@@ -1,2 +1,3 @@
 # gomoku
-School project: play Gomoku against our AI. This project aims to implement a minimax algorithm.
+
+This is a **school project**. The goal is to make a Gomoku game and an AI based on minimax algorithm.
