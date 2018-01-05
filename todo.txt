@@ -21,7 +21,8 @@ Ressources
     - https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
     - http://www.fil.univ-lille1.fr/~routier/enseignement/licence/coo/cours/exemple-conception-minMAX-4parpage.pdf 🇫🇷
     - http://pageperso.lif.univ-mrs.fr/~liva.ralaivola/teachings20062005/reversi/MinMaxL2.pdf 🇫🇷
-
+    - http://pageperso.lif.univ-mrs.fr/~liva.ralaivola/teachings20062005/reversi/othello.pdf 🇫🇷
+    - https://wiki-prog.infoprepa.epita.fr/images/e/e0/Game_of_tron.pdf
 
     GUI:
     - https://codegou.wordpress.com/2013/12/03/past-assignments-9-tkinter/
