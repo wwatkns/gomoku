@@ -1,19 +1,19 @@
 #ifndef GAMEENGINE_HPP
 # define GAMEENGINE_HPP
 
+# include <ctime>
 # include <vector>
 # include <Eigen/Dense>
-// # include "Player.hpp"
 
 # define BOARD_COLS 19
 # define BOARD_ROWS 19
 
 
-typedef struct  s_action { // Redefinition, TODO, delete redondant code
+typedef struct  s_action {
     Eigen::Array2i      pos;
-    unsigned short      player_index;
+    unsigned short      player_id;
     unsigned long       num;
-    unsigned long       timestamp;
+    std::time_t         timestamp;
 }               t_action;
 
 
@@ -36,10 +36,10 @@ public:
 
 private:
     Eigen::ArrayXXi         _grid;
-    std::vector<t_action>   _history;
+    std::vector<t_action>   _history; // TODO: Linked list
+    std::time_t             _initial_timestamp;
     /* the possible states of the board cells */
     struct state { enum { free, black, white, black_free, white_free }; };
-
 };
 
 #endif

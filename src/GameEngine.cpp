@@ -2,6 +2,7 @@
 
 GameEngine::GameEngine(void) {
     this->_grid = Eigen::ArrayXXi::Constant(BOARD_COLS, BOARD_ROWS, state::free);
+    this->_initial_timestamp = std::time(nullptr);
 }
 
 GameEngine::GameEngine(GameEngine const &src) {
@@ -31,6 +32,7 @@ bool    GameEngine::check_end(void) {
 }
 
 void    GameEngine::update_game_state(t_action &action) {
-    this->_grid(action.pos[0], action.pos[1]) = (action.player_index == 0 ? state::black : state::white);
+    this->_grid(action.pos[0], action.pos[1]) = (action.player_id == 0 ? state::black : state::white);
+    action.timestamp = std::time(nullptr) - this->_initial_timestamp;
     this->_history.push_back(action);
 }

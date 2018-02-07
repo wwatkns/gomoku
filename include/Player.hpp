@@ -4,16 +4,6 @@
 # include <Eigen/Dense>
 # include "GameEngine.hpp"
 
-class Player; // define the Player class before the definition so that the struct knows what's up
-
-// typedef struct  s_action {
-//     Eigen::Array2i      pos;
-//     unsigned short      player_index;
-//     unsigned long       num;
-//     unsigned long       timestamp;
-// }               t_action;
-
-
 class Player {
 
 public:
