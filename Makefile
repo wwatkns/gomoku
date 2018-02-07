@@ -3,11 +3,12 @@ INC_PATH = ./include/
 OBJ_PATH = ./obj/
 EIGEN_PATH = $(HOME)/.eigen/
 
-NAME = mlp
+NAME = gomoku
 CC = clang++
-CFLGS = -Werror -Wextra -Wall -Ofast -std=c++11
+# CFLGS = -Werror -Wextra -Wall -Ofast -std=c++11
+CFLGS = -std=c++11
 
-SRC_NAME = main.cpp
+SRC_NAME = main.cpp Game.cpp GameEngine.cpp Player.cpp Human.cpp Computer.cpp
 OBJ_NAME = $(SRC_NAME:.cpp=.o)
 
 SRC = $(addprefix $(SRC_PATH), $(SRC_NAME))
