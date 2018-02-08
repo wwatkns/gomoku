@@ -45,8 +45,8 @@ void        Game::loop(void) {
         c_action = this->_c_player->play();
         this->_game_engine->update_game_state(c_action);
 
-        std::cout << "\n num: " << c_action.num << std::endl;
-        std::cout << "  id: " << c_action.player_id << std::endl;
+        std::cout << "\n  id: " << c_action.id << std::endl;
+        std::cout << " pid: " << c_action.player_id << std::endl;
         std::cout << "time: " << c_action.timepoint.count() << std::endl;
 
         if (this->_game_engine->check_end() == true)

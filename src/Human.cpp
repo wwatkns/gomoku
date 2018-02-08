@@ -24,7 +24,7 @@ t_action    Human::play(void) {
     */
     action.pos = {0, 0}; // TMP
     action.player_id = this->_id;
-    action.num = this->_game_engine->get_history_size() + 1;
+    action.id = this->_game_engine->get_history_size() + 1;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     return action;
 }

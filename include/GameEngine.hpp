@@ -12,9 +12,9 @@
 
 
 typedef struct  s_action {
-    Eigen::Array2i          pos;
-    unsigned short          player_id;
-    unsigned long           num;
+    Eigen::Array2i                  pos;
+    unsigned short                  player_id;
+    unsigned long                   id;
     std::chrono::duration<double>   timepoint;
 }               t_action;
 
