@@ -5,6 +5,8 @@
 # include <list>
 # include <Eigen/Dense>
 
+# include <iostream>
+
 # define BOARD_COLS 19
 # define BOARD_ROWS 19
 # define ALIGNTOWIN 5
@@ -49,6 +51,11 @@ private:
             white_free = 10 
         }; 
     };
+
+    bool            _check_col(size_t col, size_t row);
+    bool            _check_row(size_t col, size_t row);
+    bool            _check_dil(size_t col, size_t row);
+    bool            _check_dir(size_t col, size_t row);
 
 };
 
