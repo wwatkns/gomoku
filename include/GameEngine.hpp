@@ -39,7 +39,16 @@ private:
     std::list<t_action>     _history;
     std::time_t             _initial_timestamp;
     /* the possible states of the board cells */
-    struct state { enum { free, black, white, black_free, white_free }; };
+    struct state {
+        enum {
+            black_free = -10,
+            black = -1,
+            free = 0,
+            white = 1,
+            white_free = 10 
+        }; 
+    };
+
 };
 
 #endif
