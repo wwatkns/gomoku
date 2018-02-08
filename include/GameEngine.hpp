@@ -1,6 +1,7 @@
 #ifndef GAMEENGINE_HPP
 # define GAMEENGINE_HPP
 
+# include <iostream>
 # include <ctime>
 # include <list>
 # include <Eigen/Dense>
@@ -25,14 +26,18 @@ public:
     ~GameEngine(void);
     GameEngine	&operator=(GameEngine const &rhs);
 
-    bool            check_action(t_action &action); // check if action is valid
-    bool            check_end(void);
-    void            update_game_state(t_action &action); // update the game state given an action
+    bool                check_action(t_action &action); // check if action is valid
+    bool                check_end(void);
+    void                update_game_state(t_action &action); // update the game state given an action
 
     /* Getters */
-    Eigen::ArrayXXi get_grid(void) const;
+    Eigen::ArrayXXi     get_grid(void) const;
+    std::list<t_action> get_history(void) const;
+    unsigned long       get_history_size(void) const;
+    std::time_t         get_initial_timestamp(void) const;
     /* Setters */
-    void            set_grid(Eigen::ArrayXXi grid);
+    void                set_grid(Eigen::ArrayXXi grid);
+
 
 private:
     Eigen::ArrayXXi         _grid;
@@ -40,6 +45,7 @@ private:
     std::time_t             _initial_timestamp;
     /* the possible states of the board cells */
     struct state { enum { free, black, white, black_free, white_free }; };
+
 };
 
 #endif

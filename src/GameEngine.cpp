@@ -17,12 +17,6 @@ GameEngine	&GameEngine::operator=(GameEngine const &src) {
     return (*this);
 }
 
-/* Getters */
-Eigen::ArrayXXi    GameEngine::get_grid(void) const { return (this->_grid); }
-/* Setters */
-void        GameEngine::set_grid(Eigen::ArrayXXi grid) { this->_grid = grid; }
-
-
 bool    GameEngine::check_action(t_action &action) {
     return false;
 }
@@ -36,3 +30,12 @@ void    GameEngine::update_game_state(t_action &action) {
     action.timestamp = std::time(nullptr) - this->_initial_timestamp;
     this->_history.push_back(action);
 }
+
+
+/* Getters */
+Eigen::ArrayXXi     GameEngine::get_grid(void) const { return (this->_grid); }
+std::list<t_action> GameEngine::get_history(void) const { return (this->_history); }
+unsigned long       GameEngine::get_history_size(void) const { return (this->_history.size()); }
+std::time_t         GameEngine::get_initial_timestamp(void) const { return (this->_initial_timestamp); }
+/* Setters */
+void                GameEngine::set_grid(Eigen::ArrayXXi grid) { this->_grid = grid; }
