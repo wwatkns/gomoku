@@ -5,6 +5,7 @@ Game::Game(void)  {
     // std::vector<std::string>    players = this->_input_handler.set_players();
 
     this->_game_engine = new GameEngine();
+    this->_gui = new GraphicalInterface();
 
     /* Debug */
     this->_player_1 = new Human(this->_game_engine, 1);
@@ -45,12 +46,13 @@ void        Game::loop(void) {
         c_action = this->_c_player->play();
         this->_game_engine->update_game_state(c_action);
 
-        std::cout << "\n  id: " << c_action.id << std::endl;
-        std::cout << " pid: " << c_action.player_id << std::endl;
-        std::cout << "time: " << c_action.timepoint.count() << std::endl;
+        // std::cout << "\n  id: " << c_action.id << std::endl;
+        // std::cout << " pid: " << c_action.player_id << std::endl;
+        // std::cout << "time: " << c_action.timepoint.count() << std::endl;
 
-        if (this->_game_engine->check_end() == true)
+        if (this->_game_engine->check_end() == true || this->_gui->check_close())
             break;
+        this->_gui->update_display();
         this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
     }
 }
