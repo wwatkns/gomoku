@@ -7,6 +7,7 @@ Game::Game(void)  {
     this->_game_engine = new GameEngine();
 
     /* Debug */
+    this->_current_player = 1;
     this->_player_1 = new Human(this->_game_engine, 0);
     this->_player_2 = new Computer(this->_game_engine, 1);
 }
@@ -16,6 +17,9 @@ Game::Game(Game const &src) {
 }
 
 Game::~Game(void) {
+    delete this->_player_1;
+    delete this->_player_2;
+    delete this->_game_engine;
 }
 
 Game	&Game::operator=(Game const &src) {
@@ -35,7 +39,12 @@ void    Game::set_player_2(Player player) { this->_player_2 = &player; }
 
 
 void    Game::loop(void) const {
-
+    // while (true) {
+    //     this->_current_player = (this->_current_player == 1 ? 0 : 1); // switch the current player
+    //     this->_current_player->play();
+    //     if (this->_game_engine->check_end() == true)
+    //         break;
+    // }
 }
 
 void    Game::end(void) const {

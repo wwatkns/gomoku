@@ -1,6 +1,6 @@
 #include "Human.hpp"
 
-Human::Human(GameEngine *game_engine, unsigned short index) : Player(game_engine, index) {
+Human::Human(GameEngine *game_engine, unsigned short id) : Player(game_engine, id) {
 }
 
 Human::Human(Human const &src) : Player(src) {
@@ -12,7 +12,7 @@ Human::~Human(void) {
 
 Human	&Human::operator=(Human const &src) {
     this->_game_engine = src.get_game_engine();
-    this->_index = src.get_index();
+    this->_id = src.get_id();
     return (*this);
 }
 

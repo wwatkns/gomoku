@@ -2,7 +2,7 @@
 # define GAMEENGINE_HPP
 
 # include <ctime>
-# include <vector>
+# include <list>
 # include <Eigen/Dense>
 
 # define BOARD_COLS 19
@@ -36,7 +36,7 @@ public:
 
 private:
     Eigen::ArrayXXi         _grid;
-    std::vector<t_action>   _history; // TODO: Linked list
+    std::list<t_action>     _history;
     std::time_t             _initial_timestamp;
     /* the possible states of the board cells */
     struct state { enum { free, black, white, black_free, white_free }; };
