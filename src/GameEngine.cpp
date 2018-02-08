@@ -34,7 +34,7 @@ bool    GameEngine::check_end(void) {
                 if (_check_col(col, row) || _check_row(col, row) ||
                     _check_dil(col, row) || _check_dir(col, row))
                     return true;
-}
+            }
         }
     }
     return false;
