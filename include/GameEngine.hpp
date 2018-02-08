@@ -7,6 +7,7 @@
 
 # define BOARD_COLS 19
 # define BOARD_ROWS 19
+# define ALIGNTOWIN 5
 
 
 typedef struct  s_action {
