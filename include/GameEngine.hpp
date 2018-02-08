@@ -44,7 +44,7 @@ private:
     std::list<t_action>                     _history;
     std::chrono::steady_clock::time_point   _initial_timepoint;
     /* the possible states of the board cells */
-    struct state { enum { free, black, white, black_free, white_free }; };
+    struct state { enum { free=0, black=-1, white=1, black_free=-10, white_free=10 }; };
 
 };
 

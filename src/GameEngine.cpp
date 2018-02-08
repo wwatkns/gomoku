@@ -14,6 +14,8 @@ GameEngine::~GameEngine(void) {
 
 GameEngine	&GameEngine::operator=(GameEngine const &src) {
     this->_grid = src.get_grid();
+    this->_history = src.get_history();
+    this->_initial_timepoint = src.get_initial_timepoint();
     return (*this);
 }
 
