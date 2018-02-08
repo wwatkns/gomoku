@@ -24,6 +24,6 @@ t_action    Computer::play(void) {
     action.pos = {0, 0}; // TMP
     action.player_id = this->_id;
     action.num = this->_game_engine->get_history_size() + 1;
-    action.timestamp = std::time(nullptr) - this->_game_engine->get_initial_timestamp();
+    action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     return action;
 }

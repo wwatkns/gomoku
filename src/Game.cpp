@@ -47,7 +47,7 @@ void        Game::loop(void) {
 
         std::cout << "\n num: " << c_action.num << std::endl;
         std::cout << "  id: " << c_action.player_id << std::endl;
-        std::cout << "time: " << c_action.timestamp << std::endl;
+        std::cout << "time: " << c_action.timepoint.count() << std::endl;
 
         if (this->_game_engine->check_end() == true)
             break;
