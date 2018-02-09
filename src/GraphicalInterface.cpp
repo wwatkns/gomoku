@@ -1,22 +1,14 @@
 #include "GraphicalInterface.hpp"
 
-GraphicalInterface::GraphicalInterface(void) {
+GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_grid_padding = 8;
     this->_bg_color = (SDL_Color){215, 171, 84, 255};
     this->_init_sdl();
     this->_load_images();
     this->_init_grid();
-
-    this->add_stone((Eigen::Array2i){10, 3}, 1);
-    this->add_stone((Eigen::Array2i){11, 3}, 1);
-    this->add_stone((Eigen::Array2i){9, 4}, 2);
-    this->add_stone((Eigen::Array2i){10, 4}, 2);
-    this->add_stone((Eigen::Array2i){9, 3}, 1);
-    this->add_stone((Eigen::Array2i){14, 1}, 2);
-
 }
 
-GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) {
+GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
     *this = src;
 }
 
@@ -27,6 +19,9 @@ GraphicalInterface::~GraphicalInterface(void) {
 GraphicalInterface	&GraphicalInterface::operator=(GraphicalInterface const &src) {
     return (*this);
 }
+
+GameEngine  *GraphicalInterface::get_game_engine(void) const { return (this->_game_engine); }
+
 
 SDL_Texture *GraphicalInterface::load_texture(std::string path) {
     IMG_Init(IMG_INIT_PNG);
@@ -56,13 +51,10 @@ void    GraphicalInterface::_init_sdl(void) {
 
     this->_window = SDL_CreateWindow("gomoku", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_H, WIN_W, SDL_WINDOW_SHOWN);
     this->_renderer = SDL_CreateRenderer(this->_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-    // SDL_SetRenderDrawColor(this->_renderer, this->_bg_color.r, this->_bg_color.g, this->_bg_color.b, this->_bg_color.a);
     this->_board_grid_tex = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
-    this->_board_stones_tex = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
 
     SDL_SetRenderDrawBlendMode(this->_renderer, SDL_BLENDMODE_BLEND);
     SDL_SetTextureBlendMode(this->_board_grid_tex, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureBlendMode(this->_board_stones_tex, SDL_BLENDMODE_BLEND);
 }
 
 void    GraphicalInterface::_load_images(void) {
@@ -105,29 +97,30 @@ void    GraphicalInterface::_init_grid_points(void) {
     }
 }
 
-
 void    GraphicalInterface::update_display(void) {
     SDL_SetRenderDrawColor(this->_renderer, this->_bg_color.r, this->_bg_color.g, this->_bg_color.b, this->_bg_color.a);
     SDL_RenderClear(this->_renderer);
     SDL_RenderCopyEx(this->_renderer, this->_board_grid_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
-    SDL_RenderCopyEx(this->_renderer, this->_board_stones_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
-
+    this->_render_stones();
     SDL_RenderPresent(this->_renderer);
 }
 
-
-void    GraphicalInterface::add_stone(Eigen::Array2i pos, uint8_t pid) {
+void    GraphicalInterface::_render_stones(void) {
     int32_t         size = 56;
-    Eigen::Array2i  spos = this->grid_to_screen(pos);
-    SDL_Rect        rect = {spos[1]-size/2, spos[0]-size/2, size, size};
+    Eigen::Array2i  spos;
+    SDL_Rect        rect;
+    SDL_Texture     *stone;
 
-    SDL_SetRenderTarget(this->_renderer, this->_board_stones_tex);
-    SDL_RenderCopy(this->_renderer, (pid == 1 ? this->_black_stone_tex : this->_white_stone_tex), NULL, &rect);
-    SDL_SetRenderTarget(this->_renderer, NULL);
-}
-
-
-void    GraphicalInterface::del_stone(Eigen::Array2i pos) {
+    for (int j = 0; j < COLS; j++) {
+        for (int i = 0; i < ROWS; i++) {
+            if (this->_game_engine->grid(j,i) == -1 || this->_game_engine->grid(j,i) == 1) {
+                spos = this->grid_to_screen((Eigen::Array2i){j,i});
+                rect = {spos[1]-size/2, spos[0]-size/2, size, size};
+                stone = (this->_game_engine->grid(j,i) == -1 ? this->_black_stone_tex : this->_white_stone_tex);
+                SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
+            }
+        }
+    }
 }
 
 bool    GraphicalInterface::check_close(void) {
@@ -145,9 +138,7 @@ void    GraphicalInterface::_close_sdl(void) {
     SDL_DestroyTexture(this->_black_stone_tex);
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
-    SDL_DestroyTexture(this->_board_stones_tex);
     SDL_DestroyTexture(this->_board_grid_tex);
-    this->_board_stones_tex = NULL;
     this->_board_grid_tex = NULL;
 
     SDL_DestroyWindow(this->_window);

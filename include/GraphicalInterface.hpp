@@ -6,6 +6,7 @@
 # include <SDL.h>
 # include <SDL_image.h>
 // # include <SDL2_gfxPrimitives.h>
+# include "GameEngine.hpp"
 
 # define WIN_H 1280
 # define WIN_W 1280
@@ -15,28 +16,31 @@
 class GraphicalInterface {
 
 public:
-    GraphicalInterface(void);
+    GraphicalInterface(GameEngine *game_engine);
     GraphicalInterface(GraphicalInterface const &src);
     ~GraphicalInterface(void);
     GraphicalInterface	&operator=(GraphicalInterface const &rhs);
 
     bool        check_close(void);
     void        update_display(void);
-    void        add_stone(Eigen::Array2i pos, uint8_t pid);
-    void        del_stone(Eigen::Array2i pos);
 
     SDL_Texture     *load_texture(std::string path);
     Eigen::Array2i  grid_to_screen(Eigen::Array2i pos);
     // Eigen::Array2i  screen_to_grid(Eigen::Array2i &pos);
 
+    GameEngine  *get_game_engine(void) const;
+
 private:
     void    _init_sdl(void);
     void    _init_grid(void);
     void    _init_grid_points(void);
+    void    _render_stones(void);
     void    _load_images(void);
 
     // bool    _check_poll_event(void);
     void    _close_sdl(void);
+
+    GameEngine      *_game_engine;
 
     SDL_Window      *_window;
     SDL_Renderer    *_renderer;
@@ -48,7 +52,6 @@ private:
     SDL_Texture     *_black_stone_tex;
 
     SDL_Texture     *_board_grid_tex;
-    SDL_Texture     *_board_stones_tex;
 };
 
 #endif
