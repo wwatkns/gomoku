@@ -1,7 +1,13 @@
 #include "GraphicalInterface.hpp"
 
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
+    this->_quit = false;
     this->_grid_padding = 8;
+    this->_pad[1] = (int32_t)(WIN_W * (float)(this->_grid_padding / 100.));
+    this->_pad[0] = (int32_t)(WIN_H * (float)(this->_grid_padding / 100.));
+    this->_inc[1] = (float)(WIN_W - (this->_pad[1] * 2)) / (COLS-1);
+    this->_inc[0] = (float)(WIN_H - (this->_pad[0] * 2)) / (ROWS-1);
+
     this->_bg_color = (SDL_Color){215, 171, 84, 255};
     this->_init_sdl();
     this->_load_images();
@@ -25,24 +31,42 @@ GameEngine  *GraphicalInterface::get_game_engine(void) const { return (this->_ga
 
 SDL_Texture *GraphicalInterface::load_texture(std::string path) {
     IMG_Init(IMG_INIT_PNG);
-
     SDL_Texture *texture = NULL;
     SDL_Surface *loadedSurface = IMG_Load(path.c_str());
-
     texture = SDL_CreateTextureFromSurface(this->_renderer, loadedSurface);
     SDL_FreeSurface(loadedSurface);
     return texture;
 }
 
 Eigen::Array2i  GraphicalInterface::grid_to_screen(Eigen::Array2i pos) {
-    uint32_t    pad_w = (uint32_t)(WIN_W * (float)(this->_grid_padding / 100.));
-    uint32_t    pad_h = (uint32_t)(WIN_H * (float)(this->_grid_padding / 100.));
-    float       inc_w = (float)(WIN_W - (pad_w * 2)) / (COLS-1);
-    float       inc_h = (float)(WIN_H - (pad_h * 2)) / (ROWS-1);
+    Eigen::Array2i  s_pos;
+    s_pos[0] = this->_pad[0] + pos[0] * this->_inc[0];
+    s_pos[1] = this->_pad[1] + pos[1] * this->_inc[1];
+    return s_pos;
+}
 
-    Eigen::Array2i  screen_pos;
-    screen_pos << pad_h + pos[0] * inc_h, pad_w + pos[1] * inc_w;
-    return screen_pos;
+Eigen::Array2i  GraphicalInterface::screen_to_grid(Eigen::Array2i pos) {
+    Eigen::Array2i  g_pos;
+    g_pos[0] = std::round((pos[0] - this->_pad[0]) / this->_inc[0]);
+    g_pos[1] = std::round((pos[1] - this->_pad[1]) / this->_inc[1]);
+    g_pos[0] = std::min(std::max(g_pos[0], 0), COLS-1);
+    g_pos[1] = std::min(std::max(g_pos[1], 0), ROWS-1);
+    return g_pos;
+}
+
+Eigen::Array2i  GraphicalInterface::snap_to_grid(Eigen::Array2i pos) {
+    Eigen::Array2i  s_pos;
+    s_pos[0] = this->_pad[0] + std::round((pos[0] - this->_pad[0]) / this->_inc[0]) * this->_inc[0];
+    s_pos[1] = this->_pad[1] + std::round((pos[1] - this->_pad[1]) / this->_inc[1]) * this->_inc[1];
+    s_pos[0] = std::min(std::max(s_pos[0], this->_pad[0]), WIN_H - this->_pad[0]);
+    s_pos[1] = std::min(std::max(s_pos[1], this->_pad[1]), WIN_W - this->_pad[1]);
+    return s_pos;
+}
+
+void    GraphicalInterface::_load_images(void) {
+    this->_white_stone_tex = this->load_texture(std::string("./resources/circle_white.png"));
+    this->_black_stone_tex = this->load_texture(std::string("./resources/circle_black.png"));
+    this->_select_stone_tex = this->load_texture(std::string("./resources/circle_select.png"));
 }
 
 void    GraphicalInterface::_init_sdl(void) {
@@ -57,30 +81,17 @@ void    GraphicalInterface::_init_sdl(void) {
     SDL_SetTextureBlendMode(this->_board_grid_tex, SDL_BLENDMODE_BLEND);
 }
 
-void    GraphicalInterface::_load_images(void) {
-    this->_white_stone_tex = this->load_texture(std::string("./resources/circle_white.png"));
-    this->_black_stone_tex = this->load_texture(std::string("./resources/circle_black.png"));
-}
-
 void    GraphicalInterface::_init_grid(void) {
-    uint32_t    pad_w = (uint32_t)(WIN_W * (float)(this->_grid_padding / 100.));
-    uint32_t    pad_h = (uint32_t)(WIN_H * (float)(this->_grid_padding / 100.));
-    float       inc_w = (float)(WIN_W - (pad_w * 2)) / (COLS-1);
-    float       inc_h = (float)(WIN_H - (pad_h * 2)) / (ROWS-1);
-
-    /* will render to the texture _board_grid_tex */
     SDL_SetRenderTarget(this->_renderer, this->_board_grid_tex);
     SDL_RenderClear(this->_renderer);
-
     SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
     for (int i = 0; i < ROWS; i++) {
-        SDL_RenderDrawLine(this->_renderer, pad_w, (int)(pad_h+i*inc_h), WIN_W - pad_w, (int)(pad_h+i*inc_h));
+        SDL_RenderDrawLine(this->_renderer, this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]), WIN_W - this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]));
     }
     for (int i = 0; i < COLS; i++) {
-        SDL_RenderDrawLine(this->_renderer, (int)(pad_w+i*inc_w), pad_h, (int)(pad_h+i*inc_h), WIN_H - pad_h);
+        SDL_RenderDrawLine(this->_renderer, (int)(this->_pad[1]+i*this->_inc[1]), this->_pad[0], (int)(this->_pad[0]+i*this->_inc[0]), WIN_H - this->_pad[0]);
     }
     this->_init_grid_points();
-    /* reset the renderer target to the screen */
     SDL_SetRenderTarget(this->_renderer, NULL);
 }
 
@@ -97,25 +108,51 @@ void    GraphicalInterface::_init_grid_points(void) {
     }
 }
 
+
+void    GraphicalInterface::update_events(void) {
+    while (SDL_PollEvent(&this->_event) != 0) {
+        switch (this->_event.type) {
+            case SDL_QUIT: this->_quit = true; break;
+            case SDL_MOUSEMOTION: SDL_GetMouseState(&this->_mouse_pos[1], &this->_mouse_pos[0]); break;
+            case SDL_MOUSEBUTTONDOWN: break;
+            case SDL_MOUSEBUTTONUP:
+                t_action    action;
+
+                action.pos = this->screen_to_grid(this->_mouse_pos);
+                action.player_id = 1;
+                action.id = this->_game_engine->get_history_size() + 1;
+                action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
+
+                this->_game_engine->update_game_state(action);
+                break;
+        }
+    }
+}
+
+
 void    GraphicalInterface::update_display(void) {
     SDL_SetRenderDrawColor(this->_renderer, this->_bg_color.r, this->_bg_color.g, this->_bg_color.b, this->_bg_color.a);
     SDL_RenderClear(this->_renderer);
     SDL_RenderCopyEx(this->_renderer, this->_board_grid_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
     this->_render_stones();
+    this->_render_select(this->_mouse_pos);
     SDL_RenderPresent(this->_renderer);
 }
 
 void    GraphicalInterface::_render_stones(void) {
+    /*  TODO:
+        should optimize to only the update the stones that were updated, and not search the whole grid each time.
+    */
     int32_t         size = 56;
-    Eigen::Array2i  spos;
+    Eigen::Array2i  s_pos;
     SDL_Rect        rect;
     SDL_Texture     *stone;
 
     for (int j = 0; j < COLS; j++) {
         for (int i = 0; i < ROWS; i++) {
             if (this->_game_engine->grid(j,i) == -1 || this->_game_engine->grid(j,i) == 1) {
-                spos = this->grid_to_screen((Eigen::Array2i){j,i});
-                rect = {spos[1]-size/2, spos[0]-size/2, size, size};
+                s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
+                rect = {s_pos[1] - size / 2, s_pos[0] - size / 2, size, size};
                 stone = (this->_game_engine->grid(j,i) == -1 ? this->_black_stone_tex : this->_white_stone_tex);
                 SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
             }
@@ -123,21 +160,27 @@ void    GraphicalInterface::_render_stones(void) {
     }
 }
 
-bool    GraphicalInterface::check_close(void) {
-    bool    quit = false;
+void    GraphicalInterface::_render_select(Eigen::ArrayXi pos) {
+    int32_t         size = 56;
+    Eigen::Array2i  g_pos;
+    SDL_Rect        rect;
 
-    while (SDL_PollEvent(&this->_event) != 0) {
-        if(this->_event.type == SDL_QUIT)
-            quit = true;
-    }
-    return quit;
+    g_pos = this->snap_to_grid(pos);
+    rect = {g_pos[1] - size / 2, g_pos[0] - size / 2, size, size};
+    SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+}
+
+bool    GraphicalInterface::check_close(void) {
+    return this->_quit;
 }
 
 void    GraphicalInterface::_close_sdl(void) {
     SDL_DestroyTexture(this->_white_stone_tex);
     SDL_DestroyTexture(this->_black_stone_tex);
+    SDL_DestroyTexture(this->_select_stone_tex);
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
+    this->_select_stone_tex = NULL;
     SDL_DestroyTexture(this->_board_grid_tex);
     this->_board_grid_tex = NULL;
 

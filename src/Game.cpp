@@ -20,7 +20,9 @@ Game::Game(Game const &src) {
 Game::~Game(void) {
     delete this->_player_1;
     delete this->_player_2;
+    delete this->_c_player;
     delete this->_game_engine;
+    delete this->_gui;
 }
 
 Game	&Game::operator=(Game const &src) {
@@ -43,9 +45,9 @@ void        Game::loop(void) {
     t_action    c_action;
 
     while (true) {
+        this->_gui->update_events();
         c_action = this->_c_player->play();
         this->_game_engine->update_game_state(c_action);
-
         if (this->_game_engine->check_end() == true || this->_gui->check_close())
             break;
         this->_gui->update_display();
