@@ -17,8 +17,27 @@ GameEngine	&GameEngine::operator=(GameEngine const &src) {
     return (*this);
 }
 
+/*
+    Check the validity of an action by looking at the cell availability for the current player.
+        * -1/1  :   represent a stone already on board
+        * -10/10:   non-possible move (because of free-threes for example)
+*/
 bool    GameEngine::check_action(t_action &action) {
-    return false;
+    int x =0, y = 0;
+
+    y = action.pos(0);
+    x = action.pos(1);
+    if (action.player_id == 1) {
+        if (this->_grid(y, x) == -1 || this->_grid(y, x) == 1 || this->_grid(y, x) == -10) {
+            return false;
+        }
+    }
+    else {
+        if ( this->_grid(y, x) == -1 || this->_grid(y, x) == 1 || this->_grid(y, x) == 10) {
+            return false;
+        }
+    }
+    return true;
 }
 
 bool    GameEngine::check_end(void) {
