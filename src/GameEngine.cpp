@@ -36,7 +36,7 @@ void    GameEngine::update_game_state(t_action &action) {
 /* Getters */
 Eigen::ArrayXXi                         GameEngine::get_grid(void) const { return (this->_grid); }
 std::list<t_action>                     GameEngine::get_history(void) const { return (this->_history); }
-unsigned long                           GameEngine::get_history_size(void) const { return (this->_history.size()); }
+uint64_t                                GameEngine::get_history_size(void) const { return (this->_history.size()); }
 std::chrono::steady_clock::time_point   GameEngine::get_initial_timepoint(void) const { return (this->_initial_timepoint); }
 /* Setters */
 void                                    GameEngine::set_grid(Eigen::ArrayXXi grid) { this->_grid = grid; }

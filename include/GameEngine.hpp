@@ -13,8 +13,8 @@
 
 typedef struct  s_action {
     Eigen::Array2i                  pos;
-    unsigned short                  player_id;
-    unsigned long                   id;
+    uint8_t                         player_id;
+    uint64_t                        id;
     std::chrono::duration<double>   timepoint;
 }               t_action;
 
@@ -34,7 +34,7 @@ public:
     /* Getters */
     Eigen::ArrayXXi                         get_grid(void) const;
     std::list<t_action>                     get_history(void) const;
-    unsigned long                           get_history_size(void) const;
+    uint64_t                                get_history_size(void) const;
     std::chrono::steady_clock::time_point   get_initial_timepoint(void) const;
     /* Setters */
     void                                    set_grid(Eigen::ArrayXXi grid);

@@ -20,7 +20,7 @@ public:
 
 protected:
     GameEngine      *_game_engine;
-    unsigned short  _id;
+    uint8_t         _id;
 
 };
 
