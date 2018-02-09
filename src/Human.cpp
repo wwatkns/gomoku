@@ -1,6 +1,6 @@
 #include "Human.hpp"
 
-Human::Human(GameEngine *game_engine, unsigned short id) : Player(game_engine, id) {
+Human::Human(GameEngine *game_engine, GraphicalInterface *gui, unsigned short id) : Player(game_engine, gui, id) {
 }
 
 Human::Human(Human const &src) : Player(src) {
@@ -19,10 +19,15 @@ Human	&Human::operator=(Human const &src) {
 t_action    Human::play(void) {
     t_action    action;
 
-    /*  Await the players input, check if those are valid, if not,
-        loop again.
+    /* TODO : change this mess, this is dumb... or not ?
     */
-    action.pos = {0, 0}; // TMP
+    while (true) {
+        this->_gui->update_events();
+        if (this->_gui->check_mouse_action() || this->_gui->check_close())
+            break;
+        this->_gui->update_display();
+    }
+    action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
     action.player_id = this->_id;
     action.id = this->_game_engine->get_history_size() + 1;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();

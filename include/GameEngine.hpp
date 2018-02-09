@@ -2,7 +2,6 @@
 # define GAMEENGINE_HPP
 
 # include <iostream>
-// # include <ctime>
 # include <chrono>
 # include <list>
 # include <Eigen/Dense>
@@ -16,8 +15,8 @@
 
 typedef struct  s_action {
     Eigen::Array2i                  pos;
-    unsigned short                  player_id;
-    unsigned long                   id;
+    uint8_t                         player_id;
+    uint64_t                        id;
     std::chrono::duration<double>   timepoint;
 }               t_action;
 
@@ -36,15 +35,14 @@ public:
     void                update_game_state(t_action &action); // update the game state given an action
 
     /* Getters */
-    Eigen::ArrayXXi                         get_grid(void) const;
     std::list<t_action>                     get_history(void) const;
-    unsigned long                           get_history_size(void) const;
+    uint64_t                                get_history_size(void) const;
     std::chrono::steady_clock::time_point   get_initial_timepoint(void) const;
     /* Setters */
-    void                                    set_grid(Eigen::ArrayXXi grid);
+
+    Eigen::ArrayXXi                         grid;
 
 private:
-    Eigen::ArrayXXi                         _grid;
     std::list<t_action>                     _history;
     std::chrono::steady_clock::time_point   _initial_timepoint;
     /* the possible states of the board cells */

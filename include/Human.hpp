@@ -6,7 +6,7 @@
 class Human : public Player {
 
 public:
-    Human(GameEngine *game_engine, unsigned short id);
+    Human(GameEngine *game_engine, GraphicalInterface *gui, unsigned short id);
     Human(Human const &src);
     ~Human(void);
     Human	&operator=(Human const &rhs);
