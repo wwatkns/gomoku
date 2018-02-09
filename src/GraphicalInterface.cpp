@@ -3,7 +3,6 @@
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_quit = false;
     this->_mouse_action = false;
-    this->_grid_padding = 8;
     this->_pad[1] = (int32_t)(WIN_W * (float)(this->_grid_padding / 100.));
     this->_pad[0] = (int32_t)(WIN_H * (float)(this->_grid_padding / 100.));
     this->_inc[1] = (float)(WIN_W - (this->_pad[1] * 2)) / (COLS-1);
@@ -136,7 +135,6 @@ void    GraphicalInterface::_render_stones(void) {
     /*  TODO:
         should optimize to only the update the stones that were updated, and not search the whole grid each time.
     */
-    int32_t         size = 56;
     Eigen::Array2i  s_pos;
     SDL_Rect        rect;
     SDL_Texture     *stone;
@@ -145,7 +143,7 @@ void    GraphicalInterface::_render_stones(void) {
         for (int i = 0; i < ROWS; i++) {
             if (this->_game_engine->grid(j,i) == -1 || this->_game_engine->grid(j,i) == 1) {
                 s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
-                rect = {s_pos[1] - size / 2, s_pos[0] - size / 2, size, size};
+                rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
                 stone = (this->_game_engine->grid(j,i) == -1 ? this->_black_stone_tex : this->_white_stone_tex);
                 SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
             }
@@ -154,13 +152,15 @@ void    GraphicalInterface::_render_stones(void) {
 }
 
 void    GraphicalInterface::_render_select(void) {
-    int32_t         size = 56;
+    Eigen::Array2i  s_pos;
     Eigen::Array2i  g_pos;
     SDL_Rect        rect;
 
-    g_pos = this->snap_to_grid(this->_mouse_pos);
-    rect = {g_pos[1] - size / 2, g_pos[0] - size / 2, size, size};
-    SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+    s_pos = this->snap_to_grid(this->_mouse_pos);
+    g_pos = this->screen_to_grid(this->_mouse_pos);
+    rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
+    if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
+        SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
 }
 
 bool    GraphicalInterface::check_mouse_action(void) {

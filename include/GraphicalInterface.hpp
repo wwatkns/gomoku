@@ -51,7 +51,8 @@ private:
     SDL_Renderer    *_renderer;
     SDL_Event       _event;
     SDL_Color       _bg_color;
-    uint32_t        _grid_padding;
+    uint32_t        _grid_padding = 8;
+    int32_t         _stone_size = 56;
 
     /* Helpers for coordinates convertions */
     Eigen::Array2i  _pad;
