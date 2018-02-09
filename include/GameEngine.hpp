@@ -7,6 +7,8 @@
 # include <list>
 # include <Eigen/Dense>
 
+# include "Player.hpp"
+
 # define BOARD_COLS 19
 # define BOARD_ROWS 19
 # define ALIGNTOWIN 5
@@ -19,6 +21,7 @@ typedef struct  s_action {
     std::chrono::duration<double>   timepoint;
 }               t_action;
 
+class Player;
 
 class GameEngine {
 
@@ -29,7 +32,7 @@ public:
     GameEngine	&operator=(GameEngine const &rhs);
 
     bool                check_action(t_action &action); // check if action is valid
-    bool                check_end(void);
+    bool                check_end(Player *player);
     void                update_game_state(t_action &action); // update the game state given an action
 
     /* Getters */
@@ -59,6 +62,7 @@ private:
     bool            _check_row(size_t col, size_t row);
     bool            _check_dil(size_t col, size_t row);
     bool            _check_dir(size_t col, size_t row);
+    bool            _check_pairs(Player *player);
 
 };
 

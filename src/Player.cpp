@@ -15,3 +15,4 @@ Player	&Player::operator=(Player const &src) {
 
 GameEngine      *Player::get_game_engine(void) const { return (this->_game_engine); }
 unsigned short  Player::get_id(void) const { return (this->_id); }
+unsigned short  Player::get_pair_captured(void) const { return (this->_pair_captured); }

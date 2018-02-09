@@ -40,12 +40,13 @@ bool    GameEngine::check_action(t_action &action) {
     return true;
 }
 
-bool    GameEngine::check_end(void) {
-    for (size_t col = 0; col < BOARD_ROWS; col++) {
-        for (size_t row = 0; row < BOARD_COLS; row++) {
+bool    GameEngine::check_end(Player *player) {
+    for (size_t col = 0; col < BOARD_ROWS; ++col) {
+        for (size_t row = 0; row < BOARD_COLS; ++row) {
             if (this->_grid(row, col) == state::black || this->_grid(row, col) == state::white) {
                 if (_check_col(col, row) || _check_row(col, row) ||
-                    _check_dil(col, row) || _check_dir(col, row))
+                    _check_dil(col, row) || _check_dir(col, row) ||
+                    _check_pairs(player)) // TODO (alain): est ce que je peux passer un player ?
                     return true;
             }
         }
@@ -53,6 +54,8 @@ bool    GameEngine::check_end(void) {
     return false;
 }
 
+/*
+*/
 void    GameEngine::update_game_state(t_action &action) {
     this->_grid(action.pos[0], action.pos[1]) = (action.player_id == 0 ? state::black : state::white);
     this->_history.push_back(action);
@@ -114,6 +117,16 @@ bool    GameEngine::_check_dir(size_t col, size_t row) {
         }
     }
     return false;
+}
+
+/* Check pairs captured. If it is == 5: win! */
+bool    GameEngine::_check_pairs(Player *player) {
+    unsigned short  pairs;
+
+    pairs = player->get_pair_captured();
+    if (pairs != 5)
+        return false;
+    return true;
 }
 
 /* Getters */

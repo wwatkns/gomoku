@@ -4,6 +4,9 @@
 # include <Eigen/Dense>
 # include "GameEngine.hpp"
 
+class           GameEngine;
+typedef struct  s_action t_action;
+
 class Player {
 
 public:
@@ -17,6 +20,7 @@ public:
     /* Getters */
     GameEngine      *get_game_engine(void) const;
     unsigned short  get_id(void) const;
+    unsigned short  get_pair_captured(void) const;
 
 protected:
     GameEngine      *_game_engine;
