@@ -21,6 +21,7 @@ public:
 protected:
     GameEngine      *_game_engine;
     unsigned short  _id;
+    unsigned short  _pair_captured;
 
 };
 
