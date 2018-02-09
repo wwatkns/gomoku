@@ -3,11 +3,12 @@
 
 # include <Eigen/Dense>
 # include "GameEngine.hpp"
+# include "GraphicalInterface.hpp"
 
 class Player {
 
 public:
-    Player(GameEngine *game_engine, unsigned short id);
+    Player(GameEngine *game_engine, GraphicalInterface *gui, unsigned short id);
     Player(Player const &src);
     virtual ~Player() {};
     Player	&operator=(Player const &rhs);
@@ -19,8 +20,9 @@ public:
     unsigned short  get_id(void) const;
 
 protected:
-    GameEngine      *_game_engine;
-    uint8_t         _id;
+    GameEngine          *_game_engine;
+    GraphicalInterface  *_gui;
+    uint8_t             _id;
 
 };
 

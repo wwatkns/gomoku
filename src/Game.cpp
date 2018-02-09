@@ -8,7 +8,7 @@ Game::Game(void)  {
     this->_gui = new GraphicalInterface(this->_game_engine);
 
     /* Debug */
-    this->_player_1 = new Human(this->_game_engine, 1);
+    this->_player_1 = new Human(this->_game_engine, this->_gui, 1);
     this->_player_2 = new Computer(this->_game_engine, 2);
     this->_c_player = this->_player_1;
 }
@@ -46,12 +46,14 @@ void        Game::loop(void) {
 
     while (true) {
         this->_gui->update_events();
+
         c_action = this->_c_player->play();
+
         this->_game_engine->update_game_state(c_action);
         if (this->_game_engine->check_end() == true || this->_gui->check_close())
             break;
         this->_gui->update_display();
-        this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
+        this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
     }
 }
 

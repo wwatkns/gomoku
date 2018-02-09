@@ -2,12 +2,12 @@
 
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_quit = false;
+    this->_mouse_action = false;
     this->_grid_padding = 8;
     this->_pad[1] = (int32_t)(WIN_W * (float)(this->_grid_padding / 100.));
     this->_pad[0] = (int32_t)(WIN_H * (float)(this->_grid_padding / 100.));
     this->_inc[1] = (float)(WIN_W - (this->_pad[1] * 2)) / (COLS-1);
     this->_inc[0] = (float)(WIN_H - (this->_pad[0] * 2)) / (ROWS-1);
-
     this->_bg_color = (SDL_Color){215, 171, 84, 255};
     this->_init_sdl();
     this->_load_images();
@@ -26,8 +26,8 @@ GraphicalInterface	&GraphicalInterface::operator=(GraphicalInterface const &src)
     return (*this);
 }
 
-GameEngine  *GraphicalInterface::get_game_engine(void) const { return (this->_game_engine); }
-
+GameEngine      *GraphicalInterface::get_game_engine(void) const { return (this->_game_engine); }
+Eigen::Array2i  GraphicalInterface::get_mouse_pos(void) const { return (this->_mouse_pos); }
 
 SDL_Texture *GraphicalInterface::load_texture(std::string path) {
     IMG_Init(IMG_INIT_PNG);
@@ -86,10 +86,12 @@ void    GraphicalInterface::_init_grid(void) {
     SDL_RenderClear(this->_renderer);
     SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
     for (int i = 0; i < ROWS; i++) {
-        SDL_RenderDrawLine(this->_renderer, this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]), WIN_W - this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]));
+        SDL_RenderDrawLine(this->_renderer, this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]),
+            WIN_W - this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]));
     }
     for (int i = 0; i < COLS; i++) {
-        SDL_RenderDrawLine(this->_renderer, (int)(this->_pad[1]+i*this->_inc[1]), this->_pad[0], (int)(this->_pad[0]+i*this->_inc[0]), WIN_H - this->_pad[0]);
+        SDL_RenderDrawLine(this->_renderer, (int)(this->_pad[1]+i*this->_inc[1]), this->_pad[0],
+            (int)(this->_pad[0]+i*this->_inc[0]), WIN_H - this->_pad[0]);
     }
     this->_init_grid_points();
     SDL_SetRenderTarget(this->_renderer, NULL);
@@ -108,34 +110,25 @@ void    GraphicalInterface::_init_grid_points(void) {
     }
 }
 
-
 void    GraphicalInterface::update_events(void) {
     while (SDL_PollEvent(&this->_event) != 0) {
         switch (this->_event.type) {
             case SDL_QUIT: this->_quit = true; break;
             case SDL_MOUSEMOTION: SDL_GetMouseState(&this->_mouse_pos[1], &this->_mouse_pos[0]); break;
-            case SDL_MOUSEBUTTONDOWN: break;
-            case SDL_MOUSEBUTTONUP:
-                t_action    action;
-
-                action.pos = this->screen_to_grid(this->_mouse_pos);
-                action.player_id = 1;
-                action.id = this->_game_engine->get_history_size() + 1;
-                action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
-
-                this->_game_engine->update_game_state(action);
-                break;
+            case SDL_MOUSEBUTTONUP: this->_mouse_action = true; break;
         }
     }
+    this->_key_states = SDL_GetKeyboardState(NULL);
+    if (this->_key_states[SDL_SCANCODE_ESCAPE])
+        this->_quit = true;
 }
-
 
 void    GraphicalInterface::update_display(void) {
     SDL_SetRenderDrawColor(this->_renderer, this->_bg_color.r, this->_bg_color.g, this->_bg_color.b, this->_bg_color.a);
     SDL_RenderClear(this->_renderer);
     SDL_RenderCopyEx(this->_renderer, this->_board_grid_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
     this->_render_stones();
-    this->_render_select(this->_mouse_pos);
+    this->_render_select();
     SDL_RenderPresent(this->_renderer);
 }
 
@@ -160,14 +153,22 @@ void    GraphicalInterface::_render_stones(void) {
     }
 }
 
-void    GraphicalInterface::_render_select(Eigen::ArrayXi pos) {
+void    GraphicalInterface::_render_select(void) {
     int32_t         size = 56;
     Eigen::Array2i  g_pos;
     SDL_Rect        rect;
 
-    g_pos = this->snap_to_grid(pos);
+    g_pos = this->snap_to_grid(this->_mouse_pos);
     rect = {g_pos[1] - size / 2, g_pos[0] - size / 2, size, size};
     SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+}
+
+bool    GraphicalInterface::check_mouse_action(void) {
+    if (this->_mouse_action == true) {
+        this->_mouse_action = false;
+        return true;
+    }
+    return false;
 }
 
 bool    GraphicalInterface::check_close(void) {

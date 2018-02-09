@@ -1,6 +1,6 @@
 #include "Player.hpp"
 
-Player::Player(GameEngine *game_engine, unsigned short id) : _game_engine(game_engine), _id(id) {
+Player::Player(GameEngine *game_engine, GraphicalInterface *gui, unsigned short id) : _game_engine(game_engine), _gui(gui), _id(id) {
 }
 
 Player::Player(Player const &src) : _game_engine(src.get_game_engine()), _id(src.get_id()) {
