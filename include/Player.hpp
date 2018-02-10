@@ -2,7 +2,6 @@
 # define PLAYER_HPP
 
 # include <Eigen/Dense>
-# include "GameEngine.hpp"
 # include "GraphicalInterface.hpp"
 
 class           GameEngine;

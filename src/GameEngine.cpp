@@ -30,25 +30,25 @@ bool    GameEngine::check_action(t_action &action) {
     y = action.pos(0);
     x = action.pos(1);
     if (action.player_id == 1) {
-        if (this->_grid(y, x) == -1 || this->_grid(y, x) == 1 || this->_grid(y, x) == -10) {
+        if (this->grid(y, x) == -1 || this->grid(y, x) == 1 || this->grid(y, x) == -10) {
             return false;
         }
     }
     else {
-        if ( this->_grid(y, x) == -1 || this->_grid(y, x) == 1 || this->_grid(y, x) == 10) {
+        if ( this->grid(y, x) == -1 || this->grid(y, x) == 1 || this->grid(y, x) == 10) {
             return false;
         }
     }
     return true;
 }
 
-bool    GameEngine::check_end(Player *player) {
+bool    GameEngine::check_end(uint8_t player_pairs) {
     for (size_t col = 0; col < BOARD_ROWS; ++col) {
         for (size_t row = 0; row < BOARD_COLS; ++row) {
-            if (this->_grid(row, col) == state::black || this->_grid(row, col) == state::white) {
+            if (this->grid(row, col) == state::black || this->grid(row, col) == state::white) {
                 if (_check_col(col, row) || _check_row(col, row) ||
                     _check_dil(col, row) || _check_dir(col, row) ||
-                    _check_pairs(player)) // TODO (alain): est ce que je peux passer un player ?
+                    _check_pairs(player_pairs)) // TODO (alain): est ce que je peux passer un player ?
                     return true;
             }
         }
@@ -67,9 +67,9 @@ bool    GameEngine::_check_col(size_t col, size_t row) {
     int sum = 0;
 
     if (row <= (BOARD_ROWS - ALIGNTOWIN)) { // row <= 14
-        sum = this->_grid(row,     col) + this->_grid(row + 1, col) +
-              this->_grid(row + 2, col) + this->_grid(row + 3, col) +
-              this->_grid(row + 4, col);
+        sum = this->grid(row,     col) + this->grid(row + 1, col) +
+              this->grid(row + 2, col) + this->grid(row + 3, col) +
+              this->grid(row + 4, col);
         if (sum == ALIGNTOWIN || sum == -ALIGNTOWIN) {
             return true;
         }
@@ -81,9 +81,9 @@ bool    GameEngine::_check_row(size_t col, size_t row) {
     int sum = 0;
 
     if (col <= (BOARD_COLS - ALIGNTOWIN)) { // 0 <= cols <= 14
-        sum = this->_grid(row, col    ) + this->_grid(row, col + 1) +
-              this->_grid(row, col + 2) + this->_grid(row, col + 3) +
-              this->_grid(row, col + 4);
+        sum = this->grid(row, col    ) + this->grid(row, col + 1) +
+              this->grid(row, col + 2) + this->grid(row, col + 3) +
+              this->grid(row, col + 4);
         if (sum == ALIGNTOWIN || sum == -ALIGNTOWIN) {
             return true;
         }
@@ -96,9 +96,9 @@ bool    GameEngine::_check_dil(size_t col, size_t row) {
     int sum = 0;
 
     if (col >= (ALIGNTOWIN - 1) && row <= (BOARD_ROWS - ALIGNTOWIN)) {
-        sum = this->_grid(row    , col    ) + this->_grid(row + 1, col - 1) +
-              this->_grid(row + 2, col - 2) + this->_grid(row + 3, col - 3) +
-              this->_grid(row + 4, col - 4);
+        sum = this->grid(row    , col    ) + this->grid(row + 1, col - 1) +
+              this->grid(row + 2, col - 2) + this->grid(row + 3, col - 3) +
+              this->grid(row + 4, col - 4);
         if (sum == ALIGNTOWIN || sum == -ALIGNTOWIN) {
             return true;
         }
@@ -111,9 +111,9 @@ bool    GameEngine::_check_dir(size_t col, size_t row) {
     int sum = 0;
 
     if (col <= (BOARD_COLS - ALIGNTOWIN) && row <= (BOARD_ROWS - ALIGNTOWIN)) {
-        sum = this->_grid(row    , col    ) + this->_grid(row + 1, col + 1) +
-              this->_grid(row + 2, col + 2) + this->_grid(row + 3, col + 3) +
-              this->_grid(row + 4, col + 4);
+        sum = this->grid(row    , col    ) + this->grid(row + 1, col + 1) +
+              this->grid(row + 2, col + 2) + this->grid(row + 3, col + 3) +
+              this->grid(row + 4, col + 4);
         if (sum == ALIGNTOWIN || sum == -ALIGNTOWIN) {
             return true;
         }
@@ -122,10 +122,7 @@ bool    GameEngine::_check_dir(size_t col, size_t row) {
 }
 
 /* Check pairs captured. If it is == 5: win! */
-bool    GameEngine::_check_pairs(Player *player) {
-    unsigned short  pairs;
-
-    pairs = player->get_pair_captured();
+bool    GameEngine::_check_pairs(uint8_t pairs) {
     if (pairs != 5)
         return false;
     return true;
