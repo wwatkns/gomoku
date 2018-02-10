@@ -2,8 +2,6 @@
 #include "Game.hpp"
 #include "GraphicalInterface.hpp"
 
-#include <SDL.h>
-
 int     main(int argc, char **argv) {
     Game                *game = new Game();
 

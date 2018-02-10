@@ -3,11 +3,13 @@
 
 # include <iostream>
 # include <cmath>
+# include <string>
 # include <Eigen/Dense>
 # include <SDL.h>
 # include <SDL_image.h>
 // # include <SDL2_gfxPrimitives.h>
 # include "GameEngine.hpp"
+# include "FontHandler.hpp"
 
 # define COLS 19
 # define ROWS 19
@@ -39,10 +41,12 @@ private:
     void    _init_grid_points(void);
     void    _render_stones(void);
     void    _render_select(void);
+    // void    _render_font(void);
     void    _load_images(void);
     void    _close_sdl(void);
 
     GameEngine      *_game_engine;
+    FontHandler     *_font_handler;
 
     SDL_Window      *_window;
     SDL_Renderer    *_renderer;

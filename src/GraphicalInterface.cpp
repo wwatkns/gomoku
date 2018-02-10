@@ -4,9 +4,10 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_quit = false;
     this->_mouse_action = false;
     this->_init_sdl();
+    this->_font_handler = new FontHandler(this->_renderer);
     this->_win_res_ratio = (this->_res_h / (float)this->_win_h);
     // multiply by ratio between window size and resolution
-    this->_grid_padding = (int32_t)(this->_win_h * 0.00625);    /* defaults to 8 for screen size of 1280 */
+    this->_grid_padding = (int32_t)(this->_win_h * 0.009375);  /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
     this->_pad[1] = (int32_t)(this->_res_w * (float)(this->_grid_padding / 100.));
     this->_pad[0] = (int32_t)(this->_res_h * (float)(this->_grid_padding / 100.));
@@ -33,7 +34,6 @@ GameEngine      *GraphicalInterface::get_game_engine(void) const { return (this-
 Eigen::Array2i  GraphicalInterface::get_mouse_pos(void) const { return (this->_mouse_pos); }
 
 SDL_Texture *GraphicalInterface::load_texture(std::string path) {
-    IMG_Init(IMG_INIT_PNG);
     SDL_Texture *texture = NULL;
     SDL_Surface *loadedSurface = IMG_Load(path.c_str());
     texture = SDL_CreateTextureFromSurface(this->_renderer, loadedSurface);
@@ -75,6 +75,7 @@ void    GraphicalInterface::_load_images(void) {
 void    GraphicalInterface::_init_sdl(void) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+    IMG_Init(IMG_INIT_PNG);
 
     /* get the screen dimensions */
     SDL_DisplayMode DM;
@@ -145,6 +146,11 @@ void    GraphicalInterface::update_display(void) {
     SDL_RenderCopyEx(this->_renderer, this->_board_grid_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
     this->_render_stones();
     this->_render_select();
+
+    // std::string     text("Je suis une loutre.");
+    // Eigen::Array2i  pos = {0, 0};
+    // this->_font_handler->render_realtime_text(&text, &pos, this->_font_handler->default_font);
+
     SDL_RenderPresent(this->_renderer);
 }
 
