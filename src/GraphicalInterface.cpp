@@ -4,6 +4,7 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_quit = false;
     this->_mouse_action = false;
     this->_init_sdl();
+    this->_win_res_ratio = (this->_res_h / (float)this->_win_h);
     // multiply by ratio between window size and resolution
     this->_grid_padding = (int32_t)(this->_win_h * 0.00625);    /* defaults to 8 for screen size of 1280 */
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
@@ -92,12 +93,8 @@ void    GraphicalInterface::_init_sdl(void) {
 }
 
 void    GraphicalInterface::_init_grid(void) {
-    Eigen::Array2i  pad;
-    Eigen::Array2i  inc;
-    pad[1] = (int32_t)(this->_win_w * (float)(this->_grid_padding / 100.));
-    pad[0] = (int32_t)(this->_win_h * (float)(this->_grid_padding / 100.));
-    inc[1] = (float)(this->_win_w - (pad[1] * 2)) / (COLS-1);
-    inc[0] = (float)(this->_win_h - (pad[0] * 2)) / (ROWS-1);
+    Eigen::Array2i  pad = this->_pad / (int32_t)this->_win_res_ratio;
+    Eigen::Array2f  inc = this->_inc / this->_win_res_ratio;
 
     SDL_SetRenderTarget(this->_renderer, this->_board_grid_tex);
     SDL_RenderClear(this->_renderer);
@@ -120,7 +117,7 @@ void    GraphicalInterface::_init_grid_points(void) {
 
     for (int j = 0; j < 3; j++) {
         for (int i = 0; i < 3; i++) {
-            pos = this->grid_to_screen((Eigen::Array2i){3+j*6, 3+i*6}) / (int32_t)(this->_res_h / (float)this->_win_h);
+            pos = this->grid_to_screen((Eigen::Array2i){3+j*6, 3+i*6}) / (int32_t)this->_win_res_ratio;
             rect = {pos[1]-2, pos[0]-2, 5, 5};
             SDL_RenderCopy(this->_renderer, this->_black_stone_tex, NULL, &rect);
         }
@@ -132,7 +129,7 @@ void    GraphicalInterface::update_events(void) {
         switch (this->_event.type) {
             case SDL_QUIT: this->_quit = true; break;
             case SDL_MOUSEMOTION: SDL_GetMouseState(&this->_mouse_pos[1], &this->_mouse_pos[0]);
-                this->_mouse_pos *= (this->_res_h / (float)this->_win_h);
+                this->_mouse_pos *= this->_win_res_ratio;
                 break;
             case SDL_MOUSEBUTTONUP: this->_mouse_action = true; break;
         }

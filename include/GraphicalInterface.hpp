@@ -4,14 +4,11 @@
 # include <iostream>
 # include <cmath>
 # include <Eigen/Dense>
-# include <chrono> // TMP debug
 # include <SDL.h>
 # include <SDL_image.h>
 // # include <SDL2_gfxPrimitives.h>
 # include "GameEngine.hpp"
 
-// # define WIN_H 800
-// # define WIN_W 800
 # define COLS 19
 # define ROWS 19
 
@@ -52,10 +49,11 @@ private:
     SDL_Event       _event;
     SDL_Color       _bg_color;
     /* Board variables */
-    int32_t         _win_w; // window size can be different
-    int32_t         _win_h; // than rendering size, for high-dpi
-    int32_t         _res_w; // monitors for example retina displays.
+    int32_t         _win_w;
+    int32_t         _win_h;
+    int32_t         _res_w;
     int32_t         _res_h;
+    float           _win_res_ratio;
     uint32_t        _grid_padding;
     int32_t         _stone_size;
     /* Helpers for coordinates convertions */
