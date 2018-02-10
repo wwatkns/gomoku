@@ -3,12 +3,15 @@
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_quit = false;
     this->_mouse_action = false;
-    this->_pad[1] = (int32_t)(WIN_W * (float)(this->_grid_padding / 100.));
-    this->_pad[0] = (int32_t)(WIN_H * (float)(this->_grid_padding / 100.));
-    this->_inc[1] = (float)(WIN_W - (this->_pad[1] * 2)) / (COLS-1);
-    this->_inc[0] = (float)(WIN_H - (this->_pad[0] * 2)) / (ROWS-1);
-    this->_bg_color = (SDL_Color){215, 171, 84, 255};
     this->_init_sdl();
+    // multiply by ratio between window size and resolution
+    this->_grid_padding = (int32_t)(this->_win_h * 0.00625);    /* defaults to 8 for screen size of 1280 */
+    this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
+    this->_pad[1] = (int32_t)(this->_res_w * (float)(this->_grid_padding / 100.));
+    this->_pad[0] = (int32_t)(this->_res_h * (float)(this->_grid_padding / 100.));
+    this->_inc[1] = (float)(this->_res_w - (this->_pad[1] * 2)) / (COLS-1);
+    this->_inc[0] = (float)(this->_res_h - (this->_pad[0] * 2)) / (ROWS-1);
+    this->_bg_color = (SDL_Color){ 215, 171, 84, 255 };
     this->_load_images();
     this->_init_grid();
 }
@@ -57,8 +60,8 @@ Eigen::Array2i  GraphicalInterface::snap_to_grid(Eigen::Array2i pos) {
     Eigen::Array2i  s_pos;
     s_pos[0] = this->_pad[0] + std::round((pos[0] - this->_pad[0]) / this->_inc[0]) * this->_inc[0];
     s_pos[1] = this->_pad[1] + std::round((pos[1] - this->_pad[1]) / this->_inc[1]) * this->_inc[1];
-    s_pos[0] = std::min(std::max(s_pos[0], this->_pad[0]), WIN_H - this->_pad[0]);
-    s_pos[1] = std::min(std::max(s_pos[1], this->_pad[1]), WIN_W - this->_pad[1]);
+    s_pos[0] = std::min(std::max(s_pos[0], this->_pad[0]), this->_res_h - this->_pad[0]);
+    s_pos[1] = std::min(std::max(s_pos[1], this->_pad[1]), this->_res_w - this->_pad[1]);
     return s_pos;
 }
 
@@ -72,25 +75,40 @@ void    GraphicalInterface::_init_sdl(void) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
 
-    this->_window = SDL_CreateWindow("gomoku", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIN_H, WIN_W, SDL_WINDOW_SHOWN);
+    /* get the screen dimensions */
+    SDL_DisplayMode DM;
+    SDL_GetCurrentDisplayMode(0, &DM);
+    this->_win_w = this->_win_h = (int32_t)(std::min(DM.w, DM.h) / 1.125);
+
+    this->_window = SDL_CreateWindow("gomoku", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->_win_w, this->_win_h, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
     this->_renderer = SDL_CreateRenderer(this->_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-    this->_board_grid_tex = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WIN_W, WIN_H);
+    this->_board_grid_tex = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, this->_win_w, this->_win_h);
+
+    /* get the renderer resolution, may differ from window size for high-dpi displays */
+    SDL_GetRendererOutputSize(this->_renderer, &this->_res_w, &this->_res_h);
 
     SDL_SetRenderDrawBlendMode(this->_renderer, SDL_BLENDMODE_BLEND);
     SDL_SetTextureBlendMode(this->_board_grid_tex, SDL_BLENDMODE_BLEND);
 }
 
 void    GraphicalInterface::_init_grid(void) {
+    Eigen::Array2i  pad;
+    Eigen::Array2i  inc;
+    pad[1] = (int32_t)(this->_win_w * (float)(this->_grid_padding / 100.));
+    pad[0] = (int32_t)(this->_win_h * (float)(this->_grid_padding / 100.));
+    inc[1] = (float)(this->_win_w - (pad[1] * 2)) / (COLS-1);
+    inc[0] = (float)(this->_win_h - (pad[0] * 2)) / (ROWS-1);
+
     SDL_SetRenderTarget(this->_renderer, this->_board_grid_tex);
     SDL_RenderClear(this->_renderer);
     SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
     for (int i = 0; i < ROWS; i++) {
-        SDL_RenderDrawLine(this->_renderer, this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]),
-            WIN_W - this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]));
+        SDL_RenderDrawLine(this->_renderer, pad[1], (int)(pad[0]+i*inc[0]),
+            this->_win_w - pad[1], (int)(pad[0]+i*inc[0]));
     }
     for (int i = 0; i < COLS; i++) {
-        SDL_RenderDrawLine(this->_renderer, (int)(this->_pad[1]+i*this->_inc[1]), this->_pad[0],
-            (int)(this->_pad[0]+i*this->_inc[0]), WIN_H - this->_pad[0]);
+        SDL_RenderDrawLine(this->_renderer, (int)(pad[1]+i*inc[1]), pad[0],
+            (int)(pad[0]+i*inc[0]), this->_win_h - pad[0]);
     }
     this->_init_grid_points();
     SDL_SetRenderTarget(this->_renderer, NULL);
@@ -102,7 +120,7 @@ void    GraphicalInterface::_init_grid_points(void) {
 
     for (int j = 0; j < 3; j++) {
         for (int i = 0; i < 3; i++) {
-            pos = this->grid_to_screen((Eigen::Array2i){3+j*6, 3+i*6});
+            pos = this->grid_to_screen((Eigen::Array2i){3+j*6, 3+i*6}) / (int32_t)(this->_res_h / (float)this->_win_h);
             rect = {pos[1]-2, pos[0]-2, 5, 5};
             SDL_RenderCopy(this->_renderer, this->_black_stone_tex, NULL, &rect);
         }
@@ -113,7 +131,9 @@ void    GraphicalInterface::update_events(void) {
     while (SDL_PollEvent(&this->_event) != 0) {
         switch (this->_event.type) {
             case SDL_QUIT: this->_quit = true; break;
-            case SDL_MOUSEMOTION: SDL_GetMouseState(&this->_mouse_pos[1], &this->_mouse_pos[0]); break;
+            case SDL_MOUSEMOTION: SDL_GetMouseState(&this->_mouse_pos[1], &this->_mouse_pos[0]);
+                this->_mouse_pos *= (this->_res_h / (float)this->_win_h);
+                break;
             case SDL_MOUSEBUTTONUP: this->_mouse_action = true; break;
         }
     }
