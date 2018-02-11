@@ -116,6 +116,8 @@ void    GraphicalInterface::_init_grid(void) {
             (int)(this->_pad[0]+i*this->_inc[0]), this->_res_h - this->_pad[0]);
     }
     this->_init_grid_points();
+    SDL_Rect    rect = { this->_main_viewport.w - 2, 0, 2, this->_main_viewport.h };
+    SDL_RenderFillRect(this->_renderer, &rect);
     SDL_SetRenderTarget(this->_renderer, NULL);
 }
 
@@ -123,7 +125,6 @@ void    GraphicalInterface::_init_grid_points(void) {
     Eigen::Array2i  pos;
     SDL_Rect        rect;
     int32_t         pt_size = (int32_t)(0.00625 * this->_main_viewport.w);
-    std::cout << pt_size << std::endl;
 
     for (int j = 0; j < 3; j++) {
         for (int i = 0; i < 3; i++) {
@@ -191,7 +192,7 @@ void    GraphicalInterface::_render_select(void) {
 
 void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_secondary_viewport);
-    SDL_SetRenderDrawColor(this->_renderer, 235, 201, 146, 255);
+    SDL_SetRenderDrawColor(this->_renderer, 238, 214, 178, 255);
 
     SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
     SDL_RenderFillRect(this->_renderer, &rect);
