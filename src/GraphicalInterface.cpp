@@ -156,16 +156,7 @@ void    GraphicalInterface::update_display(void) {
     SDL_RenderCopyEx(this->_renderer, this->_board_grid_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
     this->_render_stones();
     this->_render_select();
-
-    /* render elements on secondary viewport (TMP) */
-    SDL_RenderSetViewport(this->_renderer, &this->_secondary_viewport);
-    SDL_SetRenderDrawColor(this->_renderer, 235, 201, 146, 255);
-    SDL_Rect    r = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
-    SDL_RenderFillRect(this->_renderer, &r);
-    std::string     text("Je suis une loutre.");
-    Eigen::Array2i  pos = {10, 10};
-    this->_font_handler->render_realtime_text(&text, &pos, this->_font_handler->default_font);
-
+    this->_render_secondary_viewport();
     SDL_RenderPresent(this->_renderer);
 }
 
@@ -196,6 +187,17 @@ void    GraphicalInterface::_render_select(void) {
     rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
     if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
         SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+}
+
+void    GraphicalInterface::_render_secondary_viewport(void) {
+    SDL_RenderSetViewport(this->_renderer, &this->_secondary_viewport);
+    SDL_SetRenderDrawColor(this->_renderer, 235, 201, 146, 255);
+
+    SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
+    SDL_RenderFillRect(this->_renderer, &rect);
+    std::string     text("Analytics (WIP)");
+    Eigen::Array2i  pos = {10, 10};
+    this->_font_handler->render_realtime_text(&text, &pos, this->_font_handler->default_font);
 }
 
 bool    GraphicalInterface::check_mouse_action(void) {

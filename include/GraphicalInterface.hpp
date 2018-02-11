@@ -41,6 +41,7 @@ private:
     void    _init_grid_points(void);
     void    _render_stones(void);
     void    _render_select(void);
+    void    _render_secondary_viewport(void);
     void    _load_images(void);
     void    _close_sdl(void);
 
@@ -51,7 +52,7 @@ private:
     SDL_Renderer    *_renderer;
     SDL_Event       _event;
     SDL_Color       _bg_color;
-
+    
     SDL_Rect        _main_viewport;
     SDL_Rect        _secondary_viewport;
     /* Board variables */
