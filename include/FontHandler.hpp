@@ -10,7 +10,7 @@
 class FontHandler {
 
 public:
-    FontHandler(SDL_Renderer *renderer);
+    FontHandler(SDL_Renderer *renderer, float const res_ratio = 1.);
     FontHandler(FontHandler const &src);
     ~FontHandler(void);
     FontHandler	&operator=(FontHandler const &rhs);

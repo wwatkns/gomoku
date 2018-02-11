@@ -41,7 +41,6 @@ private:
     void    _init_grid_points(void);
     void    _render_stones(void);
     void    _render_select(void);
-    // void    _render_font(void);
     void    _load_images(void);
     void    _close_sdl(void);
 
@@ -70,7 +69,7 @@ private:
     /* Computed textures */
     SDL_Texture     *_board_grid_tex;
     /* Event keys */
-    const uint8_t*  _key_states;
+    const uint8_t   *_key_states;
     Eigen::Array2i  _mouse_pos;
     bool            _mouse_action;
     bool            _quit;
