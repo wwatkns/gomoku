@@ -19,8 +19,6 @@ Human	&Human::operator=(Human const &src) {
 t_action    Human::play(void) {
     t_action    action;
 
-    /* TODO : change this mess, this is dumb... or not ?
-    */
     while (true) {
         this->_gui->update_events();
         if (this->_gui->check_mouse_action() || this->_gui->check_close())

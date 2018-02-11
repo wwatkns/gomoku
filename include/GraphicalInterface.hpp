@@ -51,12 +51,15 @@ private:
     SDL_Renderer    *_renderer;
     SDL_Event       _event;
     SDL_Color       _bg_color;
+
+    SDL_Rect        _main_viewport;
+    SDL_Rect        _secondary_viewport;
     /* Board variables */
     int32_t         _win_w;
     int32_t         _win_h;
     int32_t         _res_w;
     int32_t         _res_h;
-    float           _win_res_ratio;
+    float           _res_ratio;
     uint32_t        _grid_padding;
     int32_t         _stone_size;
     /* Helpers for coordinates convertions */
