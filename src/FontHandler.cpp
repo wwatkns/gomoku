@@ -11,6 +11,7 @@ FontHandler::FontHandler(FontHandler const &src) {
 }
 
 FontHandler::~FontHandler(void) {
+    TTF_CloseFont(this->default_font);
     SDL_DestroyTexture(this->_renderer_texture);
     TTF_Quit();
 }
@@ -30,7 +31,7 @@ TTF_Font    *FontHandler::load_font(std::string path, uint32_t size) {
 }
 
 void        FontHandler::render_text(std::string *text, Eigen::Array2i *pos, TTF_Font *font) {
-    SDL_Surface *surf = TTF_RenderText_Solid(font, text->c_str(), this->_render_color);
+    SDL_Surface *surf = TTF_RenderText_Blended(font, text->c_str(), this->_render_color);
     this->_renderer_texture = SDL_CreateTextureFromSurface(this->_renderer, surf);
     SDL_FreeSurface(surf);
 
@@ -47,7 +48,7 @@ void        FontHandler::render_realtime_text(std::string *text, Eigen::Array2i 
     static std::string previous = "";
 
     if (previous.compare(*text) != 0) {
-        SDL_Surface *surf = TTF_RenderText_Solid(font, text->c_str(), this->_render_color);
+        SDL_Surface *surf = TTF_RenderText_Blended(font, text->c_str(), this->_render_color);
         this->_renderer_texture = SDL_CreateTextureFromSurface(this->_renderer, surf);
         SDL_FreeSurface(surf);
 
