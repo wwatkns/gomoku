@@ -1,5 +1,6 @@
 #include "Analytics.hpp"
 #include "Player.hpp"
+#include <iomanip> // TEST
 
 Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler) : _game_engine(game_engine), _font_handler(font_handler), _player_1(nullptr), _player_2(nullptr) {
     this->_update_analytics();
@@ -21,19 +22,24 @@ Analytics	&Analytics::operator=(Analytics const &src) {
     return (*this);
 }
 
+static std::string  fzeros(std::string str, uint32_t width) {
+    if (str.size() < width)
+        return std::string(width - str.size(), '0') + str;
+    return str;
+}
+
 static std::string  format_duration(std::chrono::duration<double> elapsed) {
     std::string formated_time;
     uint32_t    seconds;
 
     seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
-    formated_time = std::to_string(seconds/60) +":"+ std::to_string(seconds%60)+"sec";
+    formated_time = fzeros(std::to_string(seconds/60), 2)+":"+fzeros(std::to_string(seconds%60), 2)+" min";
     return formated_time;
 }
 
 void        Analytics::_update_analytics(void) {
     this->_data["g_time"] = {
         "time since start : ",
-        // std::to_string(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint()).count()),
         format_duration(std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint()),
         {5, 10}
     };
