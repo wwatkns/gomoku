@@ -59,11 +59,22 @@ bool    GameEngine::check_end(uint8_t player_pairs) {
 */
 void    GameEngine::update_game_state(t_action &action) {
     this->grid(action.pos[0], action.pos[1]) = (action.player_id == 1 ? state::black : state::white);
+    _pair_detection(action.pos);
     this->_history.push_back(action);
 }
 
-static bool     _pair_detection(Eigen::Array2i pos) {
-    int         sum_h1, sum_h2, sum_v1, sum_v2, sum_dr1, sum_dr2, sum_dl1, sum_dl2;
+static void     _pair_detection(Eigen::Array2i pos, Player player) {
+    for (int row = -1; row < 2; ++row) {
+        for (int col = -1; col < 2; ++ col) {
+            if (_sum_function(pos, 3, row, col) == 0) {
+                this->grid((pos[0] +      row) , (pos[1] +      col))  = state::free;
+                this->grid((pos[0] + (2 * row)), (pos[1] + (2 * col))) = state::free;
+                player.inc_pair_captured();
+                return;
+            }
+        }
+    }
+}
 
     sum_h1  = _sum_function(pos, 3, 0, -1);
     sum_h2  = _sum_function(pos, 3, 0, 1);
