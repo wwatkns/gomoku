@@ -25,17 +25,16 @@ GameEngine	&GameEngine::operator=(GameEngine const &src) {
         * -10/10:   non-possible move (because of free-threes for example)
 */
 bool    GameEngine::check_action(t_action &action) {
-    int x =0, y = 0;
+    int y = action.pos(0);
+    int x = action.pos(1);
 
-    y = action.pos(0);
-    x = action.pos(1);
     if (action.player_id == 1) {
         if (this->grid(y, x) == -1 || this->grid(y, x) == 1 || this->grid(y, x) == -10) {
             return false;
         }
     }
     else {
-        if ( this->grid(y, x) == -1 || this->grid(y, x) == 1 || this->grid(y, x) == 10) {
+        if (this->grid(y, x) == -1 || this->grid(y, x) == 1 || this->grid(y, x) == 10) {
             return false;
         }
     }
