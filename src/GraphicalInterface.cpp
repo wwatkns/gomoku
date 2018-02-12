@@ -1,10 +1,13 @@
 #include "GraphicalInterface.hpp"
+#include "Player.hpp"
 
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_quit = false;
     this->_mouse_action = false;
     this->_init_sdl();
+
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
+    this->_analytics = new Analytics(this->_game_engine, this->_font_handler);
 
     // multiply by ratio between window size and resolution
     this->_grid_padding = 8;                                   /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
@@ -16,16 +19,6 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_bg_color = (SDL_Color){ 217, 165, 84, 255 };
     this->_load_images();
     this->_init_grid();
-
-    //TMP
-    this->_text_1 = std::string("(Text 1)");
-    this->_text_2 = std::string("(Text 2, text 2)");
-    Eigen::Array2i  *pos_1 = new Eigen::Array2i({10, 10});
-    Eigen::Array2i  *pos_2 = new Eigen::Array2i({40, 40});
-    Eigen::Array2i  *pos_3 = new Eigen::Array2i({80, 80});
-    this->_font_handler->create_text(&this->_text_1, pos_1);
-    this->_font_handler->create_text(&this->_text_2, pos_2);
-    this->_font_handler->create_text(&this->_text_1, pos_3);
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -40,9 +33,6 @@ GraphicalInterface::~GraphicalInterface(void) {
 GraphicalInterface	&GraphicalInterface::operator=(GraphicalInterface const &src) {
     return (*this);
 }
-
-GameEngine      *GraphicalInterface::get_game_engine(void) const { return (this->_game_engine); }
-Eigen::Array2i  GraphicalInterface::get_mouse_pos(void) const { return (this->_mouse_pos); }
 
 SDL_Texture *GraphicalInterface::load_texture(std::string path) {
     SDL_Texture *texture = NULL;
@@ -207,13 +197,7 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
     SDL_RenderFillRect(this->_renderer, &rect);
 
-    // TMP
-    // static uint32_t i = 0;
-    // i++;
-    // if (i > 1000) {
-    //     this->_text_2 = std::string("Je suis une loutre");
-    // }
-    this->_font_handler->render_texts();
+    this->_analytics->render_text();
 }
 
 bool    GraphicalInterface::check_mouse_action(void) {

@@ -21,9 +21,9 @@ public:
     FontHandler	&operator=(FontHandler const &rhs);
 
     TTF_Font        *load_font(std::string path, uint32_t size = 28);
-    void            create_text(std::string *text, Eigen::Array2i *pos);
-    void            create_text(std::string *text, Eigen::Array2i *pos, TTF_Font *font, SDL_Color *color);
-    void            render_texts(void);
+    void            create_text(std::string *text, Eigen::Array2i pos);
+    void            create_text(std::string *text, Eigen::Array2i pos, TTF_Font *font, SDL_Color *color);
+    void            render_text(void);
 
     /* getters */
     SDL_Renderer    *get_renderer(void) const { return _renderer; };

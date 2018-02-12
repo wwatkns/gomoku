@@ -27,18 +27,16 @@ TTF_Font    *FontHandler::load_font(std::string path, uint32_t size) {
     return font;
 }
 
-void        FontHandler::create_text(std::string *text, Eigen::Array2i *pos) {
+void        FontHandler::create_text(std::string *text, Eigen::Array2i pos) {
     create_text(text, pos, this->default_font, this->default_color);
-    // FontText    *new_text = new FontText(text, pos, font, color, this->_renderer);
-    // this->_font_texts.push_back(new_text);
 }
 
-void        FontHandler::create_text(std::string *text, Eigen::Array2i *pos, TTF_Font *font, SDL_Color *color) {
+void        FontHandler::create_text(std::string *text, Eigen::Array2i pos, TTF_Font *font, SDL_Color *color) {
     FontText    *new_text = new FontText(text, pos, font, color, this->_renderer);
     this->_font_texts.push_back(new_text);
 }
 
-void        FontHandler::render_texts(void) {
+void        FontHandler::render_text(void) {
     for (uint32_t i = 0; i < this->_font_texts.size(); i++) {
         this->_font_texts[i]->render_realtime_text();
     }

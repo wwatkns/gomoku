@@ -18,9 +18,9 @@ public:
     virtual t_action    play(void) = 0;
 
     /* Getters */
-    GameEngine      *get_game_engine(void) const;
-    unsigned short  get_id(void) const;
-    unsigned short  get_pair_captured(void) const;
+    GameEngine      *get_game_engine(void) const { return _game_engine; };
+    uint8_t         get_id(void) const { return _id; };
+    uint8_t         get_pair_captured(void) const { return _pair_captured; };
 
 protected:
     GameEngine          *_game_engine;

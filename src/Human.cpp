@@ -24,6 +24,7 @@ t_action    Human::play(void) {
         if (this->_gui->check_mouse_action()) {
             action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
             action.player_id = this->_id;
+            action.player = this;
             action.id = this->_game_engine->get_history_size() + 1;
             action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
             if (this->_game_engine->check_action(action))
