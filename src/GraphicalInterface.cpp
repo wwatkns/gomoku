@@ -7,7 +7,7 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
 
     // multiply by ratio between window size and resolution
-    this->_grid_padding = (int32_t)(this->_win_h * 0.009375);  /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
+    this->_grid_padding = 8;                                   /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
     this->_pad[1] = (int32_t)(this->_main_viewport.w * (float)(this->_grid_padding / 100.));
     this->_pad[0] = (int32_t)(this->_res_h * (float)(this->_grid_padding / 100.));
