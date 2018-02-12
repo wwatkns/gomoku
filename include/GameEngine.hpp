@@ -10,6 +10,7 @@
 # define BOARD_ROWS 19
 # define ALIGNTOWIN 5
 
+class Player;
 
 typedef struct  s_action {
     Eigen::Array2i                  pos;
@@ -29,19 +30,23 @@ public:
 
     bool                check_action(t_action &action); // check if action is valid
     bool                check_end(uint8_t player_pairs);
-    void                update_game_state(t_action &action); // update the game state given an action
+    void                update_game_state(t_action &action, Player &player); // update the game state given an action
 
     /* Getters */
     std::list<t_action>                     get_history(void) const;
     uint64_t                                get_history_size(void) const;
     std::chrono::steady_clock::time_point   get_initial_timepoint(void) const;
+    uint64_t                                get_game_turn(void) const;
     /* Setters */
+    void                                    inc_game_turn(void);
 
     Eigen::ArrayXXi                         grid;
 
 private:
     std::list<t_action>                     _history;
     std::chrono::steady_clock::time_point   _initial_timepoint;
+    uint64_t                                _game_turn;
+
     /* the possible states of the board cells */
     struct state {
         enum {
@@ -53,6 +58,13 @@ private:
         };
     };
 
+    bool            _check_boundary(int row, int col);
+
+    /* Update game state utils */
+    void            _pair_detection(Eigen::Array2i pos, Player &player);
+    int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
+
+    /* Check end utils */
     bool            _check_col(size_t col, size_t row);
     bool            _check_row(size_t col, size_t row);
     bool            _check_dil(size_t col, size_t row);

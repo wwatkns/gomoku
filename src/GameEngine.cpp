@@ -1,6 +1,7 @@
 #include "GameEngine.hpp"
+#include "Player.hpp"
 
-GameEngine::GameEngine(void) {
+GameEngine::GameEngine(void) : _game_turn(0) {
     this->grid = Eigen::ArrayXXi::Constant(BOARD_COLS, BOARD_ROWS, state::free);
     this->_initial_timepoint = std::chrono::steady_clock::now();
 }
@@ -56,27 +57,16 @@ bool    GameEngine::check_end(uint8_t player_pairs) {
 }
 
 /*
+    Update Game state
 */
-void    GameEngine::update_game_state(t_action &action) {
-    this->grid(action.pos[0], action.pos[1]) = (action.player_id == 1 ? state::black : state::white);
-    _pair_detection(action.pos);
-    this->_history.push_back(action);
+
+bool    GameEngine::_check_boundary(int row, int col) {
+    if (row > -1 && row < BOARD_ROWS && col > -1 && col < BOARD_COLS)
+        return true;
+    return false;
 }
 
-static void     _pair_detection(Eigen::Array2i pos, Player player) {
-    for (int row = -1; row < 2; ++row) {
-        for (int col = -1; col < 2; ++ col) {
-            if (_sum_function(pos, 3, row, col) == 0) {
-                this->grid((pos[0] +      row) , (pos[1] +      col))  = state::free;
-                this->grid((pos[0] + (2 * row)), (pos[1] + (2 * col))) = state::free;
-                player.inc_pair_captured();
-                return;
-            }
-        }
-    }
-}
-
-static int      _sum_function(Eigen::Array2i pos, int max, int row_dir, int col_dir) {
+int     GameEngine::_check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir) {
     /*
 
                    row - 1
@@ -92,23 +82,56 @@ static int      _sum_function(Eigen::Array2i pos, int max, int row_dir, int col_
                    row + 1
 
     */
-    int         sum = 0;
-    int         row = pos[0];
-    int         col = pos[1];
+    int         row     = pos[0] + row_dir;
+    int         col     = pos[1] + col_dir;
+    int         cplayer = this->grid(pos[0], pos[1]);
 
-    for (i = max; i > 0; --i) {
-        if (row > -1 && row < 19 && col > -1 && col < 19){
-            sum += this->grid(row, col);
+    for (int i = 0; i < max; ++i) {
+        if (_check_boundary(row, col)) {
+            if (i == 0 && this->grid(row, col) != -cplayer)
+                return false;
+            else if (i == 1 && this->grid(row, col) != -cplayer)
+                return false;
+            else if (i == 2 && this->grid(row, col) != cplayer)
+                return false;
             row += row_dir;
             col += col_dir;
         }
         else
-            break;
+            return false;
     }
-    return sum;
+    return true;
 }
-    return false;
+
+void    GameEngine::_pair_detection(Eigen::Array2i pos, Player &player) {
+    for (int row = -1; row < 2; ++row) {
+        for (int col = -1; col < 2; ++col) {
+            if (_check_pair(pos, 3, row, col)) {
+                this->grid((pos[0] +      row) , (pos[1] +      col))  = state::free;
+                this->grid((pos[0] + (2 * row)), (pos[1] + (2 * col))) = state::free;
+                player.inc_pair_captured();
+                // return;
+            }
+        }
+    }
 }
+
+// static bool     _double_threes_detection() {
+    // return false;
+// }
+
+void    GameEngine::update_game_state(t_action &action, Player &player) {
+    this->grid(action.pos[0], action.pos[1]) = (action.player_id == 1 ? state::black : state::white);
+    // TODO (alain) : detecter les doubles threes et mettre 10/-10 aux emplacements 
+    // _double_threes_detection();
+    _pair_detection(action.pos, player);
+    this->_history.push_back(action);
+}
+
+/*
+    End of Update Game State
+*/
+
 bool    GameEngine::_check_col(size_t col, size_t row) {
     int sum = 0;
 
@@ -178,4 +201,9 @@ bool    GameEngine::_check_pairs(uint8_t pairs) {
 std::list<t_action>                     GameEngine::get_history(void) const { return (this->_history); }
 uint64_t                                GameEngine::get_history_size(void) const { return (this->_history.size()); }
 std::chrono::steady_clock::time_point   GameEngine::get_initial_timepoint(void) const { return (this->_initial_timepoint); }
+uint64_t                                GameEngine::get_game_turn(void) const { return (this->_game_turn); }
 /* Setters */
+void                                    GameEngine::inc_game_turn(void) {
+    this->_game_turn++;
+    return;
+}

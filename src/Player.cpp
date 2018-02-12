@@ -17,7 +17,7 @@ GameEngine      *Player::get_game_engine(void) const { return (this->_game_engin
 unsigned short  Player::get_id(void) const { return (this->_id); }
 unsigned short  Player::get_pair_captured(void) const { return (this->_pair_captured); }
 
-void            inc_pair_captured(void) {
+void            Player::inc_pair_captured(void) {
     this->_pair_captured += 1;
     return;
 }
