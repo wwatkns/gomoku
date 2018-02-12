@@ -76,19 +76,37 @@ static void     _pair_detection(Eigen::Array2i pos, Player player) {
     }
 }
 
-    sum_h1  = _sum_function(pos, 3, 0, -1);
-    sum_h2  = _sum_function(pos, 3, 0, 1);
-    sum_v1  = _sum_function(pos, 3, -1, 0);
-    sum_v2  = _sum_function(pos, 3, 1, 0);
-    sum_dr1 = _sum_function(pos, 3, -1, 1);
-    sum_dr2 = _sum_function(pos, 3, 1, 1);
-    sum_dl1 = _sum_function(pos, 3, -1, -1);
-    sum_dl2 = _sum_function(pos, 3, 1, -1);
-    if (sum_h1  == 0 || sum_h2  == 0 ||
-        sum_v1  == 0 || sum_v2  == 0 ||
-        sum_dr1 == 0 || sum_dr2 == 0 ||
-        sum_dl1 == 0 || sum_dl2 == 0)
-        return true;
+static int      _sum_function(Eigen::Array2i pos, int max, int row_dir, int col_dir) {
+    /*
+
+                   row - 1
+                      ↑
+                x . . x . . x
+                . x . x . x .
+                . . x x x . .
+     col - 1  ← x x x o x x x → col + 1
+                . . x x x . .
+                . x . x . x .
+                x . . x . . x
+                      ↓
+                   row + 1
+
+    */
+    int         sum = 0;
+    int         row = pos[0];
+    int         col = pos[1];
+
+    for (i = max; i > 0; --i) {
+        if (row > -1 && row < 19 && col > -1 && col < 19){
+            sum += this->grid(row, col);
+            row += row_dir;
+            col += col_dir;
+        }
+        else
+            break;
+    }
+    return sum;
+}
     return false;
 }
 bool    GameEngine::_check_col(size_t col, size_t row) {
