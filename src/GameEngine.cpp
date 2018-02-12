@@ -63,6 +63,24 @@ void    GameEngine::update_game_state(t_action &action) {
     this->_history.push_back(action);
 }
 
+static bool     _pair_detection(Eigen::Array2i pos) {
+    int         sum_h1, sum_h2, sum_v1, sum_v2, sum_dr1, sum_dr2, sum_dl1, sum_dl2;
+
+    sum_h1  = _sum_function(pos, 3, 0, -1);
+    sum_h2  = _sum_function(pos, 3, 0, 1);
+    sum_v1  = _sum_function(pos, 3, -1, 0);
+    sum_v2  = _sum_function(pos, 3, 1, 0);
+    sum_dr1 = _sum_function(pos, 3, -1, 1);
+    sum_dr2 = _sum_function(pos, 3, 1, 1);
+    sum_dl1 = _sum_function(pos, 3, -1, -1);
+    sum_dl2 = _sum_function(pos, 3, 1, -1);
+    if (sum_h1  == 0 || sum_h2  == 0 ||
+        sum_v1  == 0 || sum_v2  == 0 ||
+        sum_dr1 == 0 || sum_dr2 == 0 ||
+        sum_dl1 == 0 || sum_dl2 == 0)
+        return true;
+    return false;
+}
 bool    GameEngine::_check_col(size_t col, size_t row) {
     int sum = 0;
 
