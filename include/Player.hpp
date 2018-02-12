@@ -21,6 +21,8 @@ public:
     GameEngine      *get_game_engine(void) const;
     unsigned short  get_id(void) const;
     unsigned short  get_pair_captured(void) const;
+    /* Setters */
+    void            inc_pair_captured(void);
 
 protected:
     GameEngine          *_game_engine;
