@@ -44,6 +44,7 @@ void        FontHandler::render_text(std::string *text, Eigen::Array2i *pos, TTF
 void        FontHandler::render_realtime_text(std::string *text, Eigen::Array2i *pos, TTF_Font *font) {
     /*  Only update the texture when the text has changed, best suited for text display such as analytics
         that change every so often (but definitely not every frame).
+        TODO : this'll work for one text, but for multiple texts it will not be an optimization...
     */
     static std::string previous = "";
 
