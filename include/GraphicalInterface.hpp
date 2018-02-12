@@ -52,7 +52,7 @@ private:
     SDL_Renderer    *_renderer;
     SDL_Event       _event;
     SDL_Color       _bg_color;
-    
+
     SDL_Rect        _main_viewport;
     SDL_Rect        _secondary_viewport;
     /* Board variables */
@@ -78,6 +78,9 @@ private:
     bool            _mouse_action;
     bool            _quit;
 
+    // TMP
+    std::string      _text_1;
+    std::string      _text_2;
 };
 
 #endif

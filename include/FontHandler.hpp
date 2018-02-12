@@ -3,9 +3,14 @@
 
 # include <iostream>
 # include <string>
+# include <vector>
 # include <Eigen/Dense>
 # include <SDL.h>
 # include <SDL_ttf.h>
+# include "FontText.hpp"
+
+/*  FontHandler will contain a vector of FontText which will be rendered
+*/
 
 class FontHandler {
 
@@ -16,23 +21,21 @@ public:
     FontHandler	&operator=(FontHandler const &rhs);
 
     TTF_Font        *load_font(std::string path, uint32_t size = 28);
-    void            render_text(std::string *text, Eigen::Array2i *pos, TTF_Font *font);
-    void            render_realtime_text(std::string *text, Eigen::Array2i *pos, TTF_Font *font);
+    void            create_text(std::string *text, Eigen::Array2i *pos);
+    void            create_text(std::string *text, Eigen::Array2i *pos, TTF_Font *font, SDL_Color *color);
+    void            render_texts(void);
 
     /* getters */
     SDL_Renderer    *get_renderer(void) const { return _renderer; };
-    SDL_Color       get_render_color(void) const { return _render_color; };
     /* setters */
     void            set_renderer(SDL_Renderer *renderer) { _renderer = renderer; };
-    void            set_render_color(SDL_Color color) { _render_color = color; };
 
     TTF_Font        *default_font;
+    SDL_Color       *default_color;
 
 private:
-    SDL_Renderer    *_renderer;
-    SDL_Texture     *_renderer_texture;
-    SDL_Rect        _renderer_rect;
-    SDL_Color       _render_color;
+    SDL_Renderer            *_renderer;
+    std::vector<FontText*>  _font_texts;
 
 };
 

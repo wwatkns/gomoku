@@ -15,7 +15,7 @@ SDL_TTF_INC = $(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers/
 
 SDL = -F $(HOME)/Library/Frameworks -I$(SDL_INC) -I$(SDL_IMG_INC) -I$(SDL_TTF_INC) $(SDLFLGS)
 
-SRC_NAME = main.cpp FontHandler.cpp Game.cpp GameEngine.cpp Player.cpp Human.cpp Computer.cpp GraphicalInterface.cpp
+SRC_NAME = main.cpp FontHandler.cpp FontText.cpp Game.cpp GameEngine.cpp Player.cpp Human.cpp Computer.cpp GraphicalInterface.cpp
 OBJ_NAME = $(SRC_NAME:.cpp=.o)
 
 SRC = $(addprefix $(SRC_PATH), $(SRC_NAME))

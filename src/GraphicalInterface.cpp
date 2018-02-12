@@ -7,7 +7,7 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
 
     // multiply by ratio between window size and resolution
-    this->_grid_padding = (int32_t)(this->_win_h * 0.009375);  /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
+    this->_grid_padding = 8;                                   /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
     this->_pad[1] = (int32_t)(this->_main_viewport.w * (float)(this->_grid_padding / 100.));
     this->_pad[0] = (int32_t)(this->_res_h * (float)(this->_grid_padding / 100.));
@@ -16,6 +16,16 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_bg_color = (SDL_Color){ 217, 165, 84, 255 };
     this->_load_images();
     this->_init_grid();
+
+    //TMP
+    this->_text_1 = std::string("(Text 1)");
+    this->_text_2 = std::string("(Text 2, text 2)");
+    Eigen::Array2i  *pos_1 = new Eigen::Array2i({10, 10});
+    Eigen::Array2i  *pos_2 = new Eigen::Array2i({40, 40});
+    Eigen::Array2i  *pos_3 = new Eigen::Array2i({80, 80});
+    this->_font_handler->create_text(&this->_text_1, pos_1);
+    this->_font_handler->create_text(&this->_text_2, pos_2);
+    this->_font_handler->create_text(&this->_text_1, pos_3);
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -196,9 +206,14 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
 
     SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
     SDL_RenderFillRect(this->_renderer, &rect);
-    std::string     text("Analytics (WIP)");
-    Eigen::Array2i  pos = {10, 10};
-    this->_font_handler->render_realtime_text(&text, &pos, this->_font_handler->default_font);
+
+    // TMP
+    // static uint32_t i = 0;
+    // i++;
+    // if (i > 1000) {
+    //     this->_text_2 = std::string("Je suis une loutre");
+    // }
+    this->_font_handler->render_texts();
 }
 
 bool    GraphicalInterface::check_mouse_action(void) {
