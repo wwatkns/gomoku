@@ -50,8 +50,10 @@ void        Game::loop(void) {
 
         c_action = this->_c_player->play();
 
+        if (this->_gui->check_close())
+            break;
         this->_game_engine->update_game_state(c_action, *this->_c_player);
-        if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true || this->_gui->check_close())
+        if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true)
             break;
         this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
