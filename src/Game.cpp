@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include <thread> // TMP
 
 Game::Game(void)  {
     // this->_input_handler = new InputHandler();
@@ -9,9 +10,16 @@ Game::Game(void)  {
 
     /* Debug */
     this->_player_1 = new Human(this->_game_engine, this->_gui, 1);
-    this->_player_2 = new Computer(this->_game_engine, 2);
+    this->_player_2 = new Human(this->_game_engine, this->_gui, 2);
+    // this->_player_2 = new Computer(this->_game_engine, 2);
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+
+    /* initial menu */
+    // this->_gui->update_events();
+    // this->_gui->update_display();
+    // this->_gui->render_choice_menu();
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 }
 
 Game::Game(Game const &src) {

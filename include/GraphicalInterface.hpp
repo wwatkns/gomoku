@@ -4,6 +4,7 @@
 # include <iostream>
 # include <cmath>
 # include <string>
+# include <list>
 # include <Eigen/Dense>
 # include <SDL.h>
 # include <SDL_image.h>
@@ -11,6 +12,7 @@
 # include "GameEngine.hpp"
 # include "FontHandler.hpp"
 # include "Analytics.hpp"
+# include "Button.hpp"
 
 # define COLS 19
 # define ROWS 19
@@ -39,6 +41,8 @@ public:
     Analytics       *get_analytics(void) const { return _analytics; };
     Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
 
+    void            render_choice_menu(void);
+
 private:
     void    _init_sdl(void);
     void    _init_grid(void);
@@ -46,6 +50,7 @@ private:
     void    _render_stones(void);
     void    _render_select(void);
     void    _render_secondary_viewport(void);
+    void    _render_buttons(void);
     void    _load_images(void);
     void    _close_sdl(void);
 
@@ -58,6 +63,7 @@ private:
     SDL_Event       _event;
     SDL_Color       _bg_color;
 
+    SDL_Rect        _global_viewport;
     SDL_Rect        _main_viewport;
     SDL_Rect        _secondary_viewport;
     /* Board variables */
@@ -82,6 +88,8 @@ private:
     Eigen::Array2i  _mouse_pos;
     bool            _mouse_action;
     bool            _quit;
+
+    std::list<Button*>   _buttons;
 
 };
 

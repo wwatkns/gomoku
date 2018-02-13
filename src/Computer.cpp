@@ -1,6 +1,6 @@
 #include "Computer.hpp"
 #include <cstdlib> // TMP
-# include <thread> // TMP
+#include <thread> // TMP
 
 Computer::Computer(GameEngine *game_engine, uint8_t id) : Player(game_engine, NULL, id) {
     std::srand(std::time(nullptr));

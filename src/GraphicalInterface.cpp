@@ -19,6 +19,9 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_bg_color = (SDL_Color){ 217, 165, 84, 255 };
     this->_load_images();
     this->_init_grid();
+
+    Button *button_start = new Button(this->_renderer, "restart", {this->_main_viewport.w + 10, 270}, this->_font_handler->default_font, {255, 255, 255, 255});
+    this->_buttons.push_back(button_start);
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -93,6 +96,7 @@ void    GraphicalInterface::_init_sdl(void) {
     SDL_GetRendererOutputSize(this->_renderer, &this->_res_w, &this->_res_h);
     this->_res_ratio = (this->_res_h / (float)this->_win_h);
     secondary_viewport_width = (int32_t)(secondary_viewport_width * this->_res_ratio);
+    this->_global_viewport = (SDL_Rect){ 0, 0, this->_res_w, this->_res_h };
     this->_main_viewport = (SDL_Rect){ 0, 0, (int32_t)(this->_res_w - secondary_viewport_width), this->_res_h };
     this->_secondary_viewport = (SDL_Rect){ (int32_t)(this->_res_w - secondary_viewport_width), 0, secondary_viewport_width, this->_res_h };
 
@@ -158,6 +162,7 @@ void    GraphicalInterface::update_display(void) {
     this->_render_stones();
     this->_render_select();
     this->_render_secondary_viewport();
+    this->_render_buttons();
     SDL_RenderPresent(this->_renderer);
 }
 
@@ -202,6 +207,21 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderDrawLine(this->_renderer, 0, 180, this->_secondary_viewport.w, 180);
 
     this->_analytics->render_text();
+}
+
+void    GraphicalInterface::_render_buttons(void) {
+    SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
+
+    for (std::list<Button*>::iterator it = this->_buttons.begin(); it != this->_buttons.end(); it++) {
+        (*it)->update_state(&this->_mouse_pos, this->_mouse_action);
+        (*it)->render(this->_renderer);
+    }
+}
+
+
+void    GraphicalInterface::render_choice_menu(void) {
+    // Button *button_start = new Button(this->_renderer, "restart", {10, 270}, this->_font_handler->default_font, {255, 255, 255, 255});
+    // this->_buttons.push_back(button_start);
 }
 
 bool    GraphicalInterface::check_mouse_action(void) {
