@@ -1,10 +1,13 @@
 #include "GraphicalInterface.hpp"
+#include "Player.hpp"
 
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_quit = false;
     this->_mouse_action = false;
     this->_init_sdl();
+
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
+    this->_analytics = new Analytics(this->_game_engine, this->_font_handler);
 
     // multiply by ratio between window size and resolution
     this->_grid_padding = 8;                                   /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
@@ -30,9 +33,6 @@ GraphicalInterface::~GraphicalInterface(void) {
 GraphicalInterface	&GraphicalInterface::operator=(GraphicalInterface const &src) {
     return (*this);
 }
-
-GameEngine      *GraphicalInterface::get_game_engine(void) const { return (this->_game_engine); }
-Eigen::Array2i  GraphicalInterface::get_mouse_pos(void) const { return (this->_mouse_pos); }
 
 SDL_Texture *GraphicalInterface::load_texture(std::string path) {
     SDL_Texture *texture = NULL;
@@ -74,7 +74,7 @@ void    GraphicalInterface::_load_images(void) {
 }
 
 void    GraphicalInterface::_init_sdl(void) {
-    int32_t secondary_viewport_width = 200;
+    int32_t secondary_viewport_width = 300;
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
@@ -116,7 +116,7 @@ void    GraphicalInterface::_init_grid(void) {
             (int)(this->_pad[0]+i*this->_inc[0]), this->_res_h - this->_pad[0]);
     }
     this->_init_grid_points();
-    SDL_Rect    rect = { this->_main_viewport.w - 2, 0, 2, this->_main_viewport.h };
+    SDL_Rect    rect = { this->_main_viewport.w - 1, 0, 1, this->_main_viewport.h };
     SDL_RenderFillRect(this->_renderer, &rect);
     SDL_SetRenderTarget(this->_renderer, NULL);
 }
@@ -124,7 +124,7 @@ void    GraphicalInterface::_init_grid(void) {
 void    GraphicalInterface::_init_grid_points(void) {
     Eigen::Array2i  pos;
     SDL_Rect        rect;
-    int32_t         pt_size = (int32_t)(0.00625 * this->_main_viewport.w);
+    int32_t         pt_size = (int32_t)(0.005625 * this->_main_viewport.w);
 
     for (int j = 0; j < 3; j++) {
         for (int i = 0; i < 3; i++) {
@@ -196,9 +196,12 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
 
     SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
     SDL_RenderFillRect(this->_renderer, &rect);
-    std::string     text("Analytics (WIP)");
-    Eigen::Array2i  pos = {10, 10};
-    this->_font_handler->render_realtime_text(&text, &pos, this->_font_handler->default_font);
+    /* TODO : put that on a texture instead of drawing the lines each time */
+    SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
+    SDL_RenderDrawLine(this->_renderer, 0,  90, this->_secondary_viewport.w,  90);
+    SDL_RenderDrawLine(this->_renderer, 0, 180, this->_secondary_viewport.w, 180);
+
+    this->_analytics->render_text();
 }
 
 bool    GraphicalInterface::check_mouse_action(void) {

@@ -15,7 +15,7 @@ GameEngine::~GameEngine(void) {
 
 GameEngine	&GameEngine::operator=(GameEngine const &src) {
     this->grid = src.grid;
-    this->_history = src.get_history();
+    this->_history = src.get_history_copy();
     this->_initial_timepoint = src.get_initial_timepoint();
     return (*this);
 }
@@ -197,11 +197,6 @@ bool    GameEngine::_check_pairs(uint8_t pairs) {
     return true;
 }
 
-/* Getters */
-std::list<t_action>                     GameEngine::get_history(void) const { return (this->_history); }
-uint64_t                                GameEngine::get_history_size(void) const { return (this->_history.size()); }
-std::chrono::steady_clock::time_point   GameEngine::get_initial_timepoint(void) const { return (this->_initial_timepoint); }
-uint64_t                                GameEngine::get_game_turn(void) const { return (this->_game_turn); }
 /* Setters */
 void                                    GameEngine::inc_game_turn(void) {
     this->_game_turn++;

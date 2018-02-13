@@ -13,10 +13,11 @@
 class Player;
 
 typedef struct  s_action {
-    Eigen::Array2i                  pos;
-    uint8_t                         player_id;
-    uint64_t                        id;
-    std::chrono::duration<double>   timepoint;
+    Eigen::Array2i                              pos;
+    uint8_t                                     player_id;
+    uint64_t                                    id;
+    std::chrono::duration<double, std::milli>   timepoint;  /* time since start */
+    std::chrono::duration<double, std::milli>   duration;   /* duration of the action */
 }               t_action;
 
 
@@ -33,10 +34,10 @@ public:
     void                update_game_state(t_action &action, Player &player); // update the game state given an action
 
     /* Getters */
-    std::list<t_action>                     get_history(void) const;
-    uint64_t                                get_history_size(void) const;
-    std::chrono::steady_clock::time_point   get_initial_timepoint(void) const;
-    uint64_t                                get_game_turn(void) const;
+    std::list<t_action>                     *get_history(void) { return &_history; };
+    std::list<t_action>                     get_history_copy(void) const { return _history; };
+    uint64_t                                get_history_size(void) const { return _history.size(); };
+    std::chrono::steady_clock::time_point   get_initial_timepoint(void) const { return _initial_timepoint; };
     /* Setters */
     void                                    inc_game_turn(void);
 

@@ -32,7 +32,7 @@ public:
 private:
     Player              *_player_1;
     Player              *_player_2;
-    Player              *_c_player; /* a pointer to the current player */
+    Player              *_c_player;
     GameEngine          *_game_engine;
     GraphicalInterface  *_gui;
 

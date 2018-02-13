@@ -10,9 +10,12 @@
 // # include <SDL2_gfxPrimitives.h>
 # include "GameEngine.hpp"
 # include "FontHandler.hpp"
+# include "Analytics.hpp"
 
 # define COLS 19
 # define ROWS 19
+
+class Player;
 
 class GraphicalInterface {
 
@@ -32,8 +35,9 @@ public:
     Eigen::Array2i  snap_to_grid(Eigen::Array2i pos);
     Eigen::Array2i  screen_to_grid(Eigen::Array2i pos);
 
-    GameEngine      *get_game_engine(void) const;
-    Eigen::Array2i  get_mouse_pos(void) const;
+    GameEngine      *get_game_engine(void) const { return _game_engine; };
+    Analytics       *get_analytics(void) const { return _analytics; };
+    Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
 
 private:
     void    _init_sdl(void);
@@ -46,13 +50,14 @@ private:
     void    _close_sdl(void);
 
     GameEngine      *_game_engine;
+    Analytics       *_analytics;
     FontHandler     *_font_handler;
 
     SDL_Window      *_window;
     SDL_Renderer    *_renderer;
     SDL_Event       _event;
     SDL_Color       _bg_color;
-    
+
     SDL_Rect        _main_viewport;
     SDL_Rect        _secondary_viewport;
     /* Board variables */

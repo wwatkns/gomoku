@@ -1,6 +1,6 @@
 #include "Human.hpp"
 
-Human::Human(GameEngine *game_engine, GraphicalInterface *gui, unsigned short id) : Player(game_engine, gui, id) {
+Human::Human(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id) {
 }
 
 Human::Human(Human const &src) : Player(src) {
@@ -17,16 +17,17 @@ Human	&Human::operator=(Human const &src) {
 }
 
 t_action    Human::play(void) {
-    t_action    action;
+    t_action                                action;
+    std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now();
 
     while (true) {
         this->_gui->update_events();
         if (this->_gui->check_mouse_action()) {
             action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
             action.player_id = this->_id;
-            // action.player = this;
             action.id = this->_game_engine->get_history_size() + 1;
             action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
+            action.duration = std::chrono::steady_clock::now() - action_beg;
             if (this->_game_engine->check_action(action))
                 break;
         }

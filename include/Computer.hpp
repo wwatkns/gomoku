@@ -6,7 +6,7 @@
 class Computer : public Player {
 
 public:
-    Computer(GameEngine *game_engine, unsigned short id);
+    Computer(GameEngine *game_engine, uint8_t id);
     Computer(Computer const &src);
     ~Computer(void);
     Computer	&operator=(Computer const &rhs);

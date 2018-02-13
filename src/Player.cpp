@@ -1,6 +1,6 @@
 #include "Player.hpp"
 
-Player::Player(GameEngine *game_engine, GraphicalInterface *gui, unsigned short id) : _game_engine(game_engine), _gui(gui), _id(id), _pair_captured(0) {
+Player::Player(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : _game_engine(game_engine), _gui(gui), _id(id), _pair_captured(0) {
 }
 
 Player::Player(Player const &src) : _game_engine(src.get_game_engine()), _id(src.get_id()) {
@@ -12,10 +12,6 @@ Player	&Player::operator=(Player const &src) {
     this->_id = src.get_id();
     return (*this);
 }
-
-GameEngine      *Player::get_game_engine(void) const { return (this->_game_engine); }
-unsigned short  Player::get_id(void) const { return (this->_id); }
-unsigned short  Player::get_pair_captured(void) const { return (this->_pair_captured); }
 
 void            Player::inc_pair_captured(void) {
     this->_pair_captured += 1;
