@@ -74,7 +74,7 @@ void    GraphicalInterface::_load_images(void) {
 }
 
 void    GraphicalInterface::_init_sdl(void) {
-    int32_t secondary_viewport_width = 200;
+    int32_t secondary_viewport_width = 300;
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
@@ -116,7 +116,7 @@ void    GraphicalInterface::_init_grid(void) {
             (int)(this->_pad[0]+i*this->_inc[0]), this->_res_h - this->_pad[0]);
     }
     this->_init_grid_points();
-    SDL_Rect    rect = { this->_main_viewport.w - 2, 0, 2, this->_main_viewport.h };
+    SDL_Rect    rect = { this->_main_viewport.w - 1, 0, 1, this->_main_viewport.h };
     SDL_RenderFillRect(this->_renderer, &rect);
     SDL_SetRenderTarget(this->_renderer, NULL);
 }
@@ -196,6 +196,10 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
 
     SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
     SDL_RenderFillRect(this->_renderer, &rect);
+    /* TODO : put that on a texture instead of drawing the lines each time */
+    SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
+    SDL_RenderDrawLine(this->_renderer, 0,  90, this->_secondary_viewport.w,  90);
+    SDL_RenderDrawLine(this->_renderer, 0, 180, this->_secondary_viewport.w, 180);
 
     this->_analytics->render_text();
 }

@@ -11,7 +11,6 @@ Game::Game(void)  {
     this->_player_1 = new Human(this->_game_engine, this->_gui, 1);
     this->_player_2 = new Computer(this->_game_engine, 2);
     this->_c_player = this->_player_1;
-    /* Dumb? */
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
 }
 
@@ -54,7 +53,7 @@ void        Game::loop(void) {
         this->_game_engine->update_game_state(c_action);
         if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true || this->_gui->check_close())
             break;
-        this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2); /* dumb */
+        this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
         this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
     }

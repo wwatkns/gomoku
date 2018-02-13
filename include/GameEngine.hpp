@@ -13,11 +13,11 @@
 class Player;
 
 typedef struct  s_action {
-    Eigen::Array2i                  pos;
-    uint8_t                         player_id;
-    Player                          *player;
-    uint64_t                        id;
-    std::chrono::duration<double>   timepoint;
+    Eigen::Array2i                              pos;
+    uint8_t                                     player_id;
+    uint64_t                                    id;
+    std::chrono::duration<double, std::milli>   timepoint;  /* time since start */
+    std::chrono::duration<double, std::milli>   duration;   /* duration of the action */
 }               t_action;
 
 

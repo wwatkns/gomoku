@@ -10,7 +10,7 @@ typedef struct  s_action t_action;
 class Player {
 
 public:
-    Player(GameEngine *game_engine, GraphicalInterface *gui, unsigned short id);
+    Player(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id);
     Player(Player const &src);
     virtual ~Player() {};
     Player	&operator=(Player const &rhs);

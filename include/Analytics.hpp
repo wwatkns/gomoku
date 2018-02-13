@@ -7,12 +7,11 @@
 # include <string>
 # include <vector>
 # include <map>
+# include <list>
 # include <Eigen/Dense>
 # include <SDL.h>
 # include "GameEngine.hpp"
 # include "FontHandler.hpp"
-
-// class Player;
 
 typedef struct  s_data {
     std::string     pre;
@@ -39,25 +38,14 @@ public:
     void            set_player_2(Player *player_2) { _player_2 = player_2; };
 
 private:
-    GameEngine              *_game_engine;
-    FontHandler             *_font_handler;
-    Player                  *_c_player;
-    Player                  *_player_1;
-    Player                  *_player_2;
-    std::map<std::string,s_data>   _data;
+    GameEngine                      *_game_engine;
+    FontHandler                     *_font_handler;
+    Player                          *_c_player;
+    Player                          *_player_1;
+    Player                          *_player_2;
+    std::map<std::string,s_data>    _data;
 
-    /* global analytics */
-    t_data      _gl_turn;
-    t_data      _gl_c_player;
-    t_data      _gl_time;
-    /* player 1 analytics */
-    t_data      _p1_pairs_captured;
-    t_data      _p1_mean_action_duration;
-    /* player 2 analytics */
-    t_data      _p2_pairs_captured;
-    t_data      _p2_mean_action_duration;
-
-    void            _update_analytics(void);
+    void            _update_analytics(bool init = false);
 
 };
 
