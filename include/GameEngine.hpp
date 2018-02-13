@@ -64,13 +64,15 @@ private:
     /* Update game state utils */
     void            _pair_detection(Eigen::Array2i pos, Player &player);
     int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
+    void            _double_threes_detection(void);
+    int             _sum_free_threes(int row, int col, int max, int row_dir, int col_dir);
 
     /* Check end utils */
     bool            _check_col(size_t col, size_t row);
     bool            _check_row(size_t col, size_t row);
     bool            _check_dil(size_t col, size_t row);
     bool            _check_dir(size_t col, size_t row);
-    bool            _check_pairs(uint8_t pairs);
+    bool            _check_pairs_captured(uint8_t pairs);
 
 };
 
