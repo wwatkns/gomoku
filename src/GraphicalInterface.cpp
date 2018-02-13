@@ -124,7 +124,7 @@ void    GraphicalInterface::_init_grid(void) {
 void    GraphicalInterface::_init_grid_points(void) {
     Eigen::Array2i  pos;
     SDL_Rect        rect;
-    int32_t         pt_size = (int32_t)(0.00625 * this->_main_viewport.w);
+    int32_t         pt_size = (int32_t)(0.005625 * this->_main_viewport.w);
 
     for (int j = 0; j < 3; j++) {
         for (int i = 0; i < 3; i++) {

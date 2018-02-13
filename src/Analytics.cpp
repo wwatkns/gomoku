@@ -1,6 +1,5 @@
 #include "Analytics.hpp"
 #include "Player.hpp"
-#include <iomanip> // TEST
 
 Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler) : _game_engine(game_engine), _font_handler(font_handler), _player_1(nullptr), _player_2(nullptr) {
     this->_update_analytics();
