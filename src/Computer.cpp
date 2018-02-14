@@ -26,11 +26,11 @@ void        Computer::play(void) {
     /*  Perform a MinMax and return the most favorable action
     */
     std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
-    action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
-    action.player_id = this->_id;
-    action.id = this->_game_engine->get_history_size() + 1;
-    action.old_grid = this->_game_engine->grid;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     action.duration = std::chrono::steady_clock::now() - action_beg;
+    action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
+    action.id = this->_game_engine->get_history_size() + 1;
+    action.old_grid = this->_game_engine->grid;
+    action.player = this;
     this->_game_engine->update_game_state(action, this);
 }

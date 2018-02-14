@@ -232,10 +232,6 @@ void    GraphicalInterface::_render_buttons(void) {
     this->_button_newgame->render(this->_renderer);
     this->_button_restart->render(this->_renderer);
     this->_button_undo->render(this->_renderer);
-
-    if (this->_button_undo->get_state() == true) {
-        this->_game_engine->delete_last_action();
-    }
 }
 
 
@@ -249,6 +245,9 @@ void    GraphicalInterface::render_choice_menu(void) {
 }
 
 bool    GraphicalInterface::check_undo(void) {
+    if (this->_button_undo->get_state() == true) {
+        this->_game_engine->delete_last_action();
+    }
     return this->_button_undo->get_state();
 }
 

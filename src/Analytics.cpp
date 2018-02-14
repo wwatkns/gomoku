@@ -47,7 +47,7 @@ static uint32_t    get_mean_action_duration(std::list<t_action> *history, uint8_
     uint32_t            n_action = 0;
     float               mean = 0.;
     for (std::list<t_action>::iterator it = history->begin(); it != history->end(); it++) {
-        if ((*it).player_id == player_id) {
+        if ((*it).player->get_id() == player_id) {
             mean += (*it).duration.count();
             n_action++;
         }

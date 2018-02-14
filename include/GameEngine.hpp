@@ -14,7 +14,7 @@ class Player;
 
 typedef struct  s_action {
     Eigen::Array2i                              pos;
-    uint8_t                                     player_id;
+    Player                                      *player;
     uint64_t                                    id;
     std::chrono::duration<double, std::milli>   timepoint;  /* time since start */
     std::chrono::duration<double, std::milli>   duration;   /* duration of the action */
@@ -64,7 +64,7 @@ private:
     bool            _check_boundary(int row, int col);
 
     /* Update game state utils */
-    void            _pair_detection(Eigen::Array2i pos, Player *player);
+    uint8_t         _pair_detection(Eigen::Array2i pos);
     int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
 
     /* Check end utils */

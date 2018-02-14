@@ -22,7 +22,7 @@ public:
     uint8_t         get_id(void) const { return _id; };
     uint8_t         get_pair_captured(void) const { return _pair_captured; };
     /* Setters */
-    void            inc_pair_captured(void);
+    void            set_pair_captured(uint8_t pairs) { _pair_captured = pairs; };
 
 protected:
     GameEngine          *_game_engine;
