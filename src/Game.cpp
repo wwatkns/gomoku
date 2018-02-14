@@ -64,5 +64,8 @@ void        Game::loop(void) {
     }
 }
 
+// void        Game::restart(void) {
+// }
+
 void        Game::end(void) const {
 }

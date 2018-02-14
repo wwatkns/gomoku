@@ -41,6 +41,7 @@ private:
     std::string     _previous_text;
     SDL_Rect        _renderer_rect;
 
+    void            _update_texture(void);
 };
 
 #endif

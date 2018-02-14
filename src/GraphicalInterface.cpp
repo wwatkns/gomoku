@@ -154,6 +154,11 @@ void    GraphicalInterface::update_events(void) {
     this->_key_states = SDL_GetKeyboardState(NULL);
     if (this->_key_states[SDL_SCANCODE_ESCAPE])
         this->_quit = true;
+
+    /* update the buttons states */
+    this->_button_newgame->update_state(&this->_mouse_pos, this->_mouse_action);
+    this->_button_restart->update_state(&this->_mouse_pos, this->_mouse_action);
+    this->_button_undo->update_state(&this->_mouse_pos, this->_mouse_action);
 }
 
 void    GraphicalInterface::update_display(void) {
@@ -175,7 +180,7 @@ void    GraphicalInterface::_render_stones(void) {
 
     for (int j = 0; j < COLS; j++) {
         for (int i = 0; i < ROWS; i++) {
-            if (this->_game_engine->grid(j,i) == -1 || this->_game_engine->grid(j,i) == 1) {
+            if (this->_game_engine->grid(j,i) == -1 || this->_game_engine->grid(j,i) == 1) { /* TODO: more modular, change 1 and -1 */
                 s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
                 rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
                 stone = (this->_game_engine->grid(j,i) == -1 ? this->_black_stone_tex : this->_white_stone_tex);
@@ -184,10 +189,10 @@ void    GraphicalInterface::_render_stones(void) {
         }
     }
     /* look for the last action and display an indicator on it */
-    t_action    last = this->_game_engine->get_history()->back();
-    int32_t     size = (int32_t)(this->_stone_size * 0.1);
-
     if (this->_game_engine->get_history()->size() > 0) {
+        t_action    last = this->_game_engine->get_history()->back();
+        int32_t     size = (int32_t)(this->_stone_size * 0.1);
+
         s_pos = this->grid_to_screen(last.pos);
         rect = { s_pos[1]-size/2, s_pos[0]-size/2, size, size };
         stone = (this->_game_engine->grid(last.pos[0],last.pos[1]) == 1 ? this->_black_stone_tex : this->_white_tex);
@@ -224,15 +229,8 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
 void    GraphicalInterface::_render_buttons(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
 
-    // for (std::list<Button*>::iterator it = this->_buttons.begin(); it != this->_buttons.end(); it++) {
-    //     (*it)->update_state(&this->_mouse_pos, this->_mouse_action);
-    //     (*it)->render(this->_renderer);
-    // }
-    this->_button_newgame->update_state(&this->_mouse_pos, this->_mouse_action);
     this->_button_newgame->render(this->_renderer);
-    this->_button_restart->update_state(&this->_mouse_pos, this->_mouse_action);
     this->_button_restart->render(this->_renderer);
-    this->_button_undo->update_state(&this->_mouse_pos, this->_mouse_action);
     this->_button_undo->render(this->_renderer);
 
     if (this->_button_undo->get_state() == true) {
@@ -250,21 +248,19 @@ void    GraphicalInterface::render_choice_menu(void) {
     SDL_RenderPresent(this->_renderer);
 }
 
-bool    GraphicalInterface::check_mouse_on_board(void) {
-    /*  check if the mouse is on the main viewport
-    */
-    if (this->_main_viewport.x < this->_mouse_pos[0] && this->_mouse_pos[0] < this->_main_viewport.w &&
-        this->_main_viewport.y < this->_mouse_pos[1] && this->_mouse_pos[1] < this->_main_viewport.h)
-        return true;
-    return false;
-}
-
 bool    GraphicalInterface::check_undo(void) {
     return this->_button_undo->get_state();
 }
 
 bool    GraphicalInterface::check_close(void) {
     return this->_quit;
+}
+
+bool    GraphicalInterface::check_mouse_on_board(void) {
+    if (this->_main_viewport.x < this->_mouse_pos[0] && this->_mouse_pos[0] < this->_main_viewport.w &&
+        this->_main_viewport.y < this->_mouse_pos[1] && this->_mouse_pos[1] < this->_main_viewport.h)
+        return true;
+    return false;
 }
 
 void    GraphicalInterface::_close_sdl(void) {
