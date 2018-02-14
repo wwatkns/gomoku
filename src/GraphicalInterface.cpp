@@ -216,6 +216,7 @@ void    GraphicalInterface::_render_buttons(void) {
         (*it)->update_state(&this->_mouse_pos, this->_mouse_action);
         (*it)->render(this->_renderer);
     }
+    // SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
 }
 
 
@@ -240,10 +241,10 @@ void    GraphicalInterface::_close_sdl(void) {
     SDL_DestroyTexture(this->_white_stone_tex);
     SDL_DestroyTexture(this->_black_stone_tex);
     SDL_DestroyTexture(this->_select_stone_tex);
+    SDL_DestroyTexture(this->_board_grid_tex);
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
     this->_select_stone_tex = NULL;
-    SDL_DestroyTexture(this->_board_grid_tex);
     this->_board_grid_tex = NULL;
 
     SDL_DestroyWindow(this->_window);

@@ -18,7 +18,6 @@ public:
     Button	&operator=(Button const &rhs);
 
     bool        get_state(void) const { return _state; };
-    SDL_Texture *get_texture(void) const { return _texture; };
 
     void        update_state(Eigen::Array2i *pos, bool mouse_press);
     void        render(SDL_Renderer *renderer);
@@ -31,8 +30,8 @@ private:
     SDL_Color       _color;
     SDL_Color       _text_color;
     TTF_Font        *_font;
-    SDL_Texture     *_texture;
-    SDL_Texture     *_tmp_texture;
+    SDL_Texture     *_text_texture;
+    SDL_Texture     *_box_texture;
     SDL_Renderer    *_renderer;
 
 };
