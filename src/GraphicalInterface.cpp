@@ -142,7 +142,7 @@ void    GraphicalInterface::_init_grid_points(void) {
 }
 
 void    GraphicalInterface::_init_grid_indicators(void) {
-    TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", 16);
+    TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", (int32_t)(16 * this->_res_ratio));
     SDL_Texture *texture = nullptr;
     SDL_Surface *surf = nullptr;
     SDL_Rect    rect;
@@ -192,7 +192,6 @@ void    GraphicalInterface::update_events(void) {
     this->_key_states = SDL_GetKeyboardState(NULL);
     if (this->_key_states[SDL_SCANCODE_ESCAPE])
         this->_quit = true;
-
     /* update the buttons states */
     this->_button_newgame->update_state(&this->_mouse_pos, this->_mouse_action);
     this->_button_restart->update_state(&this->_mouse_pos, this->_mouse_action);
@@ -270,15 +269,15 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
 
 void    GraphicalInterface::_render_buttons(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
-
-    this->_button_newgame->render(this->_renderer);
-    this->_button_restart->render(this->_renderer);
-    this->_button_undo->render(this->_renderer);
+    this->_button_newgame->render(this->_renderer, &this->_mouse_pos);
+    this->_button_restart->render(this->_renderer, &this->_mouse_pos);
+    this->_button_undo->render(this->_renderer, &this->_mouse_pos);
 }
 
-
 void    GraphicalInterface::render_choice_menu(void) {
+
     // Button *button_start = new Button(this->_renderer, "restart", {10, 270}, this->_font_handler->default_font, {255, 255, 255, 255});
+
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
     SDL_SetRenderDrawColor(this->_renderer, 45, 42, 35, 255);
     SDL_RenderClear(this->_renderer);

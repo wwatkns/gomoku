@@ -18,9 +18,11 @@ public:
     Button	&operator=(Button const &rhs);
 
     bool        get_state(void) const { return _state; };
+    void        set_state(bool state) { _state = state; };
 
+    bool        on_hover(Eigen::Array2i *pos);
     void        update_state(Eigen::Array2i *pos, bool mouse_press);
-    void        render(SDL_Renderer *renderer);
+    void        render(SDL_Renderer *renderer, Eigen::Array2i *pos);
 
 private:
     bool            _state;

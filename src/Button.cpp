@@ -35,20 +35,23 @@ Button	&Button::operator=(Button const &src) {
     return (*this);
 }
 
+bool    Button::on_hover(Eigen::Array2i *pos) {
+    return ((*pos)[1] >= this->_box_rect.x && (*pos)[1] < this->_box_rect.x + this->_box_rect.w &&
+            (*pos)[0] >= this->_box_rect.y && (*pos)[0] < this->_box_rect.y + this->_box_rect.h);
+}
+
 void    Button::update_state(Eigen::Array2i *pos, bool mouse_press) {
     this->_state = false;
-    SDL_SetTextureColorMod(this->_txt_texture, 255, 255, 255);
-    SDL_SetTextureColorMod(this->_box_texture, 255, 255, 255);
-    if ((*pos)[1] >= this->_box_rect.x && (*pos)[1] < this->_box_rect.x + this->_box_rect.w &&
-        (*pos)[0] >= this->_box_rect.y && (*pos)[0] < this->_box_rect.y + this->_box_rect.h) {
-        SDL_SetTextureColorMod(this->_txt_texture, 231, 183, 136);
-        SDL_SetTextureColorMod(this->_box_texture, 231, 183, 136);
-        if (mouse_press == true)
-            this->_state = true;
+    if (this->on_hover(pos) && mouse_press == true) {
+        this->_state = true;
     }
 }
 
-void    Button::render(SDL_Renderer *renderer) {
+void    Button::render(SDL_Renderer *renderer, Eigen::Array2i *pos) {
+    if (this->on_hover(pos) || this->_state == true) {
+        SDL_SetTextureColorMod(this->_box_texture, 231, 183, 136);
+    }
     SDL_RenderCopyEx(renderer, this->_box_texture, NULL, &this->_box_rect, 0, NULL, SDL_FLIP_NONE);
     SDL_RenderCopyEx(renderer, this->_txt_texture, NULL, &this->_txt_rect, 0, NULL, SDL_FLIP_NONE);
+    SDL_SetTextureColorMod(this->_box_texture, 255, 255, 255);
 }
