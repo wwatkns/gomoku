@@ -65,7 +65,9 @@ private:
     void            _pair_detection(Eigen::Array2i pos, Player &player);
     int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
     void            _double_threes_detection(void);
-    int             _sum_free_threes(int row, int col, int max, int row_dir, int col_dir);
+    // int             _sum_free_threes(int row, int col, int max, int row_dir, int col_dir);
+    bool            _count_double_threes(Eigen::Array4i);
+    bool            _detect_threes(int row, int col, int row_dir, int col_dir, int p);
 
     /* Check end utils */
     bool            _check_col(size_t col, size_t row);
