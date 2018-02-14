@@ -121,6 +121,7 @@ void    GraphicalInterface::_init_grid(void) {
             (int)(this->_pad[0]+i*this->_inc[0]), this->_res_h - this->_pad[0]);
     }
     this->_init_grid_points();
+    this->_init_grid_indicators();
     SDL_Rect    rect = { this->_main_viewport.w - 1, 0, 1, this->_main_viewport.h };
     SDL_RenderFillRect(this->_renderer, &rect);
     SDL_SetRenderTarget(this->_renderer, NULL);
@@ -136,6 +137,43 @@ void    GraphicalInterface::_init_grid_points(void) {
             pos = this->grid_to_screen((Eigen::Array2i){3+j*6, 3+i*6});
             rect = {pos[1]-(pt_size/2), pos[0]-(pt_size/2), pt_size, pt_size};
             SDL_RenderCopy(this->_renderer, this->_black_stone_tex, NULL, &rect);
+        }
+    }
+}
+
+void    GraphicalInterface::_init_grid_indicators(void) {
+    TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", 16);
+    SDL_Texture *texture = nullptr;
+    SDL_Surface *surf = nullptr;
+    SDL_Rect    rect;
+    std::string text;
+
+    for (uint8_t j = 0; j < 2; j++) {
+        for (uint8_t i = 0; i < ROWS; i++) {
+            text = std::to_string(ROWS-i);
+            surf = TTF_RenderText_Blended(font, text.c_str(), {0, 0, 0, 255});
+            texture = SDL_CreateTextureFromSurface(this->_renderer, surf);
+            SDL_FreeSurface(surf);
+            rect = { this->_pad[1]/2, (int)(this->_pad[0]+i*this->_inc[0]), 0, 0 };
+            rect.x = (j == 1 ? this->_main_viewport.w - this->_pad[1]/2 : rect.x);
+            TTF_SizeText(font, text.c_str(), &rect.w, &rect.h);
+            rect.x -= rect.w / 2;
+            rect.y -= rect.h / 2;
+            SDL_RenderCopyEx(this->_renderer, texture, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+            SDL_DestroyTexture(texture);
+        }
+        for (uint8_t i = 0; i < COLS; i++) {
+            text = std::string(1, "ABCDEFGHJKLMNOPQRST"[i]);
+            surf = TTF_RenderText_Blended(font, text.c_str(), {0, 0, 0, 255});
+            texture = SDL_CreateTextureFromSurface(this->_renderer, surf);
+            SDL_FreeSurface(surf);
+            rect = { (int)(this->_pad[1]+i*this->_inc[1]), this->_pad[0]/2, 0, 0 };
+            rect.y = (j == 1 ? this->_main_viewport.h - this->_pad[0]/2 : rect.y);
+            TTF_SizeText(font, text.c_str(), &rect.w, &rect.h);
+            rect.x -= rect.w / 2;
+            rect.y -= rect.h / 2;
+            SDL_RenderCopyEx(this->_renderer, texture, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
+            SDL_DestroyTexture(texture);
         }
     }
 }
@@ -162,15 +200,19 @@ void    GraphicalInterface::update_events(void) {
 }
 
 void    GraphicalInterface::update_display(void) {
-    SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
-    SDL_SetRenderDrawColor(this->_renderer, this->_bg_color.r, this->_bg_color.g, this->_bg_color.b, this->_bg_color.a);
-    SDL_RenderClear(this->_renderer);
-    SDL_RenderCopyEx(this->_renderer, this->_board_grid_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
+    this->_render_board();
     this->_render_stones();
     this->_render_select();
     this->_render_secondary_viewport();
     this->_render_buttons();
     SDL_RenderPresent(this->_renderer);
+}
+
+void    GraphicalInterface::_render_board(void) {
+    SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
+    SDL_SetRenderDrawColor(this->_renderer, this->_bg_color.r, this->_bg_color.g, this->_bg_color.b, this->_bg_color.a);
+    SDL_RenderClear(this->_renderer);
+    SDL_RenderCopyEx(this->_renderer, this->_board_grid_tex, NULL, NULL, 0, NULL, SDL_FLIP_NONE);
 }
 
 void    GraphicalInterface::_render_stones(void) {
@@ -252,12 +294,8 @@ bool    GraphicalInterface::check_undo(void) {
 }
 
 bool    GraphicalInterface::check_restart(void) {
-    // if (this->_button_restart->get_state() == true) {
-        // this->_game_engine->delete_last_action();
-    // }
     return this->_button_restart->get_state();
 }
-
 
 bool    GraphicalInterface::check_close(void) {
     return this->_quit;

@@ -51,10 +51,14 @@ private:
     void    _init_sdl(void);
     void    _init_grid(void);
     void    _init_grid_points(void);
+    void    _init_grid_indicators(void);
+
+    void    _render_board(void);
     void    _render_stones(void);
     void    _render_select(void);
     void    _render_secondary_viewport(void);
     void    _render_buttons(void);
+    
     void    _load_images(void);
     void    _close_sdl(void);
 
