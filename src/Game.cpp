@@ -29,7 +29,6 @@ Game::Game(Game const &src) {
 Game::~Game(void) {
     delete this->_player_1;
     delete this->_player_2;
-    delete this->_c_player;
     delete this->_game_engine;
     delete this->_gui;
 }
@@ -54,6 +53,8 @@ void        Game::loop(void) {
     while (true) {
         this->_gui->update_events();
         this->_c_player->play();
+        if (this->_gui->check_restart())
+            restart();
         if (this->_gui->check_close()) /* will quit the game */
             break;
         if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true) /* will display an end message */
@@ -64,8 +65,25 @@ void        Game::loop(void) {
     }
 }
 
-// void        Game::restart(void) {
-// }
+/*  Restart only reset the game to 0 with the same configuration, while
+    New Game displays the new game menu to configure the game.
+*/
+void        Game::restart(void) {
+    delete this->_player_1;
+    delete this->_player_2;
+    delete this->_game_engine;
+    delete this->_gui;
+
+    this->_game_engine = new GameEngine();
+    this->_gui = new GraphicalInterface(this->_game_engine);
+
+    /* Debug */
+    this->_player_1 = new Human(this->_game_engine, this->_gui, 1);
+    this->_player_2 = new Human(this->_game_engine, this->_gui, 2);
+    // this->_player_2 = new Computer(this->_game_engine, 2);
+    this->_c_player = this->_player_1;
+    this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+}
 
 void        Game::end(void) const {
 }

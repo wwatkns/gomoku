@@ -251,6 +251,14 @@ bool    GraphicalInterface::check_undo(void) {
     return this->_button_undo->get_state();
 }
 
+bool    GraphicalInterface::check_restart(void) {
+    // if (this->_button_restart->get_state() == true) {
+        // this->_game_engine->delete_last_action();
+    // }
+    return this->_button_restart->get_state();
+}
+
+
 bool    GraphicalInterface::check_close(void) {
     return this->_quit;
 }
