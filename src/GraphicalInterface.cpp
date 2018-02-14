@@ -9,7 +9,6 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
     this->_analytics = new Analytics(this->_game_engine, this->_font_handler);
 
-    // multiply by ratio between window size and resolution
     this->_grid_padding = 8;                                   /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
     this->_pad[1] = (int32_t)(this->_main_viewport.w * (float)(this->_grid_padding / 100.));
@@ -20,8 +19,10 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_load_images();
     this->_init_grid();
 
-    Button *button_start = new Button(this->_renderer, "restart", {this->_main_viewport.w + 10, 270}, this->_font_handler->default_font, {255, 255, 255, 255});
-    this->_buttons.push_back(button_start);
+    TTF_Font *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", 16);
+    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + 10, 270}, font, {255, 240, 224, 255});
+    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + 10, 300}, font, {255, 240, 224, 255});
+    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + 10, 330}, font, {255, 240, 224, 255});
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -71,7 +72,8 @@ Eigen::Array2i  GraphicalInterface::snap_to_grid(Eigen::Array2i pos) {
 }
 
 void    GraphicalInterface::_load_images(void) {
-    this->_white_stone_tex = this->load_texture(std::string("./resources/circle_white.png"));
+    this->_white_tex = this->load_texture(std::string("./resources/circle_white.png"));
+    this->_white_stone_tex = this->load_texture(std::string("./resources/circle_white_outlined.png"));
     this->_black_stone_tex = this->load_texture(std::string("./resources/circle_black.png"));
     this->_select_stone_tex = this->load_texture(std::string("./resources/circle_select.png"));
 }
@@ -181,6 +183,14 @@ void    GraphicalInterface::_render_stones(void) {
             }
         }
     }
+    /* look for the last action and display an indicator on it */
+    t_action            last = this->_game_engine->get_history()->back();
+    int32_t             size = (int32_t)(this->_stone_size * 0.1);
+
+    s_pos = this->grid_to_screen(last.pos);
+    rect = { s_pos[1]-size/2, s_pos[0]-size/2, size, size };
+    stone = (this->_game_engine->grid(last.pos[0],last.pos[1]) == 1 ? this->_black_stone_tex : this->_white_tex);
+    SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
 }
 
 void    GraphicalInterface::_render_select(void) {
@@ -212,17 +222,27 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
 void    GraphicalInterface::_render_buttons(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
 
-    for (std::list<Button*>::iterator it = this->_buttons.begin(); it != this->_buttons.end(); it++) {
-        (*it)->update_state(&this->_mouse_pos, this->_mouse_action);
-        (*it)->render(this->_renderer);
-    }
-    // SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
+    // for (std::list<Button*>::iterator it = this->_buttons.begin(); it != this->_buttons.end(); it++) {
+    //     (*it)->update_state(&this->_mouse_pos, this->_mouse_action);
+    //     (*it)->render(this->_renderer);
+    // }
+    this->_button_newgame->update_state(&this->_mouse_pos, this->_mouse_action);
+    this->_button_newgame->render(this->_renderer);
+    this->_button_restart->update_state(&this->_mouse_pos, this->_mouse_action);
+    this->_button_restart->render(this->_renderer);
+    this->_button_undo->update_state(&this->_mouse_pos, this->_mouse_action);
+    this->_button_undo->render(this->_renderer);
+    SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
 }
 
 
 void    GraphicalInterface::render_choice_menu(void) {
     // Button *button_start = new Button(this->_renderer, "restart", {10, 270}, this->_font_handler->default_font, {255, 255, 255, 255});
-    // this->_buttons.push_back(button_start);
+    SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
+    SDL_SetRenderDrawColor(this->_renderer, 45, 42, 35, 255);
+    SDL_RenderClear(this->_renderer);
+
+    SDL_RenderPresent(this->_renderer);
 }
 
 bool    GraphicalInterface::check_mouse_action(void) {
@@ -233,15 +253,26 @@ bool    GraphicalInterface::check_mouse_action(void) {
     return false;
 }
 
+bool    GraphicalInterface::check_mouse_on_board(void) {
+    /*  check if the mouse is on the main viewport
+    */
+    if (this->_main_viewport.x < this->_mouse_pos[0] && this->_mouse_pos[0] < this->_main_viewport.w &&
+        this->_main_viewport.y < this->_mouse_pos[1] && this->_mouse_pos[1] < this->_main_viewport.h)
+        return true;
+    return false;
+}
+
 bool    GraphicalInterface::check_close(void) {
     return this->_quit;
 }
 
 void    GraphicalInterface::_close_sdl(void) {
+    SDL_DestroyTexture(this->_white_tex);
     SDL_DestroyTexture(this->_white_stone_tex);
     SDL_DestroyTexture(this->_black_stone_tex);
     SDL_DestroyTexture(this->_select_stone_tex);
     SDL_DestroyTexture(this->_board_grid_tex);
+    this->_white_tex = NULL;
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
     this->_select_stone_tex = NULL;

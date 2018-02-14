@@ -12,7 +12,7 @@
 class Button {
 
 public:
-    Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, TTF_Font *font, SDL_Color color);
+    Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, TTF_Font *font, SDL_Color bg_color);
     Button(Button const &src);
     ~Button(void);
     Button	&operator=(Button const &rhs);
@@ -25,12 +25,12 @@ public:
 private:
     bool            _state;
     std::string     _text;
-    SDL_Rect        _text_rect;
-    SDL_Rect        _rect;
-    SDL_Color       _color;
-    SDL_Color       _text_color;
+    SDL_Rect        _txt_rect;
+    SDL_Rect        _box_rect;
+    SDL_Color       _box_color;
+    SDL_Color       _txt_color;
     TTF_Font        *_font;
-    SDL_Texture     *_text_texture;
+    SDL_Texture     *_txt_texture;
     SDL_Texture     *_box_texture;
     SDL_Renderer    *_renderer;
 

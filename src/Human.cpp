@@ -22,7 +22,7 @@ t_action    Human::play(void) {
 
     while (true) {
         this->_gui->update_events();
-        if (this->_gui->check_mouse_action()) {
+        if (this->_gui->check_mouse_action() && this->_gui->check_mouse_on_board()) {
             action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
             action.player_id = this->_id;
             action.id = this->_game_engine->get_history_size() + 1;

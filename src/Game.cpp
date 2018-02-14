@@ -16,10 +16,10 @@ Game::Game(void)  {
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
 
     /* initial menu */
-    // this->_gui->update_events();
-    // this->_gui->update_display();
-    // this->_gui->render_choice_menu();
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    this->_gui->update_events();
+    this->_gui->update_display();
+    this->_gui->render_choice_menu();
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 Game::Game(Game const &src) {
@@ -70,5 +70,4 @@ void        Game::loop(void) {
 }
 
 void        Game::end(void) const {
-
 }

@@ -29,6 +29,7 @@ public:
 
     bool            check_close(void);
     bool            check_mouse_action(void);
+    bool            check_mouse_on_board(void);
     void            update_events(void);
     void            update_display(void);
 
@@ -78,6 +79,7 @@ private:
     Eigen::Array2i  _pad;
     Eigen::Array2f  _inc;
     /* Loaded textures */
+    SDL_Texture     *_white_tex;
     SDL_Texture     *_white_stone_tex;
     SDL_Texture     *_black_stone_tex;
     SDL_Texture     *_select_stone_tex;
@@ -89,7 +91,10 @@ private:
     bool            _mouse_action;
     bool            _quit;
 
-    std::list<Button*>   _buttons;
+    /* buttons */
+    Button          *_button_newgame;
+    Button          *_button_restart;
+    Button          *_button_undo;
 
 };
 
