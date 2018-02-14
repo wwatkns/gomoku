@@ -19,7 +19,7 @@ Computer	&Computer::operator=(Computer const &src) {
     return (*this);
 }
 
-t_action    Computer::play(void) {
+void        Computer::play(void) {
     t_action                                action;
     std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now();
 
@@ -29,7 +29,8 @@ t_action    Computer::play(void) {
     action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
     action.player_id = this->_id;
     action.id = this->_game_engine->get_history_size() + 1;
+    action.old_grid = this->_game_engine->grid;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     action.duration = std::chrono::steady_clock::now() - action_beg;
-    return action;
+    this->_game_engine->update_game_state(action, this);
 }

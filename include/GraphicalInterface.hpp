@@ -27,6 +27,7 @@ public:
     ~GraphicalInterface(void);
     GraphicalInterface	&operator=(GraphicalInterface const &rhs);
 
+    bool            check_undo(void);
     bool            check_close(void);
     bool            check_mouse_action(void);
     bool            check_mouse_on_board(void);
@@ -41,6 +42,7 @@ public:
     GameEngine      *get_game_engine(void) const { return _game_engine; };
     Analytics       *get_analytics(void) const { return _analytics; };
     Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
+    bool            get_mouse_action(void) const { return _mouse_action; };
 
     void            render_choice_menu(void);
 
@@ -90,7 +92,6 @@ private:
     Eigen::Array2i  _mouse_pos;
     bool            _mouse_action;
     bool            _quit;
-
     /* buttons */
     Button          *_button_newgame;
     Button          *_button_restart;

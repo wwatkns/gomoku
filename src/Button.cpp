@@ -27,6 +27,8 @@ Button::Button(Button const &src) {
 }
 
 Button::~Button(void) {
+    SDL_DestroyTexture(this->_txt_texture);
+    SDL_DestroyTexture(this->_box_texture);
 }
 
 Button	&Button::operator=(Button const &src) {
@@ -41,7 +43,7 @@ void    Button::update_state(Eigen::Array2i *pos, bool mouse_press) {
         (*pos)[0] >= this->_box_rect.y && (*pos)[0] < this->_box_rect.y + this->_box_rect.h) {
         SDL_SetTextureColorMod(this->_txt_texture, 231, 183, 136);
         SDL_SetTextureColorMod(this->_box_texture, 231, 183, 136);
-        if (mouse_press)
+        if (mouse_press == true)
             this->_state = true;
     }
 }

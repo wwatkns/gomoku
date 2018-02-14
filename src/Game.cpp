@@ -51,17 +51,12 @@ void        Game::set_player_2(Player player) { this->_player_2 = &player; }
 
 
 void        Game::loop(void) {
-    t_action    c_action;
-
     while (true) {
         this->_gui->update_events();
-
-        c_action = this->_c_player->play();
-
-        if (this->_gui->check_close())
+        this->_c_player->play();
+        if (this->_gui->check_close()) /* will quit the game */
             break;
-        this->_game_engine->update_game_state(c_action, *this->_c_player);
-        if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true)
+        if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true) /* will display an end message */
             break;
         this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();

@@ -28,7 +28,6 @@ public:
     void        set_player_1(Player player);
     void        set_player_2(Player player);
 
-
 private:
     Player              *_player_1;
     Player              *_player_2;

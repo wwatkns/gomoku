@@ -103,13 +103,13 @@ int     GameEngine::_check_pair(Eigen::Array2i pos, int max, int row_dir, int co
     return true;
 }
 
-void    GameEngine::_pair_detection(Eigen::Array2i pos, Player &player) {
+void    GameEngine::_pair_detection(Eigen::Array2i pos, Player *player) {
     for (int row = -1; row < 2; ++row) {
         for (int col = -1; col < 2; ++col) {
             if (_check_pair(pos, 3, row, col)) {
                 this->grid((pos[0] +      row) , (pos[1] +      col))  = state::free;
                 this->grid((pos[0] + (2 * row)), (pos[1] + (2 * col))) = state::free;
-                player.inc_pair_captured();
+                player->inc_pair_captured();
                 // return;
             }
         }
@@ -120,12 +120,23 @@ void    GameEngine::_pair_detection(Eigen::Array2i pos, Player &player) {
     // return false;
 // }
 
-void    GameEngine::update_game_state(t_action &action, Player &player) {
+void    GameEngine::update_game_state(t_action &action, Player *player) {
     this->grid(action.pos[0], action.pos[1]) = (action.player_id == 1 ? state::black : state::white);
-    // TODO (alain) : detecter les doubles threes et mettre 10/-10 aux emplacements 
+    // TODO (alain) : detecter les doubles threes et mettre 10/-10 aux emplacements
     // _double_threes_detection();
     _pair_detection(action.pos, player);
     this->_history.push_back(action);
+}
+
+void    GameEngine::delete_last_action(void) {
+    t_action    last;
+
+    if (this->_history.size() > 0) {
+        last = this->_history.back();
+        this->grid = last.old_grid;
+        // this->grid(last.pos[0], last.pos[1]) = 0; /* should check if this really is a 0 or put to last state (maybe keep in t_action the last state of the grid case) */
+        this->_history.pop_back();
+    }
 }
 
 /*

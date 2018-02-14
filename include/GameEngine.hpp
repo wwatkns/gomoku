@@ -18,6 +18,7 @@ typedef struct  s_action {
     uint64_t                                    id;
     std::chrono::duration<double, std::milli>   timepoint;  /* time since start */
     std::chrono::duration<double, std::milli>   duration;   /* duration of the action */
+    Eigen::ArrayXXi                             old_grid;   /* the state of the grid before the action */
 }               t_action;
 
 
@@ -31,7 +32,8 @@ public:
 
     bool                check_action(t_action &action); // check if action is valid
     bool                check_end(uint8_t player_pairs);
-    void                update_game_state(t_action &action, Player &player); // update the game state given an action
+    void                update_game_state(t_action &action, Player *player); // update the game state given an action
+    void                delete_last_action(void);
 
     /* Getters */
     std::list<t_action>                     *get_history(void) { return &_history; };
@@ -62,7 +64,7 @@ private:
     bool            _check_boundary(int row, int col);
 
     /* Update game state utils */
-    void            _pair_detection(Eigen::Array2i pos, Player &player);
+    void            _pair_detection(Eigen::Array2i pos, Player *player);
     int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
 
     /* Check end utils */
