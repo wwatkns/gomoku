@@ -15,7 +15,7 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_pad[0] = (int32_t)(this->_res_h * (float)(this->_grid_padding / 100.));
     this->_inc[1] = (float)(this->_main_viewport.w - (this->_pad[1] * 2)) / (COLS-1);
     this->_inc[0] = (float)(this->_res_h - (this->_pad[0] * 2)) / (ROWS-1);
-    this->_bg_color = (SDL_Color){ 217, 165, 84, 255 };
+    this->_bg_color = (SDL_Color){ 215, 168, 84, 255 };
     this->_load_images();
     this->_init_grid();
 
