@@ -62,6 +62,8 @@ private:
     void    _render_secondary_viewport(void);
     void    _render_buttons(void);
 
+    SDL_Rect        _handle_ratio(SDL_Rect rect);
+    Eigen::Array2i  _handle_ratio(Eigen::Array2i pos);
     void    _load_images(void);
     void    _close_sdl(void);
 

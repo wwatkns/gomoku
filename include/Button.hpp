@@ -12,7 +12,7 @@
 class Button {
 
 public:
-    Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, TTF_Font *font, SDL_Color bg_color = {255, 255, 255, 255}, SDL_Color font_color = {0, 0, 0, 255}, SDL_Color hover_color = {231, 183, 136, 255}, SDL_Color outline_color = {0, 0, 0, 255});
+    Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, Eigen::Array2i padding, TTF_Font *font, SDL_Color bg_color = {255, 255, 255, 255}, SDL_Color font_color = {0, 0, 0, 255}, SDL_Color hover_color = {231, 183, 136, 255}, SDL_Color outline_color = {0, 0, 0, 255});
     Button(Button const &src);
     ~Button(void);
     Button	&operator=(Button const &rhs);

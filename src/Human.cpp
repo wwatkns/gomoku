@@ -34,7 +34,7 @@ void    Human::play(void) {
                 break;
             }
         }
-        if (this->_gui->check_close() || this->_gui->check_undo() || this->_gui->check_restart())
+        if (this->_gui->check_close() || this->_gui->check_undo() || this->_gui->check_restart() || this->_gui->check_newgame())
             break;
         this->_gui->update_display();
     }

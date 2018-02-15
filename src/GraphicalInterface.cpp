@@ -7,7 +7,7 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_init_sdl();
 
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
-    this->_analytics = new Analytics(this->_game_engine, this->_font_handler);
+    this->_analytics = new Analytics(this->_game_engine, this->_font_handler, this->_res_ratio);
 
     this->_grid_padding = 8;                                   /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
@@ -19,10 +19,11 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_load_images();
     this->_init_grid();
 
-    TTF_Font *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", 16);
-    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + 10, 270}, font, {255, 240, 224, 255});
-    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + 10, 300}, font, {255, 240, 224, 255});
-    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + 10, 330}, font, {255, 240, 224, 255});
+    TTF_Font *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", (int32_t)(15 * this->_res_ratio));
+    Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
+    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(270 * this->_res_ratio)}, button_padding, font, {255, 240, 224, 255});
+    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(300 * this->_res_ratio)}, button_padding, font, {255, 240, 224, 255});
+    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(330 * this->_res_ratio)}, button_padding, font, {255, 240, 224, 255});
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -261,8 +262,8 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderFillRect(this->_renderer, &rect);
     /* TODO : put that on a texture instead of drawing the lines each time */
     SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
-    SDL_RenderDrawLine(this->_renderer, 0,  90, this->_secondary_viewport.w,  90);
-    SDL_RenderDrawLine(this->_renderer, 0, 180, this->_secondary_viewport.w, 180);
+    SDL_RenderDrawLine(this->_renderer, 0,  (int32_t)(90 * this->_res_ratio), this->_secondary_viewport.w,  (int32_t)(90 * this->_res_ratio));
+    SDL_RenderDrawLine(this->_renderer, 0, (int32_t)(180 * this->_res_ratio), this->_secondary_viewport.w, (int32_t)(180 * this->_res_ratio));
 
     this->_analytics->render_text();
 }
@@ -279,6 +280,8 @@ std::string GraphicalInterface::render_choice_menu(void) {
     TTF_Font    *font_bold = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", (int32_t)(18 * this->_res_ratio));
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
 
+    Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
+
     SDL_Color   color_bg = {15, 15, 15, 255};
     SDL_Color   color_win = {45, 45, 45, 255};
     SDL_Color   color_header = {35, 35, 35, 255};
@@ -291,18 +294,18 @@ std::string GraphicalInterface::render_choice_menu(void) {
     SDL_Color   color_white = {255, 255, 255, 255};
     SDL_Color   color_black = {0, 0, 0, 255};
 
-    Button *p1_human = new Button(this->_renderer, "human", {0,0}, font, color_win, color_font, color_onhover, color_outline);
-    Button *p1_computer = new Button(this->_renderer, "computer", {0,0}, font, color_win, color_font, color_onhover, color_outline);
-    this->_menu_button_player_1 = new ButtonSelect({p1_human, p1_computer}, {this->_res_w/2-82/3, this->_res_h/2-40}, 0, 'h', true);
+    Button *p1_human = new Button(this->_renderer, "human", {0,0}, button_padding, font, color_win, color_font, color_onhover, color_outline);
+    Button *p1_computer = new Button(this->_renderer, "computer", {0,0}, button_padding, font, color_win, color_font, color_onhover, color_outline);
+    this->_menu_button_player_1 = new ButtonSelect({p1_human, p1_computer}, this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82/3, this->_win_h/2-40}), 0, 'h', true);
 
-    Button *p2_human = new Button(this->_renderer, "human", {0,0}, font, color_win, color_font, color_onhover, color_outline);
-    Button *p2_computer = new Button(this->_renderer, "computer", {0,0}, font, color_win, color_font, color_onhover, color_outline);
-    this->_menu_button_player_2 = new ButtonSelect({p2_human, p2_computer}, {this->_res_w/2-82/3, this->_res_h/2-40 + 29}, 0, 'h', true);
+    Button *p2_human = new Button(this->_renderer, "human", {0,0}, button_padding, font, color_win, color_font, color_onhover, color_outline);
+    Button *p2_computer = new Button(this->_renderer, "computer", {0,0}, button_padding, font, color_win, color_font, color_onhover, color_outline);
+    this->_menu_button_player_2 = new ButtonSelect({p2_human, p2_computer}, this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82/3, this->_win_h/2-40 + 29}), 0, 'h', true);
 
-    Button *p1 = new Button(this->_renderer, "Player 1:", {this->_res_w/2-82-50, this->_res_h/2-40}, font, color_win, color_font, color_white, color_outline);
-    Button *p2 = new Button(this->_renderer, "Player 2:", {this->_res_w/2-82-50, this->_res_h/2-40+29}, font, color_win, color_font, color_white, color_outline);
-    Button *go = new Button(this->_renderer, "Start", {this->_res_w/2-159, this->_res_h/2+72}, font, color_button, color_font, color_onhover, color_outline);
-    Button *ng = new Button(this->_renderer, "New Game", {this->_res_w/2-155, this->_res_h/2-93}, font, color_header, color_font, color_white);
+    Button *p1 = new Button(this->_renderer, "Player 1:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40}), button_padding, font, color_win, color_font, color_white, color_outline);
+    Button *p2 = new Button(this->_renderer, "Player 2:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40+29}), button_padding, font, color_win, color_font, color_white, color_outline);
+    Button *go = new Button(this->_renderer, "Start", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-159, this->_win_h/2+72}), button_padding, font, color_button, color_font, color_onhover, color_outline);
+    Button *ng = new Button(this->_renderer, "New Game", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2-93}), button_padding, font, color_header, color_font, color_white);
 
     SDL_Rect    rect;
     std::string out = "";
@@ -310,19 +313,19 @@ std::string GraphicalInterface::render_choice_menu(void) {
         SDL_SetRenderDrawColor(this->_renderer, color_bg.r, color_bg.g, color_bg.b, color_bg.a);
         SDL_RenderClear(this->_renderer);
         /* box */
-        rect = { this->_res_w/2-160, this->_res_h/2-100, 320, 200 };
+        rect = this->_handle_ratio((SDL_Rect){ this->_win_w/2-160, this->_win_h/2-100, 320, 200 });
         SDL_SetRenderDrawColor(this->_renderer, color_win.r, color_win.g, color_win.b, color_win.a);
         SDL_RenderFillRect(this->_renderer, &rect);
         /* box header */
-        rect = { this->_res_w/2-160, this->_res_h/2-100, 320, 40 };
+        rect = this->_handle_ratio((SDL_Rect){ this->_win_w/2-160, this->_win_h/2-100, 320, 40 });
         SDL_SetRenderDrawColor(this->_renderer, color_header.r, color_header.g, color_header.b, color_header.a);
         SDL_RenderFillRect(this->_renderer, &rect);
         /* box outline */
-        rect = { this->_res_w/2-160, this->_res_h/2-100, 320, 200 };
+        rect = this->_handle_ratio((SDL_Rect){ this->_win_w/2-160, this->_win_h/2-100, 320, 200 });
         SDL_SetRenderDrawColor(this->_renderer, color_outline.r, color_outline.g, color_outline.b, color_outline.a);
         SDL_RenderDrawRect(this->_renderer, &rect);
-        rect = { this->_res_w/2-161, this->_res_h/2-101, 322, 202 };
-        SDL_RenderDrawRect(this->_renderer, &rect);
+        // rect = this->_handle_ratio((SDL_Rect){ this->_win_w/2-161, this->_win_h/2-101, 322, 202 });
+        // SDL_RenderDrawRect(this->_renderer, &rect);
 
         this->update_events();
         if (this->check_close())
@@ -343,11 +346,20 @@ std::string GraphicalInterface::render_choice_menu(void) {
             out += std::string(",p2=")+std::string((this->_menu_button_player_2->get_activated_button() == 0?"H":"C"));
             break;
         }
-        // "p1=H,p2=C"
         SDL_RenderPresent(this->_renderer);
     }
     return out;
 }
+
+Eigen::Array2i  GraphicalInterface::_handle_ratio(Eigen::Array2i pos) {
+    return {(int32_t)(pos[0] * this->_res_ratio), (int32_t)(pos[1] * this->_res_ratio)};
+}
+
+SDL_Rect        GraphicalInterface::_handle_ratio(SDL_Rect rect) {
+    return {(int32_t)(rect.x*this->_res_ratio), (int32_t)(rect.y*this->_res_ratio),
+            (int32_t)(rect.w*this->_res_ratio), (int32_t)(rect.h*this->_res_ratio)};
+}
+
 
 bool    GraphicalInterface::check_undo(void) {
     if (this->_button_undo->get_state() == true) {
