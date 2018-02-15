@@ -13,6 +13,7 @@
 # include "FontHandler.hpp"
 # include "Analytics.hpp"
 # include "Button.hpp"
+# include "ButtonSelect.hpp"
 
 # define COLS 19
 # define ROWS 19
@@ -58,7 +59,7 @@ private:
     void    _render_select(void);
     void    _render_secondary_viewport(void);
     void    _render_buttons(void);
-    
+
     void    _load_images(void);
     void    _close_sdl(void);
 
@@ -101,6 +102,9 @@ private:
     Button          *_button_newgame;
     Button          *_button_restart;
     Button          *_button_undo;
+    /* start menu buttons */
+    ButtonSelect    *_menu_button_player_1;
+    ButtonSelect    *_menu_button_player_2;
 
 };
 

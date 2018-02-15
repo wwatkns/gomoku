@@ -1,15 +1,8 @@
 #include "Game.hpp"
-#include <thread> // TMP
 
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
-
-    /* initial menu */
-    // this->_gui->update_events();
-    // this->_gui->update_display();
-    // this->_gui->render_choice_menu();
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     /* Debug, but will be defined by the choice menu */
     this->_player_1 = new Human(this->_game_engine, this->_gui, 1);
@@ -17,6 +10,9 @@ Game::Game(void)  {
     // this->_player_2 = new Computer(this->_game_engine, 2);
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+
+    /* initial menu */
+    this->_gui->render_choice_menu();
 }
 
 Game::Game(Game const &src) {

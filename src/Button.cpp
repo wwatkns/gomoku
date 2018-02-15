@@ -1,14 +1,14 @@
 #include "Button.hpp"
 
 Button::Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, TTF_Font *font, SDL_Color bg_color) : _renderer(renderer), _text(text), _font(font), _box_color(bg_color) {
-    uint8_t w = 12;
-    uint8_t h = 2;
+    this->_pad_w = 12;
+    this->_pad_h = 2;
     this->_state = false;
     this->_txt_color = { 0, 0, 0, 255 };
-    this->_txt_rect = { pos[0] + w / 2, pos[1] + h / 2, 0, 0 };
+    this->_txt_rect = { pos[0] + this->_pad_w / 2, pos[1] + this->_pad_h / 2, 0, 0 };
     TTF_SizeText(this->_font, this->_text.c_str(), &this->_txt_rect.w, &this->_txt_rect.h);
 
-    this->_box_rect = { pos[0], pos[1], (int32_t)(this->_txt_rect.w + w), (int32_t)(this->_txt_rect.h + h) };
+    this->_box_rect = { pos[0], pos[1], (int32_t)(this->_txt_rect.w + this->_pad_w), (int32_t)(this->_txt_rect.h + this->_pad_h) };
 
     this->_box_texture = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, this->_box_rect.w, this->_box_rect.h);
     SDL_SetRenderTarget(this->_renderer, this->_box_texture);
@@ -33,6 +33,12 @@ Button::~Button(void) {
 
 Button	&Button::operator=(Button const &src) {
     return (*this);
+}
+
+void    Button::set_pos(Eigen::Array2i pos) {
+    this->_txt_rect = { pos[0] + this->_pad_w / 2, pos[1] + this->_pad_h / 2, 0, 0 };
+    TTF_SizeText(this->_font, this->_text.c_str(), &this->_txt_rect.w, &this->_txt_rect.h);
+    this->_box_rect = { pos[0], pos[1], (int32_t)(this->_txt_rect.w + this->_pad_w), (int32_t)(this->_txt_rect.h + this->_pad_h) };
 }
 
 bool    Button::on_hover(Eigen::Array2i *pos) {

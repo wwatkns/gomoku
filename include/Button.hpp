@@ -17,8 +17,14 @@ public:
     ~Button(void);
     Button	&operator=(Button const &rhs);
 
-    bool        get_state(void) const { return _state; };
+    /* setters */
     void        set_state(bool state) { _state = state; };
+    void        set_pos(Eigen::Array2i pos);
+    void        set_padding(int32_t w, int32_t h) { _pad_w = w; _pad_h = h; };
+    /* getters */
+    bool            get_state(void) const { return _state; };
+    SDL_Rect        get_rect(void) const { return _box_rect; };
+    Eigen::Array2i  get_padding(void) const { return {_pad_w, _pad_h}; };
 
     bool        on_hover(Eigen::Array2i *pos);
     void        update_state(Eigen::Array2i *pos, bool mouse_press);
@@ -31,6 +37,8 @@ private:
     SDL_Rect        _box_rect;
     SDL_Color       _box_color;
     SDL_Color       _txt_color;
+    int32_t         _pad_w;
+    int32_t         _pad_h;
     TTF_Font        *_font;
     SDL_Texture     *_txt_texture;
     SDL_Texture     *_box_texture;

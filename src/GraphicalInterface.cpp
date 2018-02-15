@@ -275,14 +275,37 @@ void    GraphicalInterface::_render_buttons(void) {
 }
 
 void    GraphicalInterface::render_choice_menu(void) {
-
-    // Button *button_start = new Button(this->_renderer, "restart", {10, 270}, this->_font_handler->default_font, {255, 255, 255, 255});
-
+    TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", (int32_t)(16 * this->_res_ratio));
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
-    SDL_SetRenderDrawColor(this->_renderer, 45, 42, 35, 255);
-    SDL_RenderClear(this->_renderer);
 
-    SDL_RenderPresent(this->_renderer);
+    Button *player_1_human = new Button(this->_renderer, "Human", {0,0}, font, {255, 255, 255, 255});
+    Button *player_1_computer = new Button(this->_renderer, "Computer", {0,0}, font, {255, 255, 255, 255});
+    this->_menu_button_player_1 = new ButtonSelect({player_1_human, player_1_computer}, {this->_res_w/2, this->_res_h/2}, 0, 'h', true);
+
+    Button *player_2_human = new Button(this->_renderer, "Human", {0,0}, font, {255, 255, 255, 255});
+    Button *player_2_computer = new Button(this->_renderer, "Computer", {0,0}, font, {255, 255, 255, 255});
+    this->_menu_button_player_2 = new ButtonSelect({player_2_human, player_2_computer}, {this->_res_w/2, this->_res_h/2 + 29}, 0, 'h', true);
+
+    while (true) {
+        SDL_SetRenderDrawColor(this->_renderer, 43, 41, 41, 255);
+        SDL_RenderClear(this->_renderer);
+        /* rect */
+        SDL_SetRenderDrawColor(this->_renderer, 63, 64, 63, 255);
+        SDL_Rect    rect = { this->_win_w / 2 - 220, this->_win_h / 2 - 150, 440, 300 };
+        SDL_RenderFillRect(this->_renderer, &rect);
+        SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
+        SDL_RenderDrawRect(this->_renderer, &rect);
+
+        this->update_events();
+        if (this->check_close())
+            break;
+        this->_menu_button_player_1->update_state(&this->_mouse_pos, this->_mouse_action);
+        this->_menu_button_player_2->update_state(&this->_mouse_pos, this->_mouse_action);
+
+        this->_menu_button_player_1->render(this->_renderer, &this->_mouse_pos);
+        this->_menu_button_player_2->render(this->_renderer, &this->_mouse_pos);
+        SDL_RenderPresent(this->_renderer);
+    }
 }
 
 bool    GraphicalInterface::check_undo(void) {
