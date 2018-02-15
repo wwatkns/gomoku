@@ -19,6 +19,7 @@
 # define ROWS 19
 
 class Player;
+class Game;
 
 class GraphicalInterface {
 
@@ -46,7 +47,7 @@ public:
     Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
     bool            get_mouse_action(void) const { return _mouse_action; };
 
-    void            render_choice_menu(void);
+    std::string     render_choice_menu(void);
 
 private:
     void    _init_sdl(void);

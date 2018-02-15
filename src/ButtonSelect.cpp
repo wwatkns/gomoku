@@ -43,8 +43,6 @@ ButtonSelect	&ButtonSelect::operator=(ButtonSelect const &src) {
 void    ButtonSelect::update_state(Eigen::Array2i *pos, bool mouse_press) {
     bool    mod = false;
 
-    // std::cout << this->_buttons[0]->get_state() << " " << this->_buttons[1]->get_state() << std::endl;
-
     for (uint32_t i = 0; i < this->_buttons.size(); i++) {
         this->_buttons[i]->update_state(pos, mouse_press);
         if (this->_buttons[i]->get_state() == true) {

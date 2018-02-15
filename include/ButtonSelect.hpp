@@ -17,7 +17,7 @@ public:
     ~ButtonSelect(void);
     ButtonSelect	&operator=(ButtonSelect const &rhs);
 
-    bool        get_activated_button(void) const { return _activated_button; };
+    uint32_t    get_activated_button(void) const { return _activated_button; };
     void        update_state(Eigen::Array2i *pos, bool mouse_press);
     void        render(SDL_Renderer *renderer, Eigen::Array2i *pos);
 

@@ -4,15 +4,13 @@ Game::Game(void)  {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
 
-    /* Debug, but will be defined by the choice menu */
-    this->_player_1 = new Human(this->_game_engine, this->_gui, 1);
-    this->_player_2 = new Human(this->_game_engine, this->_gui, 2);
-    // this->_player_2 = new Computer(this->_game_engine, 2);
+    /* start menu */
+    std::string config = this->_gui->render_choice_menu();
+
+    this->_player_1 = (config[config.find("p1=")+3] == 'H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
+    this->_player_2 = (config[config.find("p2=")+3] == 'H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
-
-    /* initial menu */
-    this->_gui->render_choice_menu();
 }
 
 Game::Game(Game const &src) {

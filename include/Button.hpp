@@ -12,7 +12,7 @@
 class Button {
 
 public:
-    Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, TTF_Font *font, SDL_Color bg_color);
+    Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, TTF_Font *font, SDL_Color bg_color = {255, 255, 255, 255}, SDL_Color font_color = {0, 0, 0, 255}, SDL_Color hover_color = {231, 183, 136, 255}, SDL_Color outline_color = {0, 0, 0, 255});
     Button(Button const &src);
     ~Button(void);
     Button	&operator=(Button const &rhs);
@@ -37,12 +37,16 @@ private:
     SDL_Rect        _box_rect;
     SDL_Color       _box_color;
     SDL_Color       _txt_color;
+    SDL_Color       _hover_color;
+    SDL_Color       _outline_color;
     int32_t         _pad_w;
     int32_t         _pad_h;
     TTF_Font        *_font;
     SDL_Texture     *_txt_texture;
     SDL_Texture     *_box_texture;
     SDL_Renderer    *_renderer;
+
+    void            _draw_box(SDL_Color *box_color, SDL_Color *outline_color);
 
 };
 
