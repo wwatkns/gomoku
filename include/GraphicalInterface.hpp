@@ -30,6 +30,7 @@ public:
     GraphicalInterface	&operator=(GraphicalInterface const &rhs);
 
     bool            check_undo(void);
+    bool            check_newgame(void);
     bool            check_restart(void);
     bool            check_close(void);
     bool            check_mouse_action(void);

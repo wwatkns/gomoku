@@ -356,6 +356,10 @@ bool    GraphicalInterface::check_undo(void) {
     return this->_button_undo->get_state();
 }
 
+bool    GraphicalInterface::check_newgame(void) {
+    return this->_button_newgame->get_state();
+}
+
 bool    GraphicalInterface::check_restart(void) {
     return this->_button_restart->get_state();
 }
