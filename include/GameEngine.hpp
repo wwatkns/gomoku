@@ -59,6 +59,7 @@ private:
         };
     };
 
+    /* Utils */
     bool            _check_boundary(int row, int col);
 
     /* Update game state utils */
