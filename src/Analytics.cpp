@@ -8,6 +8,14 @@ Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float r
     }
 }
 
+Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio, SDL_Color font_color) : _game_engine(game_engine), _font_handler(font_handler), _res_ratio(res_ratio), _player_1(nullptr), _player_2(nullptr) {
+    this->_font_color = font_color;
+    this->_update_analytics(true);
+    for (std::map<std::string,s_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
+        this->_font_handler->create_text(&it->second.text, it->second.pos, this->_font_handler->default_font, &this->_font_color);
+    }
+}
+
 Analytics::Analytics(Analytics const &src) {
     *this = src;
 }

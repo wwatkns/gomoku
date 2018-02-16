@@ -8,6 +8,7 @@
 # include <Eigen/Dense>
 # include <SDL.h>
 # include <SDL_image.h>
+# include <SDL_ttf.h>
 // # include <SDL2_gfxPrimitives.h>
 # include "GameEngine.hpp"
 # include "FontHandler.hpp"
@@ -74,7 +75,6 @@ private:
     SDL_Window      *_window;
     SDL_Renderer    *_renderer;
     SDL_Event       _event;
-    SDL_Color       _bg_color;
 
     SDL_Rect        _global_viewport;
     SDL_Rect        _main_viewport;
@@ -110,6 +110,20 @@ private:
     ButtonSelect    *_menu_button_player_1;
     ButtonSelect    *_menu_button_player_2;
 
+    /* gui colors */
+    SDL_Color       _color_board_bg = {215, 168, 84, 255};
+    SDL_Color       _color_bg = {15, 15, 15, 255};
+    SDL_Color       _color_win = {45, 45, 45, 255};
+    SDL_Color       _color_header = {35, 35, 35, 255};
+
+    SDL_Color       _color_button = {53, 53, 53, 255};
+    SDL_Color       _color_font = {160, 160, 160, 255};
+    SDL_Color       _color_font_2 = {180, 180, 180, 255};
+    SDL_Color       _color_onhover = {150, 150, 150, 255};
+    SDL_Color       _color_outline = {70, 70, 70, 255};
+
+    SDL_Color       _color_white = {255, 255, 255, 255};
+    SDL_Color       _color_black = {0, 0, 0, 255};
 };
 
 #endif
