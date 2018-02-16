@@ -139,17 +139,18 @@ void    GameEngine::_double_threes_detection(void) {
     */
     // Eigen::Array4i      count;
     Eigen::Vector4i      count;
+    Eigen::Vector4i      countblack;
+    Eigen::Vector4i      countwhite;
 
     for (int row = 0; row < BOARD_ROWS; ++row) {
         for (int col = 0; col < BOARD_COLS; ++col) {
-            for (int p = -1; p < 2; p = p + 2) { // Switch between -1 (Player 1) and 1 (Player 2) values
-                count << 0, 0, 0, 0;
-
-                std::cout << p << " (" << row << ", " << col << ")"; // delete me
-
-                if (this->grid(row, col) == state::free ||
-                    this->grid(row, col) == state::white_free ||
-                    this->grid(row, col) == state::black_free) {
+            if (this->grid(row, col) == state::free ||
+                this->grid(row, col) == state::white_free ||
+                this->grid(row, col) == state::black_free) {
+                for (int p = -1; p < 2; p = p + 2) { // Switch between -1 (Player 1/black) and 1 (Player 2/white) values
+                    count << 0, 0, 0, 0;
+                    countblack << 0, 0, 0, 0;
+                    countwhite << 0, 0, 0, 0;
                     if (_detect_threes_xcoxox(row, col, 0, -1, p) || _detect_threes_xcxoox(row, col, 0, -1, p) ||
                         _detect_threes_xocxox(row, col, 0, -1, p) || _detect_threes_xcoox(row, col, 0, -1, p)  ||
                         _detect_threes_xocox(row, col, 0, -1, p))  // ←
@@ -178,25 +179,25 @@ void    GameEngine::_double_threes_detection(void) {
                     if (_detect_threes_xcoxox(row, col, 1, 1, p) || _detect_threes_xcxoox(row, col, 1, 1, p) ||
                         _detect_threes_xocxox(row, col, 1, 1, p) || _detect_threes_xcoox(row, col, 1, 1, p)) // ↘︎
                         count(3) += 1;
-
-                    std::cout << "\t" << count(0) << ", " << count(1) << ", " << count(2) << ", " << count(3); // delete me
-
-                    if (this->grid(row, col) == state::free) {
-                        if (_count_double_threes(count) && p == -1) {
-                            this->grid(row, col) = state::black_free;
-                        }
-                        else if (_count_double_threes(count) && p == 1) {
-                            this->grid(row, col) = state::white_free;
-                        }
-                    }
-                    else if (this->grid(row, col) == state::black_free ||
-                             this->grid(row, col) == state::white_free) {
-                        if (!_count_double_threes(count))
-                            this->grid(row, col) = state::free;
-                    }
+                    if (p == -1)
+                        countblack = count;
+                    else
+                        countwhite = count;
                 }
-                std::cout << std::endl; // delete me
+                if (_count_double_threes(countblack) && !_count_double_threes(countwhite)) {
+                    this->grid(row, col) = state::black_free;
+                }
+                else if (!_count_double_threes(countblack) && _count_double_threes(countwhite)) {
+                    this->grid(row, col) = state::white_free;
+                }
+                else if (_count_double_threes(countblack) && _count_double_threes(countwhite)) {
+                    this->grid(row, col) = state::forbidden;
+                }
+                else {
+                    this->grid(row, col) = state::free;
+                }
             }
+
         }
     }
     std::cout << this->grid << std::endl << std::endl; // delete me

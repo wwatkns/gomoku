@@ -77,6 +77,7 @@ private:
     bool            _detect_threes_xocxox(int row, int col, int row_dir, int col_dir, int p);
     bool            _detect_threes_xcoox(int row, int col, int row_dir, int col_dir, int p);
     bool            _detect_threes_xocox(int row, int col, int row_dir, int col_dir, int p);
+
     /* Check end utils */
     bool            _check_col(size_t col, size_t row);
     bool            _check_row(size_t col, size_t row);
