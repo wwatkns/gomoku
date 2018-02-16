@@ -312,8 +312,6 @@ std::string GraphicalInterface::render_choice_menu(void) {
         rect = this->_handle_ratio((SDL_Rect){ this->_win_w/2-160, this->_win_h/2-100, 320, 200 });
         SDL_SetRenderDrawColor(this->_renderer, this->_color_outline.r, this->_color_outline.g, this->_color_outline.b, this->_color_outline.a);
         SDL_RenderDrawRect(this->_renderer, &rect);
-        // rect = this->_handle_ratio((SDL_Rect){ this->_win_w/2-161, this->_win_h/2-101, 322, 202 });
-        // SDL_RenderDrawRect(this->_renderer, &rect);
 
         this->update_events();
         if (this->check_close())
