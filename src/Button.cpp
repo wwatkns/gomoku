@@ -40,7 +40,6 @@ void    Button::_draw_box(SDL_Color *box_color, SDL_Color *outline_color) {
     this->_box_rect.x = 0;
     this->_box_rect.y = 0;
     SDL_RenderDrawRect(this->_renderer, &this->_box_rect);
-    // std::cout << this->_box_rect.x << " " << this->_box_rect.y << " " << this->_box_rect.w << " " << this->_box_rect.h << std::endl;
     SDL_SetRenderTarget(this->_renderer, NULL);
 }
 

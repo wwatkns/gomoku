@@ -48,6 +48,9 @@ void        Game::loop(void) {
     while (true) {
         this->_gui->update_events();
         this->_c_player->play();
+        if (this->_gui->check_undo())
+            if (undo())
+                continue;
         if (this->_gui->check_newgame())
             newgame();
         if (this->_gui->check_restart())
@@ -60,6 +63,12 @@ void        Game::loop(void) {
         this->_gui->update_display();
         this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
     }
+}
+
+bool        Game::undo(void) {
+    bool    last = (this->_game_engine->get_history_size() == 0);
+    this->_game_engine->delete_last_action();
+    return last;
 }
 
 /*  Restart only reset the game to 0 with the same configuration, while
@@ -98,7 +107,6 @@ void        Game::newgame(void) {
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
     loop();
 }
-
 
 void        Game::end(void) const {
 }
