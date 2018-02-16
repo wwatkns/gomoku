@@ -34,7 +34,6 @@ public:
     bool            check_newgame(void);
     bool            check_restart(void);
     bool            check_close(void);
-    bool            check_mouse_action(void);
     bool            check_mouse_on_board(void);
     void            update_events(void);
     void            update_display(void);
@@ -52,21 +51,21 @@ public:
     std::string     render_choice_menu(void);
 
 private:
-    void    _init_sdl(void);
-    void    _init_grid(void);
-    void    _init_grid_points(void);
-    void    _init_grid_indicators(void);
+    void            _init_sdl(void);
+    void            _init_grid(void);
+    void            _init_grid_points(void);
+    void            _init_grid_indicators(void);
 
-    void    _render_board(void);
-    void    _render_stones(void);
-    void    _render_select(void);
-    void    _render_secondary_viewport(void);
-    void    _render_buttons(void);
+    void            _render_board(void);
+    void            _render_stones(void);
+    void            _render_select(void);
+    void            _render_secondary_viewport(void);
+    void            _render_buttons(void);
 
     SDL_Rect        _handle_ratio(SDL_Rect rect);
     Eigen::Array2i  _handle_ratio(Eigen::Array2i pos);
-    void    _load_images(void);
-    void    _close_sdl(void);
+    void            _load_images(void);
+    void            _close_sdl(void);
 
     GameEngine      *_game_engine;
     Analytics       *_analytics;
