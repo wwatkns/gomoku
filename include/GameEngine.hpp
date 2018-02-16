@@ -57,7 +57,8 @@ private:
             black = -1,
             free = 0,
             white = 1,
-            white_free = 10
+            white_free = 10,
+            forbidden = 20
         };
     };
 
@@ -70,8 +71,12 @@ private:
     void            _double_threes_detection(void);
     // int             _sum_free_threes(int row, int col, int max, int row_dir, int col_dir);
     bool            _count_double_threes(Eigen::Array4i);
-    bool            _detect_threes(int row, int col, int row_dir, int col_dir, int p);
-
+    // bool            _detect_threes(int row, int col, int row_dir, int col_dir, int p);
+    bool            _detect_threes_xcoxox(int row, int col, int row_dir, int col_dir, int p);
+    bool            _detect_threes_xcxoox(int row, int col, int row_dir, int col_dir, int p);
+    bool            _detect_threes_xocxox(int row, int col, int row_dir, int col_dir, int p);
+    bool            _detect_threes_xcoox(int row, int col, int row_dir, int col_dir, int p);
+    bool            _detect_threes_xocox(int row, int col, int row_dir, int col_dir, int p);
     /* Check end utils */
     bool            _check_col(size_t col, size_t row);
     bool            _check_row(size_t col, size_t row);
