@@ -247,11 +247,15 @@ void    GraphicalInterface::_render_select(void) {
     Eigen::Array2i  g_pos;
     SDL_Rect        rect;
 
-    s_pos = this->snap_to_grid(this->_mouse_pos);
-    g_pos = this->screen_to_grid(this->_mouse_pos);
-    rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
-    if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
-        SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+    if (this->_mouse_pos[0] > this->_main_viewport.x   && this->_mouse_pos[1] > this->_main_viewport.y &&
+        this->_mouse_pos[0] < this->_main_viewport.w-1 && this->_mouse_pos[1] < this->_main_viewport.h-1)
+    {
+        s_pos = this->snap_to_grid(this->_mouse_pos);
+        g_pos = this->screen_to_grid(this->_mouse_pos);
+        rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
+        if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
+            SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+    }
 }
 
 void    GraphicalInterface::_render_secondary_viewport(void) {
