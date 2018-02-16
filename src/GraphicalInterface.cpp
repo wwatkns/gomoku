@@ -9,8 +9,8 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
     this->_analytics = new Analytics(this->_game_engine, this->_font_handler, this->_res_ratio, this->_color_font_2);
 
-    this->_grid_padding = 8;                                   /* defaults to 12 for screen size of 1280, old is 8 : 0.0625 */
-    this->_stone_size = (int32_t)(this->_res_h * 0.04375);     /* defaults to 56 for screen size of 1280 */
+    this->_grid_padding = 8;
+    this->_stone_size = (int32_t)(this->_res_h * 0.04375);
     this->_pad[1] = (int32_t)(this->_main_viewport.w * (float)(this->_grid_padding / 100.));
     this->_pad[0] = (int32_t)(this->_res_h * (float)(this->_grid_padding / 100.));
     this->_inc[1] = (float)(this->_main_viewport.w - (this->_pad[1] * 2)) / (COLS-1);
@@ -20,9 +20,9 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
 
     TTF_Font *font = this->_font_handler->load_font("./resources/fonts/Roboto-Regular.ttf", (int32_t)(15 * this->_res_ratio));
     Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
-    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(270 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(300 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(330 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(310 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(340 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -247,21 +247,24 @@ void    GraphicalInterface::_render_select(void) {
     Eigen::Array2i  g_pos;
     SDL_Rect        rect;
 
-    s_pos = this->snap_to_grid(this->_mouse_pos);
-    g_pos = this->screen_to_grid(this->_mouse_pos);
-    rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
-    if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
-        SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+    if (this->check_mouse_on_board())
+    {
+        s_pos = this->snap_to_grid(this->_mouse_pos);
+        g_pos = this->screen_to_grid(this->_mouse_pos);
+        rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
+        if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
+            SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
+    }
 }
 
 void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_secondary_viewport);
-    SDL_SetRenderDrawColor(this->_renderer, 45, 45, 45, 255);
-
+    /* draw background */
     SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
+    SDL_SetRenderDrawColor(this->_renderer, this->_color_win.r, this->_color_win.g, this->_color_win.b, this->_color_win.a);
     SDL_RenderFillRect(this->_renderer, &rect);
-    /* TODO : put that on a texture instead of drawing the lines each time */
-    SDL_SetRenderDrawColor(this->_renderer, 70, 70, 70, 255);
+    /* draw lines */
+    SDL_SetRenderDrawColor(this->_renderer, this->_color_outline.r, this->_color_outline.g, this->_color_outline.b, this->_color_outline.a);
     SDL_RenderDrawLine(this->_renderer, 0,  (int32_t)(90 * this->_res_ratio), this->_secondary_viewport.w,  (int32_t)(90 * this->_res_ratio));
     SDL_RenderDrawLine(this->_renderer, 0, (int32_t)(180 * this->_res_ratio), this->_secondary_viewport.w, (int32_t)(180 * this->_res_ratio));
 
@@ -346,11 +349,7 @@ SDL_Rect        GraphicalInterface::_handle_ratio(SDL_Rect rect) {
             (int32_t)(rect.w*this->_res_ratio), (int32_t)(rect.h*this->_res_ratio)};
 }
 
-
 bool    GraphicalInterface::check_undo(void) {
-    if (this->_button_undo->get_state() == true) {
-        this->_game_engine->delete_last_action();
-    }
     return this->_button_undo->get_state();
 }
 
@@ -367,8 +366,8 @@ bool    GraphicalInterface::check_close(void) {
 }
 
 bool    GraphicalInterface::check_mouse_on_board(void) {
-    if (this->_main_viewport.x < this->_mouse_pos[0] && this->_mouse_pos[0] < this->_main_viewport.w &&
-        this->_main_viewport.y < this->_mouse_pos[1] && this->_mouse_pos[1] < this->_main_viewport.h)
+    if (this->_main_viewport.x < this->_mouse_pos[0] && this->_mouse_pos[0] < this->_main_viewport.w-1 &&
+        this->_main_viewport.y < this->_mouse_pos[1] && this->_mouse_pos[1] < this->_main_viewport.h-1)
         return true;
     return false;
 }

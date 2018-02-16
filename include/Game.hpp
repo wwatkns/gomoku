@@ -18,6 +18,7 @@ public:
     Game	&operator=(Game const &rhs);
 
     void    loop(void);
+    bool    undo(void);
     void    newgame(void);
     void    restart(void);
     void    end(void) const;
