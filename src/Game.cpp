@@ -1,13 +1,8 @@
 #include "Game.hpp"
 
 Game::Game(void)  {
-    /*  TODO: change the undo button so that the Computer will wait a bit before putting a stone because
-        (maybe undo the last actions until the last player)
-    */
-
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
-
     /* start menu */
     this->_config = this->_gui->render_choice_menu();
 
@@ -35,19 +30,11 @@ Game	&Game::operator=(Game const &src) {
     return (*this);
 }
 
-/* Getters */
-Player      *Game::get_player_1(void) const { return (this->_player_1); }
-Player      *Game::get_player_2(void) const { return (this->_player_2); }
-GameEngine  *Game::get_game_engine(void) const { return (this->_game_engine); }
-/* Setters */
-void        Game::set_player_1(Player player) { this->_player_1 = &player; }
-void        Game::set_player_2(Player player) { this->_player_2 = &player; }
-
-
 void        Game::loop(void) {
     while (true) {
         this->_gui->update_events();
-        this->_c_player->play();
+        if (this->_gui->check_pause() == false)
+            this->_c_player->play();
         if (this->_gui->check_undo())
             if (undo())
                 continue;
@@ -59,6 +46,8 @@ void        Game::loop(void) {
             break;
         if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true) /* will display an end message */
             break;
+        if (this->_gui->check_pause())
+            continue;
         this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
         this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */

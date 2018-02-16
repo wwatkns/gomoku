@@ -1,6 +1,7 @@
 #include "Human.hpp"
 
 Human::Human(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id) {
+    this->type = 0;
 }
 
 Human::Human(Human const &src) : Player(src) {

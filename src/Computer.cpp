@@ -4,6 +4,7 @@
 
 Computer::Computer(GameEngine *game_engine, uint8_t id) : Player(game_engine, NULL, id) {
     std::srand(std::time(nullptr));
+    this->type = 1;
 }
 
 Computer::Computer(Computer const &src) : Player(src) {

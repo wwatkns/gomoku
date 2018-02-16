@@ -22,7 +22,8 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
     this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
     this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(310 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(340 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_pause = new Button(this->_renderer, "pause", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(340 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(370 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -196,6 +197,7 @@ void    GraphicalInterface::update_events(void) {
     /* update the buttons states */
     this->_button_newgame->update_state(&this->_mouse_pos, this->_mouse_action);
     this->_button_restart->update_state(&this->_mouse_pos, this->_mouse_action);
+    this->_button_pause->update_state(&this->_mouse_pos, this->_mouse_action);
     this->_button_undo->update_state(&this->_mouse_pos, this->_mouse_action);
 }
 
@@ -265,7 +267,7 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderFillRect(this->_renderer, &rect);
     /* draw lines */
     SDL_SetRenderDrawColor(this->_renderer, this->_color_outline.r, this->_color_outline.g, this->_color_outline.b, this->_color_outline.a);
-    SDL_RenderDrawLine(this->_renderer, 0,  (int32_t)(90 * this->_res_ratio), this->_secondary_viewport.w,  (int32_t)(90 * this->_res_ratio));
+    SDL_RenderDrawLine(this->_renderer, 0, (int32_t)( 90 * this->_res_ratio), this->_secondary_viewport.w, (int32_t)( 90 * this->_res_ratio));
     SDL_RenderDrawLine(this->_renderer, 0, (int32_t)(180 * this->_res_ratio), this->_secondary_viewport.w, (int32_t)(180 * this->_res_ratio));
 
     this->_analytics->render_text();
@@ -275,6 +277,7 @@ void    GraphicalInterface::_render_buttons(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
     this->_button_newgame->render(this->_renderer, &this->_mouse_pos);
     this->_button_restart->render(this->_renderer, &this->_mouse_pos);
+    this->_button_pause->render(this->_renderer, &this->_mouse_pos);
     this->_button_undo->render(this->_renderer, &this->_mouse_pos);
 }
 
@@ -347,22 +350,6 @@ Eigen::Array2i  GraphicalInterface::_handle_ratio(Eigen::Array2i pos) {
 SDL_Rect        GraphicalInterface::_handle_ratio(SDL_Rect rect) {
     return {(int32_t)(rect.x*this->_res_ratio), (int32_t)(rect.y*this->_res_ratio),
             (int32_t)(rect.w*this->_res_ratio), (int32_t)(rect.h*this->_res_ratio)};
-}
-
-bool    GraphicalInterface::check_undo(void) {
-    return this->_button_undo->get_state();
-}
-
-bool    GraphicalInterface::check_newgame(void) {
-    return this->_button_newgame->get_state();
-}
-
-bool    GraphicalInterface::check_restart(void) {
-    return this->_button_restart->get_state();
-}
-
-bool    GraphicalInterface::check_close(void) {
-    return this->_quit;
 }
 
 bool    GraphicalInterface::check_mouse_on_board(void) {

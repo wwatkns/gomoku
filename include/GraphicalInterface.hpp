@@ -30,10 +30,11 @@ public:
     ~GraphicalInterface(void);
     GraphicalInterface	&operator=(GraphicalInterface const &rhs);
 
-    bool            check_undo(void);
-    bool            check_newgame(void);
-    bool            check_restart(void);
-    bool            check_close(void);
+    bool            check_newgame(void) { return _button_newgame->get_state(); };
+    bool            check_restart(void) { return _button_restart->get_state(); };
+    bool            check_pause(void) { return _button_pause->get_state(); };
+    bool            check_undo(void) { return _button_undo->get_state(); };
+    bool            check_close(void) { return this->_quit; };
     bool            check_mouse_on_board(void);
     void            update_events(void);
     void            update_display(void);
@@ -104,6 +105,7 @@ private:
     /* buttons */
     Button          *_button_newgame;
     Button          *_button_restart;
+    Button          *_button_pause;
     Button          *_button_undo;
     /* start menu buttons */
     ButtonSelect    *_menu_button_player_1;

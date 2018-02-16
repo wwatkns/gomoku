@@ -24,12 +24,12 @@ public:
     void    end(void) const;
 
     /* Getters */
-    Player      *get_player_1(void) const;
-    Player      *get_player_2(void) const;
-    GameEngine  *get_game_engine(void) const;
+    Player      *get_player_1(void) const { return _player_1; };
+    Player      *get_player_2(void) const { return _player_2; };
+    GameEngine  *get_game_engine(void) const { return _game_engine; };
     /* Setters */
-    void        set_player_1(Player player);
-    void        set_player_2(Player player);
+    void        set_player_1(Player player) { _player_1 = &player; };
+    void        set_player_2(Player player) { _player_2 = &player; };
 
 private:
     Player              *_player_1;

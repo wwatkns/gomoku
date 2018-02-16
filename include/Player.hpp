@@ -24,6 +24,8 @@ public:
     /* Setters */
     void            set_pair_captured(uint8_t pairs) { _pair_captured = pairs; };
 
+    uint8_t         type;
+
 protected:
     GameEngine          *_game_engine;
     GraphicalInterface  *_gui;
