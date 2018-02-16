@@ -8,7 +8,6 @@ Button::Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, Eig
 
     this->_box_texture = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, this->_box_rect.w, this->_box_rect.h);
     this->_draw_box(&this->_box_color, &this->_outline_color);
-    this->set_pos(pos);
 
     SDL_Surface *srf = TTF_RenderText_Blended(this->_font, this->_text.c_str(), this->_txt_color);
     this->_txt_texture = SDL_CreateTextureFromSurface(this->_renderer, srf);
@@ -31,15 +30,13 @@ Button	&Button::operator=(Button const &src) {
 
 void    Button::_draw_box(SDL_Color *box_color, SDL_Color *outline_color) {
     SDL_SetRenderTarget(this->_renderer, this->_box_texture);
-
     /* draw box bg */
     SDL_SetRenderDrawColor(this->_renderer, box_color->r, box_color->g, box_color->b, box_color->a);
     SDL_RenderClear(this->_renderer);
     /* draw outline */
+    SDL_Rect    rect = { 0, 0, this->_box_rect.w, this->_box_rect.h };
     SDL_SetRenderDrawColor(this->_renderer, outline_color->r, outline_color->g, outline_color->b, outline_color->a);
-    this->_box_rect.x = 0;
-    this->_box_rect.y = 0;
-    SDL_RenderDrawRect(this->_renderer, &this->_box_rect);
+    SDL_RenderDrawRect(this->_renderer, &rect);
     SDL_SetRenderTarget(this->_renderer, NULL);
 }
 
