@@ -22,13 +22,19 @@ FontText	&FontText::operator=(FontText const &src) {
     return (*this);
 }
 
-void        FontText::render_text(void) {
+void        FontText::_update_texture(void) {
     SDL_Surface *surf = TTF_RenderText_Blended(this->_font, this->_text->c_str(), *this->_color);
+    if (this->_renderer_texture)
+        SDL_DestroyTexture(this->_renderer_texture);
     this->_renderer_texture = SDL_CreateTextureFromSurface(this->_renderer, surf);
     SDL_FreeSurface(surf);
     surf = NULL;
+}
 
+void        FontText::render_text(void) {
     SDL_Rect    rect = (SDL_Rect){ this->_pos[0], this->_pos[1], 0, 0 };
+    
+    this->_update_texture();
     TTF_SizeText(this->_font, this->_text->c_str(), &rect.w, &rect.h);
     SDL_RenderCopyEx(this->_renderer, this->_renderer_texture, NULL, &rect, 0, NULL, SDL_FLIP_NONE);
     SDL_DestroyTexture(this->_renderer_texture);
@@ -39,11 +45,7 @@ void        FontText::render_realtime_text(void) {
         that change every so often (but definitely not every frame).
     */
     if (this->_previous_text.compare(*this->_text) != 0) {
-        SDL_Surface *surf = TTF_RenderText_Blended(this->_font, this->_text->c_str(), *this->_color);
-        this->_renderer_texture = SDL_CreateTextureFromSurface(this->_renderer, surf);
-        SDL_FreeSurface(surf);
-        surf = NULL;
-
+        this->_update_texture();
         this->_renderer_rect = { this->_pos[0], this->_pos[1], 0, 0 };
         TTF_SizeText(this->_font, this->_text->c_str(), &this->_renderer_rect.w, &this->_renderer_rect.h);
     }

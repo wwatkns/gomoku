@@ -12,6 +12,7 @@
 # include <SDL.h>
 # include "GameEngine.hpp"
 # include "FontHandler.hpp"
+# include <SDL_ttf.h>
 
 typedef struct  s_data {
     std::string     pre;
@@ -22,7 +23,8 @@ typedef struct  s_data {
 class Analytics {
 
 public:
-    Analytics(GameEngine *game_engine, FontHandler *font_handler);
+    Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio);
+    Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio, SDL_Color font_color);
     Analytics(Analytics const &src);
     ~Analytics(void);
     Analytics	&operator=(Analytics const &rhs);
@@ -44,9 +46,11 @@ private:
     Player                          *_player_1;
     Player                          *_player_2;
     std::map<std::string,s_data>    _data;
+    float                           _res_ratio;
+    SDL_Color                       _font_color;
 
     void            _update_analytics(bool init = false);
-
+    Eigen::Array2i  _handle_ratio(Eigen::Array2i pos);
 };
 
 #endif

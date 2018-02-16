@@ -12,8 +12,3 @@ Player	&Player::operator=(Player const &src) {
     this->_id = src.get_id();
     return (*this);
 }
-
-void            Player::inc_pair_captured(void) {
-    this->_pair_captured += 1;
-    return;
-}

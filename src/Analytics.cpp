@@ -1,10 +1,18 @@
 #include "Analytics.hpp"
 #include "Player.hpp"
 
-Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler) : _game_engine(game_engine), _font_handler(font_handler), _player_1(nullptr), _player_2(nullptr) {
+Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio) : _game_engine(game_engine), _font_handler(font_handler), _res_ratio(res_ratio), _player_1(nullptr), _player_2(nullptr) {
     this->_update_analytics(true);
     for (std::map<std::string,s_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
         this->_font_handler->create_text(&it->second.text, it->second.pos);
+    }
+}
+
+Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio, SDL_Color font_color) : _game_engine(game_engine), _font_handler(font_handler), _res_ratio(res_ratio), _player_1(nullptr), _player_2(nullptr) {
+    this->_font_color = font_color;
+    this->_update_analytics(true);
+    for (std::map<std::string,s_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
+        this->_font_handler->create_text(&it->second.text, it->second.pos, this->_font_handler->default_font, &this->_font_color);
     }
 }
 
@@ -47,7 +55,7 @@ static uint32_t    get_mean_action_duration(std::list<t_action> *history, uint8_
     uint32_t            n_action = 0;
     float               mean = 0.;
     for (std::list<t_action>::iterator it = history->begin(); it != history->end(); it++) {
-        if ((*it).player_id == player_id) {
+        if ((*it).player->get_id() == player_id) {
             mean += (*it).duration.count();
             n_action++;
         }
@@ -56,38 +64,42 @@ static uint32_t    get_mean_action_duration(std::list<t_action> *history, uint8_
     return (uint32_t)mean;
 }
 
+Eigen::Array2i  Analytics::_handle_ratio(Eigen::Array2i pos) {
+    return {(int32_t)(pos[0] * this->_res_ratio), (int32_t)(pos[1] * this->_res_ratio)};
+}
+
 void        Analytics::_update_analytics(bool init) {
     this->_data["g_time"] = {
         "time since start : ",
         format_time_since_start(std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint()),
-        {10, 10}
+        this->_handle_ratio({10, 10})
     };
     this->_data["g_turn"] = {
         "current turn : ",
         std::to_string(this->_game_engine->get_history_size()),
-        {10, 30}
+        this->_handle_ratio({10, 30})
     };
-    this->_data["p1"] = { "Player 1 - black", !init&&this->_c_player->get_id()==1?"   (current)":"", {10, 100} };
+    this->_data["p1"] = { "Player 1 - black", !init&&this->_c_player->get_id()==1?"   (current)":"", this->_handle_ratio({10, 100}) };
     this->_data["p1_captured_pairs"] = {
         "captured pairs : ",
         std::to_string(!init ? this->_player_1->get_pair_captured() : 0),
-        {15, 120}
+        this->_handle_ratio({15, 120})
     };
     this->_data["p1_mean_action_duration"] = {
         "mean action duration : ",
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 1)),
-        {15, 140}
+        this->_handle_ratio({15, 140})
     };
-    this->_data["p2"] = { "Player 2 - white", !init&&this->_c_player->get_id()==2?"   (current)":"", {10, 190} };
+    this->_data["p2"] = { "Player 2 - white", !init&&this->_c_player->get_id()==2?"   (current)":"", this->_handle_ratio({10, 190}) };
     this->_data["p2_captured_pairs"] = {
         "captured pairs : ",
         std::to_string(!init ? this->_player_2->get_pair_captured() : 0),
-        {15, 210}
+        this->_handle_ratio({15, 210})
     };
     this->_data["p2_mean_action_duration"] = {
         "mean action duration : ",
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 2)),
-        {15, 230}
+        this->_handle_ratio({15, 230})
     };
 
     for (std::map<std::string,s_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {

@@ -18,6 +18,8 @@ public:
     Game	&operator=(Game const &rhs);
 
     void    loop(void);
+    void    newgame(void);
+    void    restart(void);
     void    end(void) const;
 
     /* Getters */
@@ -28,13 +30,13 @@ public:
     void        set_player_1(Player player);
     void        set_player_2(Player player);
 
-
 private:
     Player              *_player_1;
     Player              *_player_2;
     Player              *_c_player;
     GameEngine          *_game_engine;
     GraphicalInterface  *_gui;
+    std::string         _config;
 
 };
 

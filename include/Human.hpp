@@ -11,7 +11,7 @@ public:
     ~Human(void);
     Human	&operator=(Human const &rhs);
 
-    virtual t_action    play(void);
+    virtual void    play(void);
 };
 
 #endif

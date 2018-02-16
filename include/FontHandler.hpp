@@ -9,9 +9,6 @@
 # include <SDL_ttf.h>
 # include "FontText.hpp"
 
-/*  FontHandler will contain a vector of FontText which will be rendered
-*/
-
 class FontHandler {
 
 public:

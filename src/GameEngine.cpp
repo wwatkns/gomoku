@@ -30,7 +30,7 @@ bool    GameEngine::check_action(t_action &action) {
     int y = action.pos(0);
     int x = action.pos(1);
 
-    if (action.player_id == 1) {
+    if (action.player->get_id() == 1) {
         if (this->grid(y, x) == state::black || this->grid(y, x) == state::white || this->grid(y, x) == state::black_free) {
             return false;
         }
@@ -86,25 +86,28 @@ bool    GameEngine::_check_boundary(int row, int col) {
             dl2       v2      dr2
 ******************************************************************************************************************** */
 
-void    GameEngine::update_game_state(t_action &action, Player &player) {
-    this->grid(action.pos[0], action.pos[1]) = (action.player_id == 1 ? state::black : state::white);
-    // TODO (alain) : detecter les doubles threes et mettre 10/-10 aux emplacements 
-    // _double_threes_detection(action.pos);
+void    GameEngine::update_game_state(t_action &action, Player *player) {
+    this->grid(action.pos[0], action.pos[1]) = (action.player->get_id() == 1 ? state::black : state::white);
+    // TODO (alain) : detecter les doubles threes et mettre 10/-10 aux emplacements
+    // _double_threes_detection();
+    player->set_pair_captured(player->get_pair_captured() + _pair_detection(action.pos));
     _double_threes_detection();
-    _pair_detection(action.pos, player);
     this->_history.push_back(action);
 }
 
-void    GameEngine::_pair_detection(Eigen::Array2i pos, Player &player) {
+uint8_t    GameEngine::_pair_detection(Eigen::Array2i pos) {
+    uint8_t    detected_pairs;
+
     for (int row = -1; row < 2; ++row) {
         for (int col = -1; col < 2; ++col) {
             if (_check_pair(pos, 3, row, col)) {
                 this->grid((pos[0] +      row) , (pos[1] +      col))  = state::free;
                 this->grid((pos[0] + (2 * row)), (pos[1] + (2 * col))) = state::free;
-                player.inc_pair_captured();
+                detected_pairs++;
             }
         }
     }
+    return detected_pairs;
 }
 
 int     GameEngine::_check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir) {
@@ -159,8 +162,8 @@ void    GameEngine::_double_threes_detection(void) {
                     if (_detect_threes(row, col, 1, 1, p))   // ↘︎
                         count(3) += 1;
 
-                    if (row == 2 && col == 2)                    
-                        std::cout << "count: " << count << std::endl; // delete me
+                    // if (row == 2 && col == 2)
+                        // std::cout << "count: " << count << std::endl; // delete me
 
                     if (this->grid(row, col) == state::free) {
                         if (_count_double_threes(count) && p == -1) {
@@ -199,11 +202,11 @@ bool    GameEngine::_count_double_threes(Eigen::Array4i count) {
             c_2++;
     }
     if (c_1 > 1) {
-        std::cout << "### _count_double_threes ## END # true" << std::endl; // delete me
+        // std::cout << "### _count_double_threes ## END # true" << std::endl; // delete me
         return true;
     }
     else {
-        std::cout << "### _count_double_threes ## END # false" << std::endl; // delete me
+        // std::cout << "### _count_double_threes ## END # false" << std::endl; // delete me
         return false;
     }
 }
@@ -211,10 +214,10 @@ bool    GameEngine::_count_double_threes(Eigen::Array4i count) {
 bool    GameEngine::_detect_threes(int row, int col, int row_dir, int col_dir, int p) {
     // Detect specific cases undetected by _detect_threes, example:
     // . . . . .    . . . . . .
-    // . . o . .    . . o . . . 
+    // . . o . .    . . o . . .
     // . . o . . or . o x . o .
     // . o x o .    . . o . . .
-    // . . . . .    . . . . . . 
+    // . . . . .    . . . . . .
 
     // 0 x 1 0 1 0
     if (_check_boundary(row -     row_dir, col -     col_dir) &&
@@ -260,7 +263,7 @@ bool    GameEngine::_detect_threes(int row, int col, int row_dir, int col_dir, i
             this->grid(row -     row_dir, col -     col_dir) == 0 && // 0 x
             this->grid(row +     row_dir, col +     col_dir) == p && // 1
             this->grid(row + 2 * row_dir, col + 2 * col_dir) == 0) { // 0
-            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 1 0 x 1 0" << std::endl; // delete me            
+            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 1 0 x 1 0" << std::endl; // delete me
             return true;
         }
     }
@@ -271,7 +274,7 @@ bool    GameEngine::_detect_threes(int row, int col, int row_dir, int col_dir, i
             this->grid(row +     row_dir, col +     col_dir) == p && // 1
             this->grid(row + 2 * row_dir, col + 2 * col_dir) == p && // 1
             this->grid(row + 3 * row_dir, col + 3 * col_dir) == 0) { // 0
-            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 x 1 1 0" << std::endl; // delete me            
+            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 x 1 1 0" << std::endl; // delete me
             return true;
         }
     }
@@ -282,12 +285,25 @@ bool    GameEngine::_detect_threes(int row, int col, int row_dir, int col_dir, i
             this->grid(row +     row_dir, col +     col_dir) == p && // 1 x
             this->grid(row - 1 * row_dir, col - 1 * col_dir) == p && // 1
             this->grid(row - 2 * row_dir, col - 2 * col_dir) == 0) { // 0
-            if (row == 2 && col == 2)
-                std::cout << "detected @ row: " << row << " col: " << col << " | form 0 1 x 1 0" << std::endl; // delete me            
+            // if (row == 2 && col == 2)
+                // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 1 x 1 0" << std::endl; // delete me
             return true;
         }
     }
     return false;
+}
+
+void    GameEngine::delete_last_action(void) {
+    t_action    last;
+
+    if (this->_history.size() > 0) {
+        last = this->_history.back();
+        this->grid = last.old_grid;
+        this->grid(last.pos[0], last.pos[1]) = (last.player->get_id() == 1 ? state::black : state::white);
+        last.player->set_pair_captured(last.player->get_pair_captured() - _pair_detection(last.pos));
+        this->grid = last.old_grid;
+        this->_history.pop_back();
+    }
 }
 
 /*

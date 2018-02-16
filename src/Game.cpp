@@ -1,15 +1,18 @@
 #include "Game.hpp"
 
 Game::Game(void)  {
-    // this->_input_handler = new InputHandler();
-    // std::vector<std::string>    players = this->_input_handler.set_players();
+    /*  TODO: change the undo button so that the Computer will wait a bit before putting a stone because
+        (maybe undo the last actions until the last player)
+    */
 
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
 
-    /* Debug */
-    this->_player_1 = new Human(this->_game_engine, this->_gui, 1);
-    this->_player_2 = new Computer(this->_game_engine, 2);
+    /* start menu */
+    this->_config = this->_gui->render_choice_menu();
+
+    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
+    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
 }
@@ -21,7 +24,6 @@ Game::Game(Game const &src) {
 Game::~Game(void) {
     delete this->_player_1;
     delete this->_player_2;
-    delete this->_c_player;
     delete this->_game_engine;
     delete this->_gui;
 }
@@ -43,17 +45,16 @@ void        Game::set_player_2(Player player) { this->_player_2 = &player; }
 
 
 void        Game::loop(void) {
-    t_action    c_action;
-
     while (true) {
         this->_gui->update_events();
-
-        c_action = this->_c_player->play();
-
-        if (this->_gui->check_close())
+        this->_c_player->play();
+        if (this->_gui->check_newgame())
+            newgame();
+        if (this->_gui->check_restart())
+            restart();
+        if (this->_gui->check_close()) /* will quit the game */
             break;
-        this->_game_engine->update_game_state(c_action, *this->_c_player);
-        if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true)
+        if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true) /* will display an end message */
             break;
         this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
@@ -61,6 +62,43 @@ void        Game::loop(void) {
     }
 }
 
-void        Game::end(void) const {
+/*  Restart only reset the game to 0 with the same configuration, while
+    New Game displays the new game menu to configure the game.
+*/
+void        Game::restart(void) {
+    delete this->_player_1;
+    delete this->_player_2;
+    delete this->_game_engine;
+    delete this->_gui;
 
+    this->_game_engine = new GameEngine();
+    this->_gui = new GraphicalInterface(this->_game_engine);
+
+    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
+    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
+    this->_c_player = this->_player_1;
+    this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+    loop();
+}
+
+void        Game::newgame(void) {
+    delete this->_player_1;
+    delete this->_player_2;
+    delete this->_game_engine;
+    delete this->_gui;
+
+    this->_game_engine = new GameEngine();
+    this->_gui = new GraphicalInterface(this->_game_engine);
+
+    this->_config = this->_gui->render_choice_menu();
+
+    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
+    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
+    this->_c_player = this->_player_1;
+    this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+    loop();
+}
+
+
+void        Game::end(void) const {
 }
