@@ -260,12 +260,12 @@ void    GraphicalInterface::_render_select(void) {
 
 void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_secondary_viewport);
-    SDL_SetRenderDrawColor(this->_renderer, 45, 45, 45, 255);
+    SDL_SetRenderDrawColor(this->_renderer, this->_color_win.r, this->_color_win.g, this->_color_win.b, this->_color_win.a);
 
     SDL_Rect    rect = {0, 0, this->_secondary_viewport.w, this->_secondary_viewport.h};
     SDL_RenderFillRect(this->_renderer, &rect);
     /* TODO : put that on a texture instead of drawing the lines each time */
-    SDL_SetRenderDrawColor(this->_renderer, 70, 70, 70, 255);
+    SDL_SetRenderDrawColor(this->_renderer, this->_color_outline.r, this->_color_outline.g, this->_color_outline.b, this->_color_outline.a);
     SDL_RenderDrawLine(this->_renderer, 0,  (int32_t)(90 * this->_res_ratio), this->_secondary_viewport.w,  (int32_t)(90 * this->_res_ratio));
     SDL_RenderDrawLine(this->_renderer, 0, (int32_t)(180 * this->_res_ratio), this->_secondary_viewport.w, (int32_t)(180 * this->_res_ratio));
 
