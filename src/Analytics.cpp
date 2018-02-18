@@ -2,17 +2,12 @@
 #include "Player.hpp"
 
 Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio) : _game_engine(game_engine), _font_handler(font_handler), _res_ratio(res_ratio), _player_1(nullptr), _player_2(nullptr) {
+    this->_font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(13 * res_ratio));
+    this->_font_title = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(13 * res_ratio));
+    this->_font_small = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(12 * res_ratio));
     this->_update_analytics(true);
-    for (std::map<std::string,s_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
-        this->_font_handler->create_text(&it->second.text, it->second.pos);
-    }
-}
-
-Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio, SDL_Color font_color) : _game_engine(game_engine), _font_handler(font_handler), _res_ratio(res_ratio), _player_1(nullptr), _player_2(nullptr) {
-    this->_font_color = font_color;
-    this->_update_analytics(true);
-    for (std::map<std::string,s_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
-        this->_font_handler->create_text(&it->second.text, it->second.pos, this->_font_handler->default_font, &this->_font_color);
+    for (std::map<std::string,t_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
+        this->_font_handler->create_text(&it->second.text, it->second.pos, it->second.justify, it->second.font, it->second.color);
     }
 }
 
@@ -69,40 +64,89 @@ Eigen::Array2i  Analytics::_handle_ratio(Eigen::Array2i pos) {
 }
 
 void        Analytics::_update_analytics(bool init) {
+    /* global */
     this->_data["g_time"] = {
         "time since start : ",
         format_time_since_start(std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint()),
-        this->_handle_ratio({10, 10})
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({10, 10}),
+        "left"
     };
     this->_data["g_turn"] = {
         "current turn : ",
         std::to_string(this->_game_engine->get_history_size()),
-        this->_handle_ratio({10, 30})
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({10, 30}),
+        "left"
     };
-    this->_data["p1"] = { "Player 1 - black", !init&&this->_c_player->get_id()==1?"   (current)":"", this->_handle_ratio({10, 100}) };
+    /* player 1 */
+    this->_data["p1"] = {
+        "P1 - black",
+        (!init and this->_c_player->get_id() == 1?"   (current)":""),
+        this->_font_title,
+        &this->_color_font_title,
+        this->_handle_ratio({10, 100}),
+        "left"
+    };
+    this->_data["p1_type"] = {
+        (!init and this->_player_1->type == 0 ? "human":"computer"), "",
+        this->_font_small,
+        &this->_color_font_small,
+        this->_handle_ratio({290, 100}),
+        "right"
+    };
     this->_data["p1_captured_pairs"] = {
         "captured pairs : ",
         std::to_string(!init ? this->_player_1->get_pair_captured() : 0),
-        this->_handle_ratio({15, 120})
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 120}),
+        "left"
     };
     this->_data["p1_mean_action_duration"] = {
         "mean action duration : ",
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 1)),
-        this->_handle_ratio({15, 140})
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 140}),
+        "left"
     };
-    this->_data["p2"] = { "Player 2 - white", !init&&this->_c_player->get_id()==2?"   (current)":"", this->_handle_ratio({10, 190}) };
+    /* player 2 */
+    this->_data["p2"] = {
+        "P2 - white",
+        (!init and this->_c_player->get_id() == 2?"   (current)":""),
+        this->_font_title,
+        &this->_color_font_title,
+        this->_handle_ratio({10, 190}),
+        "left"
+    };
+    this->_data["p2_type"] = {
+        (!init and this->_player_2->type == 0 ? "human":"computer"), "",
+        this->_font_small,
+        &this->_color_font_small,
+        this->_handle_ratio({290, 190}),
+        "right"
+    };
     this->_data["p2_captured_pairs"] = {
         "captured pairs : ",
         std::to_string(!init ? this->_player_2->get_pair_captured() : 0),
-        this->_handle_ratio({15, 210})
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 210}),
+        "left"
     };
     this->_data["p2_mean_action_duration"] = {
         "mean action duration : ",
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 2)),
-        this->_handle_ratio({15, 230})
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 230}),
+        "left"
     };
 
-    for (std::map<std::string,s_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
+    for (std::map<std::string,t_data>::iterator it=this->_data.begin(); it != this->_data.end(); it++) {
         it->second.text = it->second.pre + it->second.text;
     }
 }

@@ -20,6 +20,7 @@ public:
     TTF_Font        *load_font(std::string path, uint32_t size = 28);
     void            create_text(std::string *text, Eigen::Array2i pos);
     void            create_text(std::string *text, Eigen::Array2i pos, TTF_Font *font, SDL_Color *color);
+    void            create_text(std::string *text, Eigen::Array2i pos, std::string justify, TTF_Font *font, SDL_Color *color);
     void            render_text(void);
 
     /* getters */

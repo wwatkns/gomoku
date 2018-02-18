@@ -11,6 +11,8 @@ class FontText {
 
 public:
     FontText(std::string *text, Eigen::Array2i pos, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer);
+    FontText(std::string *text, Eigen::Array2i pos, std::string justify_h, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer);
+    FontText(std::string *text, Eigen::Array2i pos, std::string justify_h, std::string justify_v, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer);
     FontText(FontText const &src);
     ~FontText(void);
     FontText	&operator=(FontText const &rhs);
@@ -36,11 +38,14 @@ private:
     SDL_Texture     *_renderer_texture;
     std::string     *_text;
     Eigen::Array2i  _pos;
+    uint8_t         _justify_h; // "left":0, "center":1,  "right":2
+    uint8_t         _justify_v; //  "top":0, "center":1, "bottom":2
     TTF_Font        *_font;
     SDL_Color       *_color;
     std::string     _previous_text;
     SDL_Rect        _renderer_rect;
 
+    void            _justify_position(SDL_Rect *rect);
     void            _update_texture(void);
 };
 

@@ -36,6 +36,11 @@ void        FontHandler::create_text(std::string *text, Eigen::Array2i pos, TTF_
     this->_font_texts.push_back(new_text);
 }
 
+void        FontHandler::create_text(std::string *text, Eigen::Array2i pos, std::string justify, TTF_Font *font, SDL_Color *color) {
+    FontText    *new_text = new FontText(text, pos, justify, font, color, this->_renderer);
+    this->_font_texts.push_back(new_text);
+}
+
 void        FontHandler::render_text(void) {
     for (uint32_t i = 0; i < this->_font_texts.size(); i++) {
         this->_font_texts[i]->render_realtime_text();

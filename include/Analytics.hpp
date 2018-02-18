@@ -17,14 +17,16 @@
 typedef struct  s_data {
     std::string     pre;
     std::string     text;
+    TTF_Font        *font;
+    SDL_Color       *color;
     Eigen::Array2i  pos;
+    std::string     justify;
 }               t_data;
 
 class Analytics {
 
 public:
     Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio);
-    Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio, SDL_Color font_color);
     Analytics(Analytics const &src);
     ~Analytics(void);
     Analytics	&operator=(Analytics const &rhs);
@@ -45,9 +47,17 @@ private:
     Player                          *_c_player;
     Player                          *_player_1;
     Player                          *_player_2;
-    std::map<std::string,s_data>    _data;
+    std::map<std::string,t_data>    _data;
     float                           _res_ratio;
     SDL_Color                       _font_color;
+
+    TTF_Font                        *_font;
+    TTF_Font                        *_font_title;
+    TTF_Font                        *_font_small;
+    SDL_Color                       _color_font = {160, 160, 160, 255};
+    SDL_Color                       _color_font_title = {180, 180, 180, 255};
+    SDL_Color                       _color_font_small = {130, 130, 130, 255};
+
 
     void            _update_analytics(bool init = false);
     Eigen::Array2i  _handle_ratio(Eigen::Array2i pos);
