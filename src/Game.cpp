@@ -46,10 +46,10 @@ void        Game::loop(void) {
             break;
         if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true) /* will display an end message */
             break;
-        if (this->_gui->check_pause())
-            continue;
         this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
+        if (this->_gui->check_pause())
+            continue;
         this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
     }
 }

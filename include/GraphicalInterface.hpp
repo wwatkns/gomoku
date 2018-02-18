@@ -14,6 +14,7 @@
 # include "FontHandler.hpp"
 # include "Analytics.hpp"
 # include "Button.hpp"
+# include "ButtonSwitch.hpp"
 # include "ButtonSelect.hpp"
 
 # define COLS 19
@@ -62,6 +63,7 @@ private:
     void            _render_select(void);
     void            _render_secondary_viewport(void);
     void            _render_buttons(void);
+    void            _render_stripes(void);
 
     SDL_Rect        _handle_ratio(SDL_Rect rect);
     Eigen::Array2i  _handle_ratio(Eigen::Array2i pos);
@@ -95,6 +97,7 @@ private:
     SDL_Texture     *_white_stone_tex;
     SDL_Texture     *_black_stone_tex;
     SDL_Texture     *_select_stone_tex;
+    SDL_Texture     *_stripes_tex;
     /* Computed textures */
     SDL_Texture     *_board_grid_tex;
     /* Event keys */
@@ -105,7 +108,7 @@ private:
     /* buttons */
     Button          *_button_newgame;
     Button          *_button_restart;
-    Button          *_button_pause;
+    ButtonSwitch    *_button_pause;
     Button          *_button_undo;
     /* start menu buttons */
     ButtonSelect    *_menu_button_player_1;
@@ -114,6 +117,7 @@ private:
     /* gui colors */
     SDL_Color       _color_board_bg = {215, 168, 84, 255}; // classic
     // SDL_Color       _color_board_bg = {46, 164, 119, 255}; // light blue-green
+    SDL_Color       _color_board_grid = {25, 15, 20, 255};
     SDL_Color       _color_bg = {15, 15, 15, 255};
     SDL_Color       _color_win = {45, 45, 45, 255};
     SDL_Color       _color_header = {35, 35, 35, 255};

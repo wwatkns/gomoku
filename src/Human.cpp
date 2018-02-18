@@ -23,7 +23,7 @@ void    Human::play(void) {
 
     while (true) {
         this->_gui->update_events();
-        if (this->_gui->get_mouse_action() && this->_gui->check_mouse_on_board()) {
+        if (this->_gui->get_mouse_action() && this->_gui->check_mouse_on_board() && this->_gui->check_pause() == false) {
             action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
             action.duration = std::chrono::steady_clock::now() - action_beg;
             action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());

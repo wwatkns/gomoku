@@ -20,14 +20,14 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
 
     TTF_Font *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(14 * this->_res_ratio));
     Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
-    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(78 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_pause = new Button(this->_renderer, "pause", {this->_main_viewport.w + (int32_t)(175 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(240 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
-    // this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    // this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(310 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    // this->_button_pause = new Button(this->_renderer, "pause", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(340 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    // this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(370 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
+    // this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    // this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(78 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    // this->_button_pause = new Button(this->_renderer, "pause", {this->_main_viewport.w + (int32_t)(175 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    // this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(240 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
+    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(310 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_pause = new ButtonSwitch(this->_renderer, "pause", "resume", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(340 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(370 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -36,6 +36,11 @@ GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_en
 
 GraphicalInterface::~GraphicalInterface(void) {
     delete this->_font_handler;
+    delete this->_analytics;
+    delete this->_button_newgame;
+    delete this->_button_restart;
+    delete this->_button_pause;
+    delete this->_button_undo;
     this->_close_sdl();
 }
 
@@ -77,10 +82,11 @@ Eigen::Array2i  GraphicalInterface::snap_to_grid(Eigen::Array2i pos) {
 }
 
 void    GraphicalInterface::_load_images(void) {
-    this->_white_tex = this->load_texture(std::string("./resources/circle_white.png"));
-    this->_white_stone_tex = this->load_texture(std::string("./resources/circle_white_outlined.png"));
-    this->_black_stone_tex = this->load_texture(std::string("./resources/circle_black.png"));
-    this->_select_stone_tex = this->load_texture(std::string("./resources/circle_select.png"));
+    this->_white_tex = this->load_texture("./resources/circle_white.png");
+    this->_white_stone_tex = this->load_texture("./resources/circle_white_outlined.png");
+    this->_black_stone_tex = this->load_texture("./resources/circle_black.png");
+    this->_select_stone_tex = this->load_texture("./resources/circle_select.png");
+    this->_stripes_tex = this->load_texture("./resources/stripes.png");
 }
 
 void    GraphicalInterface::_init_sdl(void) {
@@ -116,7 +122,7 @@ void    GraphicalInterface::_init_sdl(void) {
 void    GraphicalInterface::_init_grid(void) {
     SDL_SetRenderTarget(this->_renderer, this->_board_grid_tex);
     SDL_RenderClear(this->_renderer);
-    SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(this->_renderer, _color_board_grid.r, _color_board_grid.b, _color_board_grid.g, _color_board_grid.a);
     for (int i = 0; i < ROWS; i++) {
         SDL_RenderDrawLine(this->_renderer, this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]),
             this->_main_viewport.w - this->_pad[1], (int)(this->_pad[0]+i*this->_inc[0]));
@@ -127,6 +133,7 @@ void    GraphicalInterface::_init_grid(void) {
     }
     this->_init_grid_points();
     this->_init_grid_indicators();
+    /* secondary viewport boundary */
     SDL_Rect    rect = { this->_main_viewport.w - 2, 0, 2, this->_main_viewport.h };
     SDL_SetRenderDrawColor(this->_renderer, this->_color_black.r, this->_color_black.g, this->_color_black.b, this->_color_black.a);
     SDL_RenderFillRect(this->_renderer, &rect);
@@ -157,14 +164,14 @@ void    GraphicalInterface::_init_grid_indicators(void) {
         for (uint8_t i = 0; i < ROWS; i++) {
             text = std::to_string(ROWS-i);
             pos = { (j ? this->_main_viewport.w-this->_pad[1]/2 : this->_pad[1]/2), (int32_t)(this->_pad[0]+i*this->_inc[0]) };
-            font_text = new FontText(&text, pos, "center", "center", font, this->_font_handler->default_color, this->_renderer);
+            font_text = new FontText(&text, pos, "center", "center", font, &this->_color_board_grid, this->_renderer);
             font_text->render_text();
             delete font_text;
         }
         for (uint8_t i = 0; i < COLS; i++) {
             text = std::string(1, "ABCDEFGHJKLMNOPQRST"[i]);
             pos = { (int32_t)(this->_pad[1]+i*this->_inc[1]), (j ? this->_main_viewport.h-this->_pad[0]/2 : this->_pad[0]/2) };
-            font_text = new FontText(&text, pos, "center", "center", font, this->_font_handler->default_color, this->_renderer);
+            font_text = new FontText(&text, pos, "center", "center", font, &this->_color_board_grid, this->_renderer);
             font_text->render_text();
             delete font_text;
         }
@@ -198,6 +205,7 @@ void    GraphicalInterface::update_display(void) {
     this->_render_select();
     this->_render_secondary_viewport();
     this->_render_buttons();
+    this->_render_stripes();
     SDL_RenderPresent(this->_renderer);
 }
 
@@ -284,6 +292,15 @@ void    GraphicalInterface::_render_buttons(void) {
     this->_button_undo->render(this->_renderer, &this->_mouse_pos);
 }
 
+void    GraphicalInterface::_render_stripes(void) {
+    if (this->check_pause()) {
+        // SDL_SetTextureColorMod(this->_stripes_tex, 0, 0, 0);
+        SDL_SetTextureAlphaMod(this->_stripes_tex, 50);
+        SDL_RenderCopy(this->_renderer, this->_stripes_tex, NULL, &this->_main_viewport);
+    }
+}
+
+
 std::string GraphicalInterface::render_choice_menu(void) {
     TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(14 * this->_res_ratio));
     TTF_Font    *font_bold = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(16 * this->_res_ratio));
@@ -343,6 +360,15 @@ std::string GraphicalInterface::render_choice_menu(void) {
         }
         SDL_RenderPresent(this->_renderer);
     }
+    delete p1;
+    delete p2;
+    delete ng;
+    delete go;
+    delete p1_human;
+    delete p1_computer;
+    delete p2_human;
+    delete p2_computer;
+
     return out;
 }
 
@@ -367,11 +393,13 @@ void    GraphicalInterface::_close_sdl(void) {
     SDL_DestroyTexture(this->_white_stone_tex);
     SDL_DestroyTexture(this->_black_stone_tex);
     SDL_DestroyTexture(this->_select_stone_tex);
+    SDL_DestroyTexture(this->_stripes_tex);
     SDL_DestroyTexture(this->_board_grid_tex);
     this->_white_tex = NULL;
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
     this->_select_stone_tex = NULL;
+    this->_stripes_tex = NULL;
     this->_board_grid_tex = NULL;
 
     SDL_DestroyWindow(this->_window);
