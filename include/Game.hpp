@@ -40,6 +40,8 @@ private:
     GraphicalInterface  *_gui;
     std::string         _config;
 
+    void                _handle_fps(uint32_t *frames, uint32_t *ms);
+
 };
 
 #endif

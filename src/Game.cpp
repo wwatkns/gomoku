@@ -30,9 +30,19 @@ Game	&Game::operator=(Game const &src) {
     return (*this);
 }
 
+void        Game::_handle_fps(uint32_t *frames, uint32_t *ms) {
+    (*frames)++;
+    if (this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - *ms >= 1000) {
+        std::cout << "fps : " << *frames << std::endl;
+        *ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+        *frames = 0;
+    }
+}
+
 void        Game::loop(void) {
     bool    action_performed;
-    int32_t ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+    uint32_t    ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+    uint32_t    frames = 0;
 
     while (true) {
         action_performed = false;
@@ -57,8 +67,7 @@ void        Game::loop(void) {
         if (action_performed == true and !this->_gui->check_pause())
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
 
-        std::cout << std::to_string(this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - ms) << std::endl;
-        ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+        this->_handle_fps(&frames, &ms);
     }
 }
 
