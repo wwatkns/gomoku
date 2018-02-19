@@ -20,10 +20,6 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
 
     TTF_Font *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(14 * this->_res_ratio));
     Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
-    // this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    // this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(78 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    // this->_button_pause = new Button(this->_renderer, "pause", {this->_main_viewport.w + (int32_t)(175 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    // this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(240 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
     this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(280 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
     this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(310 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
     this->_button_pause = new ButtonSwitch(this->_renderer, "pause", "resume", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(340 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
@@ -155,7 +151,7 @@ void    GraphicalInterface::_init_grid_points(void) {
 }
 
 void    GraphicalInterface::_init_grid_indicators(void) {
-    TTF_Font        *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(14 * this->_res_ratio));
+    TTF_Font        *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(14 * this->_res_ratio));
     FontText        *font_text;
     Eigen::Array2i  pos;
     std::string     text;
@@ -266,11 +262,12 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderFillRect(this->_renderer, &rect);
     /* draw lines */
     SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 255);
-    rect = { 0, (int32_t)( 90 * this->_res_ratio)-1, this->_secondary_viewport.w, 2 };
+    int8_t width = (int8_t)(1 * this->_res_ratio);
+    rect = { 0, (int32_t)( 90 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width };
     SDL_RenderFillRect(this->_renderer, &rect);
-    rect = { 0, (int32_t)(180 * this->_res_ratio)-1, this->_secondary_viewport.w, 2 };
+    rect = { 0, (int32_t)(180 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width };
     SDL_RenderFillRect(this->_renderer, &rect);
-    rect = { 0, (int32_t)(270 * this->_res_ratio)-1, this->_secondary_viewport.w, 2 };
+    rect = { 0, (int32_t)(270 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width };
     SDL_RenderFillRect(this->_renderer, &rect);
     /* draw depth line */
     SDL_SetRenderDrawColor(this->_renderer, this->_color_outline.r, this->_color_outline.g, this->_color_outline.b, this->_color_outline.a);
@@ -294,10 +291,13 @@ void    GraphicalInterface::_render_buttons(void) {
 
 void    GraphicalInterface::_render_stripes(void) {
     if (this->check_pause()) {
-        // SDL_SetTextureColorMod(this->_stripes_tex, 0, 0, 0);
-        SDL_SetTextureAlphaMod(this->_stripes_tex, 50);
-        SDL_RenderCopy(this->_renderer, this->_stripes_tex, NULL, &this->_main_viewport);
+        if (this->_analytics->get_chronometer()->is_running() == true)
+            this->_analytics->get_chronometer()->stop();
+        SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 150);
+        SDL_RenderFillRect(this->_renderer, &this->_main_viewport);
     }
+    if (!this->check_pause() and this->_analytics->get_chronometer()->is_running() == false)
+        this->_analytics->get_chronometer()->resume();
 }
 
 

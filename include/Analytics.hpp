@@ -10,9 +10,10 @@
 # include <list>
 # include <Eigen/Dense>
 # include <SDL.h>
+# include <SDL_ttf.h>
 # include "GameEngine.hpp"
 # include "FontHandler.hpp"
-# include <SDL_ttf.h>
+# include "Chronometer.hpp"
 
 typedef struct  s_data {
     std::string     pre;
@@ -33,6 +34,7 @@ public:
 
     void            render_text(void);
 
+    Chronometer     *get_chronometer(void) const { return (_chrono); };
     GameEngine      *get_game_engine(void) const { return (_game_engine); };
     FontHandler     *get_font_handler(void) const { return (_font_handler); };
 
@@ -47,6 +49,7 @@ private:
     Player                          *_c_player;
     Player                          *_player_1;
     Player                          *_player_2;
+    Chronometer                     *_chrono;
     std::map<std::string,t_data>    _data;
     float                           _res_ratio;
     SDL_Color                       _font_color;

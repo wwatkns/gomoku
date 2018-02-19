@@ -15,7 +15,7 @@ SDL_TTF_INC = $(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers/
 
 SDL = -F $(HOME)/Library/Frameworks -I$(SDL_INC) -I$(SDL_IMG_INC) -I$(SDL_TTF_INC)
 
-SRC_NAME = main.cpp GraphicalInterface.cpp Button.cpp ButtonSwitch.cpp ButtonSelect.cpp FontHandler.cpp FontText.cpp \
+SRC_NAME = main.cpp GraphicalInterface.cpp Chronometer.cpp Button.cpp ButtonSwitch.cpp ButtonSelect.cpp FontHandler.cpp FontText.cpp \
 		   Analytics.cpp Game.cpp GameEngine.cpp Player.cpp Human.cpp Computer.cpp
 OBJ_NAME = $(SRC_NAME:.cpp=.o)
 

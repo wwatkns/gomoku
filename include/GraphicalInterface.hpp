@@ -117,7 +117,7 @@ private:
     /* gui colors */
     SDL_Color       _color_board_bg = {215, 168, 84, 255}; // classic
     // SDL_Color       _color_board_bg = {46, 164, 119, 255}; // light blue-green
-    SDL_Color       _color_board_grid = {25, 15, 20, 255};
+    SDL_Color       _color_board_grid = {0, 0, 0, 255};
     SDL_Color       _color_bg = {15, 15, 15, 255};
     SDL_Color       _color_win = {45, 45, 45, 255};
     SDL_Color       _color_header = {35, 35, 35, 255};

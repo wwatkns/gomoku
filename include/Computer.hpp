@@ -11,7 +11,7 @@ public:
     ~Computer(void);
     Computer	&operator=(Computer const &rhs);
 
-    virtual void    play(void);
+    virtual bool    play(void);
 };
 
 #endif

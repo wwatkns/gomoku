@@ -20,7 +20,7 @@ Computer	&Computer::operator=(Computer const &src) {
     return (*this);
 }
 
-void        Computer::play(void) {
+bool        Computer::play(void) {
     t_action                                action;
     std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now();
 
@@ -34,4 +34,5 @@ void        Computer::play(void) {
     action.old_grid = this->_game_engine->grid;
     action.player = this;
     this->_game_engine->update_game_state(action, this);
+    return true;
 }

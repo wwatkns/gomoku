@@ -31,13 +31,16 @@ Game	&Game::operator=(Game const &src) {
 }
 
 void        Game::loop(void) {
+    bool    action_performed;
+    int32_t ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+
     while (true) {
+        action_performed = false;
         this->_gui->update_events();
         if (this->_gui->check_pause() == false)
-            this->_c_player->play();
+            action_performed = this->_c_player->play();
         if (this->_gui->check_undo())
-            if (undo())
-                continue;
+            if (undo()) continue;
         if (this->_gui->check_newgame())
             newgame();
         if (this->_gui->check_restart())
@@ -46,11 +49,16 @@ void        Game::loop(void) {
             break;
         if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true) /* will display an end message */
             break;
-        this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
+        if (action_performed == true)
+            this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
-        if (this->_gui->check_pause())
-            continue;
-        this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
+
+        // we switch player if action was taken and game is not in pause
+        if (action_performed == true and !this->_gui->check_pause())
+            this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
+
+        std::cout << std::to_string(this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - ms) << std::endl;
+        ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
     }
 }
 

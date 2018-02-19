@@ -2,6 +2,8 @@
 #include "Player.hpp"
 
 Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio) : _game_engine(game_engine), _font_handler(font_handler), _res_ratio(res_ratio), _player_1(nullptr), _player_2(nullptr) {
+    this->_chrono = new Chronometer();
+    this->_chrono->start();
     this->_font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(13 * res_ratio));
     this->_font_title = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(13 * res_ratio));
     this->_font_small = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(12 * res_ratio));
@@ -67,7 +69,8 @@ void        Analytics::_update_analytics(bool init) {
     /* global */
     this->_data["g_time"] = {
         "time since start : ",
-        format_time_since_start(std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint()),
+        format_time_since_start(this->_chrono->get_elapsed()),
+        // format_time_since_start(std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint()),
         this->_font,
         &this->_color_font,
         this->_handle_ratio({10, 10}),

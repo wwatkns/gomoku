@@ -17,26 +17,21 @@ Human	&Human::operator=(Human const &src) {
     return (*this);
 }
 
-void    Human::play(void) {
+bool    Human::play(void) {
     t_action                                action;
-    std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now(); // TODO, adapt code
 
-    while (true) {
-        this->_gui->update_events();
-        if (this->_gui->get_mouse_action() && this->_gui->check_mouse_on_board() && this->_gui->check_pause() == false) {
-            action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
-            action.duration = std::chrono::steady_clock::now() - action_beg;
-            action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
-            action.id = this->_game_engine->get_history_size() + 1;
-            action.old_grid = this->_game_engine->grid;
-            action.player = this;
-            if (this->_game_engine->check_action(action)) {
-                this->_game_engine->update_game_state(action, this);
-                break;
-            }
+    if (this->_gui->get_mouse_action() && this->_gui->check_mouse_on_board() && this->_gui->check_pause() == false) {
+        action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
+        action.duration = std::chrono::steady_clock::now() - action_beg;
+        action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
+        action.id = this->_game_engine->get_history_size() + 1;
+        action.old_grid = this->_game_engine->grid;
+        action.player = this;
+        if (this->_game_engine->check_action(action)) {
+            this->_game_engine->update_game_state(action, this);
+            return true;
         }
-        if (this->_gui->check_close() || this->_gui->check_undo() || this->_gui->check_restart() || this->_gui->check_newgame())
-            break;
-        this->_gui->update_display();
     }
+    return false;
 }

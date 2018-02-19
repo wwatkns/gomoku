@@ -8,6 +8,7 @@
 # include "Computer.hpp"
 # include "GameEngine.hpp"
 # include "GraphicalInterface.hpp"
+// # include "Chronometer.hpp"
 
 class Game {
 

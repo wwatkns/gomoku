@@ -15,7 +15,7 @@ public:
     virtual ~Player() {};
     Player	&operator=(Player const &rhs);
 
-    virtual void    play(void) = 0;
+    virtual bool    play(void) = 0;
 
     /* Getters */
     GameEngine      *get_game_engine(void) const { return _game_engine; };
