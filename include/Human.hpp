@@ -12,6 +12,9 @@ public:
     Human	&operator=(Human const &rhs);
 
     virtual bool    play(void);
+
+private:
+    std::chrono::duration<double, std::milli>   _action_duration;
 };
 
 #endif
