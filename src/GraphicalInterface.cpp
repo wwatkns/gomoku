@@ -99,7 +99,7 @@ void    GraphicalInterface::_init_sdl(void) {
     this->_win_w = this->_win_h + secondary_viewport_width;
 
     this->_window = SDL_CreateWindow("gomoku", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->_win_w, this->_win_h, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
-    this->_renderer = SDL_CreateRenderer(this->_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    this->_renderer = SDL_CreateRenderer(this->_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
 
     /* get the renderer resolution, may differ from window size for high-dpi displays */
     SDL_GetRendererOutputSize(this->_renderer, &this->_res_w, &this->_res_h);
