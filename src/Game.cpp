@@ -49,20 +49,21 @@ void        Game::loop(void) {
         this->_gui->update_events();
         if (this->_gui->check_pause() == false)
             action_performed = this->_c_player->play();
-        if (this->_gui->check_undo())
+        if (this->_gui->check_undo()) {
+            action_performed = true;
             if (undo()) continue;
+        }
         if (this->_gui->check_newgame())
             newgame();
         if (this->_gui->check_restart())
             restart();
-        if (this->_gui->check_close()) /* will quit the game */
+        if (this->_gui->check_close())
             break;
         this->_gui->update_end_game(this->_c_player);
         if (action_performed == true)
             this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
 
-        // we switch player if action was taken and game is not in pause
         if (action_performed == true and !this->_gui->check_pause())
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
 
