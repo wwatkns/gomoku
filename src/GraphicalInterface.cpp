@@ -87,7 +87,6 @@ void    GraphicalInterface::_load_images(void) {
     this->_white_stone_tex = this->load_texture("./resources/circle_white_outlined.png");
     this->_black_stone_tex = this->load_texture("./resources/circle_black.png");
     this->_select_stone_tex = this->load_texture("./resources/circle_select.png");
-    this->_stripes_tex = this->load_texture("./resources/stripes.png");
 }
 
 void    GraphicalInterface::_init_sdl(void) {
@@ -134,6 +133,7 @@ void    GraphicalInterface::_init_grid(void) {
     }
     this->_init_grid_points();
     this->_init_grid_indicators();
+    this->_init_forbidden();
     /* secondary viewport boundary */
     SDL_Rect    rect = { this->_main_viewport.w - 2, 0, 2, this->_main_viewport.h };
     SDL_SetRenderDrawColor(this->_renderer, this->_color_black.r, this->_color_black.g, this->_color_black.b, this->_color_black.a);
@@ -177,6 +177,17 @@ void    GraphicalInterface::_init_grid_indicators(void) {
             delete font_text;
         }
     }
+}
+
+void    GraphicalInterface::_init_forbidden(void) {
+    std::string  text = "F";
+    TTF_Font     *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(19 * this->_res_ratio));
+    SDL_Surface  *surf = TTF_RenderText_Shaded(font, text.c_str(), this->_color_black, this->_color_board_bg);
+
+    this->_forbidden_rect = {0, 0, 0, 0};
+    this->_forbidden_tex = SDL_CreateTextureFromSurface(this->_renderer, surf);
+    SDL_FreeSurface(surf);
+    TTF_SizeText(font, text.c_str(), &this->_forbidden_rect.w, &this->_forbidden_rect.h);
 }
 
 void    GraphicalInterface::update_events(void) {
@@ -224,7 +235,6 @@ void    GraphicalInterface::update_end_game(Player *player) {
             this->_button_pause->set_state(false);
         this->_end_game = false;
     }
-    // std::cout << std::to_string(this->_end_game) << std::endl;
 }
 
 void    GraphicalInterface::_render_board(void) {
@@ -237,6 +247,7 @@ void    GraphicalInterface::_render_board(void) {
 void    GraphicalInterface::_render_stones(void) {
     Eigen::Array2i  s_pos;
     SDL_Rect        rect;
+    Eigen::Array2i  size;
     SDL_Texture     *stone;
 
     for (int j = 0; j < COLS; j++) {
@@ -246,6 +257,18 @@ void    GraphicalInterface::_render_stones(void) {
                 rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
                 stone = (this->_game_engine->grid(j,i) == -1 ? this->_black_stone_tex : this->_white_stone_tex);
                 SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
+            }
+            if (this->_game_engine->grid(j,i) == -10 || this->_game_engine->grid(j,i) == 10) {
+                s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
+                /* rect */
+                size = { this->_forbidden_rect.w*3, this->_forbidden_rect.h*1.5 };
+                rect = { s_pos[1]-size[0]/2, s_pos[0]-size[1]/2, size[0], size[1] };
+                SDL_SetRenderDrawColor(this->_renderer, this->_color_board_bg.r, this->_color_board_bg.g, this->_color_board_bg.b, this->_color_board_bg.a);
+                SDL_RenderFillRect(this->_renderer, &rect);
+                this->_forbidden_rect.x = s_pos[1]-this->_forbidden_rect.w/2;
+                this->_forbidden_rect.y = s_pos[0]-this->_forbidden_rect.h/2;
+                /* text */
+                SDL_RenderCopy(this->_renderer, this->_forbidden_tex, NULL, &this->_forbidden_rect);
             }
         }
     }
@@ -266,8 +289,7 @@ void    GraphicalInterface::_render_select(void) {
     Eigen::Array2i  g_pos;
     SDL_Rect        rect;
 
-    if (this->check_mouse_on_board())
-    {
+    if (this->check_mouse_on_board() && !this->check_pause()) {
         s_pos = this->snap_to_grid(this->_mouse_pos);
         g_pos = this->screen_to_grid(this->_mouse_pos);
         rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
@@ -430,13 +452,13 @@ void    GraphicalInterface::_close_sdl(void) {
     SDL_DestroyTexture(this->_white_stone_tex);
     SDL_DestroyTexture(this->_black_stone_tex);
     SDL_DestroyTexture(this->_select_stone_tex);
-    SDL_DestroyTexture(this->_stripes_tex);
+    SDL_DestroyTexture(this->_forbidden_tex);
     SDL_DestroyTexture(this->_board_grid_tex);
     this->_white_tex = NULL;
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
     this->_select_stone_tex = NULL;
-    this->_stripes_tex = NULL;
+    this->_forbidden_tex = NULL;
     this->_board_grid_tex = NULL;
 
     SDL_DestroyWindow(this->_window);
