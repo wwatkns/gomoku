@@ -181,7 +181,7 @@ void    GraphicalInterface::_init_grid_indicators(void) {
 
 void    GraphicalInterface::_init_forbidden(void) {
     std::string  text = "F";
-    TTF_Font     *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(19 * this->_res_ratio));
+    TTF_Font     *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(this->_res_h * 0.015625));
     SDL_Surface  *surf = TTF_RenderText_Shaded(font, text.c_str(), this->_color_black, this->_color_board_bg);
 
     this->_forbidden_rect = {0, 0, 0, 0};
