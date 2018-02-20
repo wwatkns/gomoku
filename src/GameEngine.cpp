@@ -89,8 +89,8 @@ bool    GameEngine::_check_boundary(int row, int col) {
 void    GameEngine::update_game_state(t_action &action, Player *player) {
     this->grid(action.pos[0], action.pos[1]) = (action.player->get_id() == 1 ? state::black : state::white);
     // TODO (alain) : detecter les db db threes et mettre 20 par exemple
-    player->set_pair_captured(player->get_pair_captured() + _pair_detection(action.pos));
     _double_threes_detection();
+    player->set_pair_captured(player->get_pair_captured() + _pair_detection(action.pos));
     this->_history.push_back(action);
 }
 
@@ -206,7 +206,6 @@ bool    GameEngine::_count_double_threes(Eigen::Array4i count) {
         if (*(count.data() + i) == 1)
             c_1++;
     }
-
     if (c_1 > 1) {
         return true;
     }
