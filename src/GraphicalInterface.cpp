@@ -211,6 +211,22 @@ void    GraphicalInterface::update_display(void) {
     SDL_RenderPresent(this->_renderer);
 }
 
+void    GraphicalInterface::update_end_game(Player *player) {
+    if (this->_game_engine->check_end(player->get_pair_captured()) == true) {
+        std::string type = (player->type == 0 ? "human" : "computer");
+        this->_winning_color = (player->type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
+        this->_winning_text = std::string("Player")+std::to_string(player->get_id())+std::string(" (")+type+std::string(") wins");
+        this->_button_pause->set_state(true);
+        this->_end_game = true;
+    } else {
+        this->_winning_text = "";
+        if (this->_end_game)
+            this->_button_pause->set_state(false);
+        this->_end_game = false;
+    }
+    // std::cout << std::to_string(this->_end_game) << std::endl;
+}
+
 void    GraphicalInterface::_render_board(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
     SDL_SetRenderDrawColor(this->_renderer, this->_color_board_bg.r, this->_color_board_bg.g, this->_color_board_bg.b, this->_color_board_bg.a);
@@ -319,21 +335,6 @@ void    GraphicalInterface::_render_winning_screen(void) {
         SDL_SetRenderDrawColor(this->_renderer, this->_winning_color.r, this->_winning_color.g, this->_winning_color.b, this->_winning_color.a);
         SDL_RenderDrawRect(this->_renderer, &rect);
         this->_winning_font_text->render_realtime_text();
-    }
-}
-
-void    GraphicalInterface::update_end_game(Player *player) {
-    if (this->_game_engine->check_end(player->get_pair_captured()) == true) {
-        std::string type = (player->type == 0 ? "human" : "computer");
-        this->_winning_color = (player->type == 0 ? (SDL_Color){152, 206, 76, 255} : (SDL_Color){219, 15, 59, 255});
-        this->_winning_text = std::string("Player")+std::to_string(player->get_id())+std::string(" (")+type+std::string(") wins");
-        this->_button_pause->set_state(true);
-        this->_end_game = true;
-    } else {
-        this->_winning_text = "";
-        if (this->_end_game)
-            this->_button_pause->set_state(false);
-        this->_end_game = false;
     }
 }
 

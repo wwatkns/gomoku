@@ -40,17 +40,19 @@ void        Game::_handle_fps(uint32_t *frames, uint32_t *ms) {
 }
 
 void        Game::loop(void) {
-    bool    action_performed;
+    bool        action_performed;
+    bool        action_undo;
     uint32_t    ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
     uint32_t    frames = 0;
 
     while (true) {
+        action_undo = false;
         action_performed = false;
         this->_gui->update_events();
         if (this->_gui->check_pause() == false)
             action_performed = this->_c_player->play();
         if (this->_gui->check_undo()) {
-            action_performed = true;
+            action_undo = true;
             if (undo()) continue;
         }
         if (this->_gui->check_newgame())
@@ -59,14 +61,12 @@ void        Game::loop(void) {
             restart();
         if (this->_gui->check_close())
             break;
-        this->_gui->update_end_game(this->_c_player);
-        if (action_performed == true)
-            this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
+        if (action_undo == false)
+            this->_gui->update_end_game(this->_c_player);
+        if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game()))
+            this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
+        this->_gui->get_analytics()->set_c_player(this->_c_player);
         this->_gui->update_display();
-
-        if (action_performed == true and !this->_gui->check_pause())
-            this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch */
-
         this->_handle_fps(&frames, &ms);
     }
 }
