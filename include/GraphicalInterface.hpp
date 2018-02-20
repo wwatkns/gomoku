@@ -39,6 +39,7 @@ public:
     bool            check_mouse_on_board(void);
     void            update_events(void);
     void            update_display(void);
+    void            update_end_game(Player *player);
 
     SDL_Texture     *load_texture(std::string path);
     Eigen::Array2i  grid_to_screen(Eigen::Array2i pos);
@@ -63,7 +64,8 @@ private:
     void            _render_select(void);
     void            _render_secondary_viewport(void);
     void            _render_buttons(void);
-    void            _render_stripes(void);
+    void            _render_pause(void);
+    void            _render_winning_screen(void);
 
     SDL_Rect        _handle_ratio(SDL_Rect rect);
     Eigen::Array2i  _handle_ratio(Eigen::Array2i pos);
@@ -131,6 +133,13 @@ private:
     SDL_Color       _color_white = {255, 255, 255, 255};
     SDL_Color       _color_black = {0, 0, 0, 255};
     SDL_Color       _color_gold = {228, 161, 36, 255};
+
+    /* misc */
+    bool            _end_game;
+    TTF_Font        *_winning_font;
+    SDL_Color       _winning_color;
+    std::string     _winning_text;
+    FontText        *_winning_font_text;
 };
 
 #endif
