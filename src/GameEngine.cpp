@@ -218,11 +218,11 @@ bool    GameEngine::_detect_threes_xcoxox(int row, int col, int row_dir, int col
     // 0 x 1 0 1 0
     if (_check_boundary(row -     row_dir, col -     col_dir) &&
         _check_boundary(row + 4 * row_dir, col + 4 * col_dir)) {
-        if (this->grid(row -     row_dir, col -     col_dir) == 0 && // 0 x
-            this->grid(row +     row_dir, col +     col_dir) == p && // 1
-            this->grid(row + 2 * row_dir, col + 2 * col_dir) == 0 && // 0
-            this->grid(row + 3 * row_dir, col + 3 * col_dir) == p && // 1
-            this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0) { // 0
+        if ((this->grid(row -     row_dir, col -     col_dir) == 20 || this->grid(row -     row_dir, col -     col_dir) == -10 || this->grid(row -     row_dir, col -     col_dir) == 10 || this->grid(row -     row_dir, col -     col_dir) == 0) &&
+             this->grid(row +     row_dir, col +     col_dir) == p   &&
+            (this->grid(row + 2 * row_dir, col + 2 * col_dir) == 20 || this->grid(row + 2 * row_dir, col + 2 * col_dir) == -10 || this->grid(row + 2 * row_dir, col + 2 * col_dir) == 10 || this->grid(row + 2 * row_dir, col + 2 * col_dir) == 0) &&
+             this->grid(row + 3 * row_dir, col + 3 * col_dir) == p   &&
+            (this->grid(row + 4 * row_dir, col + 4 * col_dir) == 20 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == -10 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == 10 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0)) {
             return true;
         }
     }
@@ -233,11 +233,11 @@ bool    GameEngine::_detect_threes_xcxoox(int row, int col, int row_dir, int col
     // 0 x 0 1 1 0
     if(_check_boundary(row -     row_dir, col -     col_dir) &&
        _check_boundary(row + 4 * row_dir, col + 4 * col_dir)) {
-        if (this->grid(row -     row_dir, col -     col_dir) == 0 && // 0 x
-            this->grid(row +     row_dir, col +     col_dir) == 0 && // 0
-            this->grid(row + 2 * row_dir, col + 2 * col_dir) == p && // 1
-            this->grid(row + 3 * row_dir, col + 3 * col_dir) == p && // 1
-            this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0) { // 0
+        if ((this->grid(row -     row_dir, col -     col_dir) == -10 || this->grid(row -     row_dir, col -     col_dir) == 10 || this->grid(row -     row_dir, col -     col_dir) == 0) &&
+            this->grid(row +     row_dir, col +     col_dir) == 0 &&
+            this->grid(row + 2 * row_dir, col + 2 * col_dir) == p &&
+            this->grid(row + 3 * row_dir, col + 3 * col_dir) == p &&
+            this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0) {
             return true;
         }
     }
