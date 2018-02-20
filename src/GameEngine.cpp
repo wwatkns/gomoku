@@ -88,9 +88,7 @@ bool    GameEngine::_check_boundary(int row, int col) {
 
 void    GameEngine::update_game_state(t_action &action, Player *player) {
     this->grid(action.pos[0], action.pos[1]) = (action.player->get_id() == 1 ? state::black : state::white);
-    // TODO (alain) : detecter les doubles threes et mettre 10/-10 aux emplacements
     // TODO (alain) : detecter les db db threes et mettre 20 par exemple
-    // _double_threes_detection();
     player->set_pair_captured(player->get_pair_captured() + _pair_detection(action.pos));
     _double_threes_detection();
     this->_history.push_back(action);
@@ -137,7 +135,6 @@ void    GameEngine::_double_threes_detection(void) {
     /*
         Iterate over each free, white_free and black_free cells and update the grid.
     */
-    // Eigen::Array4i      count;
     Eigen::Vector4i      count;
     Eigen::Vector4i      countblack;
     Eigen::Vector4i      countwhite;
@@ -149,8 +146,6 @@ void    GameEngine::_double_threes_detection(void) {
                 this->grid(row, col) == state::black_free) {
                 for (int p = -1; p < 2; p = p + 2) { // Switch between -1 (Player 1/black) and 1 (Player 2/white) values
                     count << 0, 0, 0, 0;
-                    countblack << 0, 0, 0, 0;
-                    countwhite << 0, 0, 0, 0;
                     if (_detect_threes_xcoxox(row, col, 0, -1, p) || _detect_threes_xcxoox(row, col, 0, -1, p) ||
                         _detect_threes_xocxox(row, col, 0, -1, p) || _detect_threes_xcoox(row, col, 0, -1, p)  ||
                         _detect_threes_xocox(row, col, 0, -1, p))  // ←
@@ -184,10 +179,10 @@ void    GameEngine::_double_threes_detection(void) {
                     else
                         countwhite = count;
                 }
-                if (_count_double_threes(countblack) && !_count_double_threes(countwhite)) {
+                if (_count_double_threes(countblack) && !(_count_double_threes(countwhite))) {
                     this->grid(row, col) = state::black_free;
                 }
-                else if (!_count_double_threes(countblack) && _count_double_threes(countwhite)) {
+                else if (!(_count_double_threes(countblack)) && _count_double_threes(countwhite)) {
                     this->grid(row, col) = state::white_free;
                 }
                 else if (_count_double_threes(countblack) && _count_double_threes(countwhite)) {
@@ -205,27 +200,17 @@ void    GameEngine::_double_threes_detection(void) {
 }
 
 bool    GameEngine::_count_double_threes(Eigen::Array4i count) {
-    // int c_0 = 0;
     int c_1 = 0;
-    // int c_2 = 0;
-
-    // std::cout << "### _count_double_threes" << std::endl; // delete me
 
     for (int i = 0; i < 4; ++i) {
-        // if (*(count.data() + i) == 0)
-            // c_0++;
-        // else if (*(count.data() + i) == 1)
         if (*(count.data() + i) == 1)
             c_1++;
-        // else if (*(count.data() + i) == 2)
-            // c_2++;
     }
+
     if (c_1 > 1) {
-        // std::cout << "### _count_double_threes ## END # true" << std::endl; // delete me
         return true;
     }
     else {
-        // std::cout << "### _count_double_threes ## END # false" << std::endl; // delete me
         return false;
     }
 }
@@ -239,7 +224,6 @@ bool    GameEngine::_detect_threes_xcoxox(int row, int col, int row_dir, int col
             this->grid(row + 2 * row_dir, col + 2 * col_dir) == 0 && // 0
             this->grid(row + 3 * row_dir, col + 3 * col_dir) == p && // 1
             this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0) { // 0
-            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 x 1 0 1 0" << std::endl; // delete me
             return true;
         }
     }
@@ -255,7 +239,6 @@ bool    GameEngine::_detect_threes_xcxoox(int row, int col, int row_dir, int col
             this->grid(row + 2 * row_dir, col + 2 * col_dir) == p && // 1
             this->grid(row + 3 * row_dir, col + 3 * col_dir) == p && // 1
             this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0) { // 0
-            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 x 0 1 1 0" << std::endl; // delete me
             return true;
         }
     }
@@ -271,7 +254,6 @@ bool    GameEngine::_detect_threes_xocxox(int row, int col, int row_dir, int col
             this->grid(row +     row_dir, col +     col_dir) == 0 && // 0
             this->grid(row + 2 * row_dir, col + 2 * col_dir) == p && // 1
             this->grid(row + 3 * row_dir, col + 3 * col_dir) == 0) { // 0
-            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 1 x 0 1 0" << std::endl; // delete me
             return true;
         }
     }
@@ -286,7 +268,6 @@ bool    GameEngine::_detect_threes_xcoox(int row, int col, int row_dir, int col_
             this->grid(row +     row_dir, col +     col_dir) == p && // 1
             this->grid(row + 2 * row_dir, col + 2 * col_dir) == p && // 1
             this->grid(row + 3 * row_dir, col + 3 * col_dir) == 0) { // 0
-            // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 x 1 1 0" << std::endl; // delete me
             return true;
         }
     }
@@ -301,8 +282,6 @@ bool    GameEngine::_detect_threes_xocox(int row, int col, int row_dir, int col_
             this->grid(row +     row_dir, col +     col_dir) == p && // 1 x
             this->grid(row - 1 * row_dir, col - 1 * col_dir) == p && // 1
             this->grid(row - 2 * row_dir, col - 2 * col_dir) == 0) { // 0
-            // if (row == 2 && col == 2)
-                // std::cout << "detected @ row: " << row << " col: " << col << " | form 0 1 x 1 0" << std::endl; // delete me
             return true;
         }
     }
