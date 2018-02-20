@@ -24,6 +24,11 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(310 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
     this->_button_pause = new ButtonSwitch(this->_renderer, "pause", "resume", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(340 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
     this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(370 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
+
+    this->_winning_font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(24 * this->_res_ratio));
+    this->_winning_text = "";
+    this->_winning_color = {255, 255, 255, 255};
+    this->_winning_font_text = new FontText(&this->_winning_text, {this->_main_viewport.w/2, this->_main_viewport.h/2}, "center", "center", this->_winning_font, &this->_winning_color, this->_renderer);
 }
 
 GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_engine(src.get_game_engine()) {
@@ -201,7 +206,8 @@ void    GraphicalInterface::update_display(void) {
     this->_render_select();
     this->_render_secondary_viewport();
     this->_render_buttons();
-    this->_render_stripes();
+    this->_render_pause();
+    this->_render_winning_screen();
     SDL_RenderPresent(this->_renderer);
 }
 
@@ -289,7 +295,7 @@ void    GraphicalInterface::_render_buttons(void) {
     this->_button_undo->render(this->_renderer, &this->_mouse_pos);
 }
 
-void    GraphicalInterface::_render_stripes(void) {
+void    GraphicalInterface::_render_pause(void) {
     if (this->check_pause()) {
         if (this->_analytics->get_chronometer()->is_running() == true)
             this->_analytics->get_chronometer()->stop();
@@ -300,6 +306,36 @@ void    GraphicalInterface::_render_stripes(void) {
         this->_analytics->get_chronometer()->resume();
 }
 
+void    GraphicalInterface::_render_winning_screen(void) {
+    if (this->_end_game) {
+        SDL_Rect    rect = { this->_winning_font_text->get_pos()[0], this->_winning_font_text->get_pos()[1], 0, 0 };
+        TTF_SizeText(this->_winning_font_text->get_font(), this->_winning_font_text->get_text()->c_str(), &rect.w, &rect.h);
+        rect.w += 20;
+        rect.h += 6;
+        rect.x -= rect.w / 2;
+        rect.y -= rect.h / 2;
+        SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 100);
+        SDL_RenderFillRect(this->_renderer, &rect);
+        SDL_SetRenderDrawColor(this->_renderer, this->_winning_color.r, this->_winning_color.g, this->_winning_color.b, this->_winning_color.a);
+        SDL_RenderDrawRect(this->_renderer, &rect);
+        this->_winning_font_text->render_realtime_text();
+    }
+}
+
+void    GraphicalInterface::update_end_game(Player *player) {
+    if (this->_game_engine->check_end(player->get_pair_captured()) == true) {
+        std::string type = (player->type == 0 ? "human" : "computer");
+        this->_winning_color = (player->type == 0 ? (SDL_Color){152, 206, 76, 255} : (SDL_Color){219, 15, 59, 255});
+        this->_winning_text = std::string("Player")+std::to_string(player->get_id())+std::string(" (")+type+std::string(") wins");
+        this->_button_pause->set_state(true);
+        this->_end_game = true;
+    } else {
+        this->_winning_text = "";
+        if (this->_end_game)
+            this->_button_pause->set_state(false);
+        this->_end_game = false;
+    }
+}
 
 std::string GraphicalInterface::render_choice_menu(void) {
     TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(14 * this->_res_ratio));

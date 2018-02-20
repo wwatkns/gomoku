@@ -57,8 +57,7 @@ void        Game::loop(void) {
             restart();
         if (this->_gui->check_close()) /* will quit the game */
             break;
-        if (this->_game_engine->check_end(this->_c_player->get_pair_captured()) == true) /* will display an end message */
-            break;
+        this->_gui->update_end_game(this->_c_player);
         if (action_performed == true)
             this->_gui->get_analytics()->set_c_player(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         this->_gui->update_display();
@@ -112,7 +111,4 @@ void        Game::newgame(void) {
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
     loop();
-}
-
-void        Game::end(void) const {
 }

@@ -22,7 +22,7 @@ public:
     bool    undo(void);
     void    newgame(void);
     void    restart(void);
-    void    end(void) const;
+    void    endgame(Player *player);
 
     /* Getters */
     Player      *get_player_1(void) const { return _player_1; };
