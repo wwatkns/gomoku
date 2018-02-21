@@ -5,6 +5,7 @@
 # include <chrono>
 # include <list>
 # include <Eigen/Dense>
+# include "MinMax.hpp"
 
 # define BOARD_COLS 19
 # define BOARD_ROWS 19
@@ -46,6 +47,7 @@ public:
     void                                    inc_game_turn(void);
 
     Eigen::ArrayXXi                         grid;
+    MinMax                                  *minmax;
 
 private:
     std::list<t_action>                     _history;

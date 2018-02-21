@@ -16,6 +16,7 @@
 # include "Button.hpp"
 # include "ButtonSwitch.hpp"
 # include "ButtonSelect.hpp"
+# include "MinMax.hpp"
 
 # define COLS 19
 # define ROWS 19

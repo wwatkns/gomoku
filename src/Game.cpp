@@ -67,7 +67,7 @@ void        Game::loop(void) {
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
         this->_gui->get_analytics()->set_c_player(this->_c_player);
         this->_gui->update_display();
-        this->_handle_fps(&frames, &ms);
+        // this->_handle_fps(&frames, &ms);
     }
 }
 

@@ -4,6 +4,7 @@
 GameEngine::GameEngine(void) : _game_turn(0) {
     this->grid = Eigen::ArrayXXi::Constant(BOARD_COLS, BOARD_ROWS, state::free);
     this->_initial_timepoint = std::chrono::steady_clock::now();
+    this->minmax = new MinMax(3);
 }
 
 GameEngine::GameEngine(GameEngine const &src) {
@@ -224,7 +225,6 @@ void    GameEngine::_double_threes_detection(void) {
 
         }
     }
-    std::cout << this->grid << std::endl << std::endl; // delete me
     return;
 }
 
