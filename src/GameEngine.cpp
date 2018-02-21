@@ -235,8 +235,8 @@ bool    GameEngine::_detect_threes_xcxoox(int row, int col, int row_dir, int col
        _check_boundary(row + 4 * row_dir, col + 4 * col_dir)) {
         if ((this->grid(row -     row_dir, col -     col_dir) == 20 || this->grid(row -     row_dir, col -     col_dir) == -10 || this->grid(row -     row_dir, col -     col_dir) == 10 || this->grid(row -     row_dir, col -     col_dir) == 0) &&
             (this->grid(row +     row_dir, col +     col_dir) == 20 || this->grid(row +     row_dir, col +     col_dir) == -10 || this->grid(row +     row_dir, col +     col_dir) == 10 || this->grid(row +     row_dir, col +     col_dir) == 0) &&
-            this->grid(row + 2 * row_dir, col + 2 * col_dir) == p &&
-            this->grid(row + 3 * row_dir, col + 3 * col_dir) == p &&
+             this->grid(row + 2 * row_dir, col + 2 * col_dir) == p &&
+             this->grid(row + 3 * row_dir, col + 3 * col_dir) == p &&
             (this->grid(row + 4 * row_dir, col + 4 * col_dir) == 20 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == -10 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == 10 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0)) {
             return true;
         }
