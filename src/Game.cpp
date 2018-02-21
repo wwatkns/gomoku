@@ -39,6 +39,9 @@ void        Game::_handle_fps(uint32_t *frames, uint32_t *ms) {
     }
 }
 
+/* TODO: implement draw game (no winners)
+*/
+
 void        Game::loop(void) {
     bool        action_performed;
     bool        action_undo;

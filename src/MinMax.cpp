@@ -30,6 +30,8 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
     game_state.p2_pairs_captured = player->get_pair_captured(); // TODO : do better
 
     open_moves = this->_get_open_moves(game_state);
+    std::cout << open_moves.size() << std::endl;
+    // exit(0);
 
     min = std::numeric_limits<unsigned int>::max();
     pos = open_moves[0];
@@ -38,8 +40,8 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
         /* save value */
         tmp = game_state.grid((*it)[0], (*it)[1]);
         /* update game state */
-        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
-        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1); /* switch virtual player */
+        game_state->grid((*it)[0], (*it)[1]) = (game_state->current_player_id == 1 ? -1 : 1);
+        game_state->current_player_id = (game_state->current_player_id == 1 ? 2 : 1);
         /* call min */
         score = this->_min(game_state, 1);
         if (score > min) {
@@ -67,8 +69,8 @@ int32_t     MinMax::_min(t_state game_state, uint8_t current_depth) {
         /* save value */
         tmp = game_state.grid((*it)[0], (*it)[1]);
         /* update game state */
-        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
-        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1); /* switch virtual player */
+        game_state->grid((*it)[0], (*it)[1]) = (game_state->current_player_id == 1 ? -1 : 1);
+        game_state->current_player_id = (game_state->current_player_id == 1 ? 2 : 1);
         /* call max */
         score = this->_max(game_state, current_depth+1);
         max = (score > max ? score : max);
@@ -93,8 +95,8 @@ int32_t     MinMax::_max(t_state game_state, uint8_t current_depth) {
         /* save value */
         tmp = game_state.grid((*it)[0], (*it)[1]);
         /* update game state */
-        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
-        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1); /* switch virtual player */
+        game_state->grid((*it)[0], (*it)[1]) = (game_state->current_player_id == 1 ? -1 : 1);
+        game_state->current_player_id = (game_state->current_player_id == 1 ? 2 : 1);
         /* call min */
         score = this->_min(game_state, current_depth+1);
         min = (score < min ? score : min);
@@ -106,12 +108,13 @@ int32_t     MinMax::_max(t_state game_state, uint8_t current_depth) {
 
 int32_t     MinMax::_score(t_state game_state) {
 
-    /*  open three
-        open four
-        close three
-        close four
-        three-four
-        double-four
+    /*  We evaluate the current state of the board and add the scores of the patterns we detect in it :
+        open three      : good  ( -o-oo- is better than -ooo- ), 3 variants
+        open four       : win
+        close three     : ok
+        close four      : good (but win if we have more than 1)
+        three-four      : win
+        double-four     : win
         pair captures
 
     */

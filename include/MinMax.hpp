@@ -9,6 +9,15 @@
 class Player;
 class GameEngine;
 
+/*  Optimizations ideas :
+    - bitboards for players to check patterns with bitwise operations blazingly fast
+    - rotated bitboards to check the diagonals faster
+    - optimized get_open_moves function (with bitboards)
+    - heuristic function to set a score on each cell of the board to reduce the search space (with threshold)
+    - hash function to access score associated with board state already explored (https://en.wikipedia.org/wiki/Zobrist_hashing)
+    - multithreading implementation of minMax on CPU or GPU
+*/
+
 typedef struct  s_state {
     Eigen::ArrayXXi grid;
     uint8_t         current_player_id;

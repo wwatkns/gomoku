@@ -65,6 +65,9 @@ Eigen::Array2i  Analytics::_handle_ratio(Eigen::Array2i pos) {
     return {(int32_t)(pos[0] * this->_res_ratio), (int32_t)(pos[1] * this->_res_ratio)};
 }
 
+/*  TODO : implement last action duration to display the duration of the last action (mandatory in gomoku)
+*/
+
 void        Analytics::_update_analytics(bool init) {
     /* global */
     this->_data["g_time"] = {
