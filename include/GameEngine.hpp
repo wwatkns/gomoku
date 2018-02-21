@@ -35,6 +35,8 @@ public:
     void                update_game_state(t_action &action, Player *player); // update the game state given an action
     void                delete_last_action(void);
 
+    Eigen::Array22i     get_end_line(void);
+
     /* Getters */
     std::list<t_action>                     *get_history(void) { return &_history; };
     std::list<t_action>                     get_history_copy(void) const { return _history; };

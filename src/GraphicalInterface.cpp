@@ -226,7 +226,7 @@ void    GraphicalInterface::update_end_game(Player *player) {
     if (this->_game_engine->check_end(player->get_pair_captured()) == true) {
         std::string type = (player->type == 0 ? "human" : "computer");
         this->_winning_color = (player->type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
-        this->_winning_text = std::string("Player")+std::to_string(player->get_id())+std::string(" (")+type+std::string(") wins");
+        this->_winning_text = std::string("Player ")+std::to_string(player->get_id())+std::string(" (")+type+std::string(") wins");
         this->_button_pause->set_state(true);
         this->_end_game = true;
     } else {
@@ -351,6 +351,14 @@ void    GraphicalInterface::_render_pause(void) {
 
 void    GraphicalInterface::_render_winning_screen(void) {
     if (this->_end_game) {
+        /* winning line */
+        Eigen::Array22i line = this->_game_engine->get_end_line();
+        Eigen::Array2i  p1 = this->grid_to_screen(line.row(0));
+        Eigen::Array2i  p2 = this->grid_to_screen(line.row(1));
+        SDL_Color       color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_white : this->_color_black);
+        SDL_SetRenderDrawColor(this->_renderer, color.r, color.g, color.b, 100);
+        SDL_RenderDrawLine(this->_renderer, p1(0), p1(1), p2(0), p2(1));
+        /* winning text */
         SDL_Rect    rect = { this->_winning_font_text->get_pos()[0], this->_winning_font_text->get_pos()[1], 0, 0 };
         TTF_SizeText(this->_winning_font_text->get_font(), this->_winning_font_text->get_text()->c_str(), &rect.w, &rect.h);
         rect.w += 20;

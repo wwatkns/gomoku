@@ -57,6 +57,35 @@ bool    GameEngine::check_end(uint8_t player_pairs) {
     return false;
 }
 
+Eigen::Array22i GameEngine::get_end_line(void) {
+    Eigen::Array22i pos;
+    pos << 0, 0, 0, 0;
+
+    for (size_t col = 0; col < BOARD_ROWS; ++col) {
+        for (size_t row = 0; row < BOARD_COLS; ++row) {
+            if (this->grid(row, col) == state::black || this->grid(row, col) == state::white) {
+                if (_check_col(col, row)) {
+                    pos << col, row, col, row+4;
+                    return pos;
+                }
+                if (_check_row(col, row)) {
+                    pos << col, row, col+4, row;
+                    return pos;
+                }
+                if (_check_dil(col, row)) {
+                    pos << col, row, col-4, row+4;
+                    return pos;
+                }
+                if (_check_dir(col, row)) {
+                    pos << col, row, col+4, row+4;
+                    return pos;
+                }
+            }
+        }
+    }
+    return pos;
+}
+
 /* Setters */
 void    GameEngine::inc_game_turn(void) {
     this->_game_turn++;
