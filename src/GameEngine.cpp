@@ -167,13 +167,13 @@ void    GameEngine::_double_threes_detection(void) {
                     if (_detect_threes_xcoxox(row, col, 1, -1, p) || _detect_threes_xcxoox(row, col, 1, -1, p) ||
                         _detect_threes_xocxox(row, col, 1, -1, p) || _detect_threes_xcoox(row, col, 1, -1, p)  ||
                         _detect_threes_xocox(row, col, 1, -1, p))  // ↙︎
-                        count(2) += 1;
+                        count(3) += 1;
                     if (_detect_threes_xcoxox(row, col, -1, 1, p) || _detect_threes_xcxoox(row, col, -1, 1, p) ||
                         _detect_threes_xocxox(row, col, -1, 1, p) || _detect_threes_xcoox(row, col, -1, 1, p)) // ↗︎
                         count(3) += 1;
                     if (_detect_threes_xcoxox(row, col, 1, 1, p) || _detect_threes_xcxoox(row, col, 1, 1, p) ||
                         _detect_threes_xocxox(row, col, 1, 1, p) || _detect_threes_xcoox(row, col, 1, 1, p)) // ↘︎
-                        count(3) += 1;
+                        count(2) += 1;
                     if (p == -1)
                         countblack = count;
                     else
