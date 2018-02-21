@@ -1,5 +1,6 @@
 #include "MinMax.hpp"
 #include "Player.hpp"
+#include "GameEngine.hpp"
 
 MinMax::MinMax(GameEngine *game_engine, uint8_t depth) : _game_engine(game_engine), _depth(depth) {
 }
@@ -15,98 +16,114 @@ MinMax	&MinMax::operator=(MinMax const &src) {
     return (*this);
 }
 
-Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi game_state, Player *player) {
-    std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state, player);
-    Eigen::ArrayXXi             tmp = game_state;
-    uint32_t                    score;
-    t_sim                       sim;
-
-    sim.score = std::numeric_limits<unsigned int>::max();
-    sim.pos = open_moves[0]; /* if all scores are 0, return first open move */
-
-    /* call max for all possible moves */
-    for (std::vector<Eigen::Array2i>::iterator it = open_moves.begin(); it != open_moves.end(); ++it) {
-        tmp((*it)[0], (*it)[1]) = (player->get_id() == 1 ? -1 : 1);
-        score = this->_min(tmp, 1);
-        sim = (score > sim.score ? { *it, score } : sim);
-        tmp = game_state;
-    }
-    return sim.pos;
-}
-
-
-std::vector<Eigen::Array2i> MinMax::_get_open_moves(Eigen::ArrayXXi game_state, Player *player) {
+Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
     std::vector<Eigen::Array2i> open_moves;
+    t_state                     game_state;
+    uint32_t                    score;
+    uint32_t                    min;
+    int32_t                     tmp;
+    Eigen::Array2i              pos;
 
-    for (uint32_t i = 0; i < game_state.size(); i++) {
-        if (*(game_state.data()+i) == 0 || *(game_state.data()+i) == (player->get_id() == 1 ? 10 : -10))
-            open_moves.push_back((Eigen::Array2i){ i % game_state.rows(), i / game_state.rows() });
+    game_state.grid = grid;
+    game_state.current_player_id = player->get_id();
+    game_state.p1_pairs_captured = player->get_pair_captured(); // TODO : do better
+    game_state.p2_pairs_captured = player->get_pair_captured(); // TODO : do better
+
+    open_moves = this->_get_open_moves(game_state);
+
+    min = std::numeric_limits<unsigned int>::max();
+    pos = open_moves[0];
+
+    for (std::vector<Eigen::Array2i>::iterator it = open_moves.begin(); it != open_moves.end(); ++it) {
+        /* save value */
+        tmp = game_state.grid((*it)[0], (*it)[1]);
+        /* update game state */
+        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
+        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1); /* switch virtual player */
+        /* call min */
+        score = this->_min(game_state, 1);
+        if (score > min) {
+            min = score;
+            pos = *it;
+        }
+        /* reset grid */
+        game_state.grid((*it)[0], (*it)[1]) = tmp;
     }
-    // for (std::vector<Eigen::Array2i>::iterator it = open_moves.begin(); it != open_moves.end(); ++it) {
-    //     std::cout << (*it)[0] << "," << (*it)[1] << " " << std::endl; // 0 is J, 1 is I
-    // }
-    return open_moves;
+    return pos;
 }
 
-int32_t     MinMax::_min(Eigen::ArrayXXi game_state, uint8_t current_depth) {
-    std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state, player);
-    Eigen::ArrayXXi             tmp = game_state;
+int32_t     MinMax::_min(t_state game_state, uint8_t current_depth) {
+    std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state);
     uint32_t                    score;
     uint32_t                    max;
+    int32_t                     tmp;
 
-    if (current_depth == this->_depth || this->_game_engine->check_end()) { /* pairs are fuckboys */
-        // compute score
-        // return (score);
+    uint8_t cpc = (game_state.current_player_id == 1 ? game_state.p1_pairs_captured : game_state.p2_pairs_captured);
+    if (current_depth == this->_depth || this->_game_engine->check_end(cpc)) {
+        return this->_score(game_state);
     }
-
     max = 0;
     for (std::vector<Eigen::Array2i>::iterator it = open_moves.begin(); it != open_moves.end(); ++it) {
-        tmp((*it)[0], (*it)[1]) = (player->get_id() == 1 ? -1 : 1);
-        score = this->_max(tmp, current_depth+1);
+        /* save value */
+        tmp = game_state.grid((*it)[0], (*it)[1]);
+        /* update game state */
+        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
+        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1); /* switch virtual player */
+        /* call max */
+        score = this->_max(game_state, current_depth+1);
         max = (score > max ? score : max);
-        tmp = game_state;
+        /* reset grid */
+        game_state.grid((*it)[0], (*it)[1]) = tmp;
     }
     return (max);
 }
 
-int32_t     MinMax::_max(Eigen::ArrayXXi game_state, uint8_t current_depth) {
-    std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state, player);
-    Eigen::ArrayXXi             tmp = game_state;
+int32_t     MinMax::_max(t_state game_state, uint8_t current_depth) {
+    std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state);
     uint32_t                    score;
     uint32_t                    min;
+    int32_t                     tmp;
 
-    if (current_depth == this->_depth || this->_game_engine->check_end()) {
-        // compute score
-        // return (score);
+    uint8_t cpc = (game_state.current_player_id == 1 ? game_state.p1_pairs_captured : game_state.p2_pairs_captured);
+    if (current_depth == this->_depth || this->_game_engine->check_end(cpc)) {
+        return this->_score(game_state);
     }
-
     min = std::numeric_limits<unsigned int>::max();
     for (std::vector<Eigen::Array2i>::iterator it = open_moves.begin(); it != open_moves.end(); ++it) {
-        tmp((*it)[0], (*it)[1]) = (player->get_id() == 1 ? -1 : 1);
-        score = this->_min(tmp, current_depth+1);
+        /* save value */
+        tmp = game_state.grid((*it)[0], (*it)[1]);
+        /* update game state */
+        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
+        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1); /* switch virtual player */
+        /* call min */
+        score = this->_min(game_state, current_depth+1);
         min = (score < min ? score : min);
-        tmp = game_state;
+        /* reset grid */
+        game_state.grid((*it)[0], (*it)[1]) = tmp;
     }
     return (min);
 }
 
+int32_t     MinMax::_score(t_state game_state) {
 
-/*
- function minimax(node, depth, maximizingPlayer)
-     if depth = 0 or node is a terminal node
-         return the heuristic value of node
+    /*  open three
+        open four
+        close three
+        close four
+        three-four
+        double-four
+        pair captures
 
-     if maximizingPlayer
-         bestValue := −∞
-         for each child of node
-             v := minimax(child, depth − 1, FALSE)
-             bestValue := max(bestValue, v)
-         return bestValue
+    */
+    return 1;
+}
 
-     else    (* minimizing player *)
-         bestValue := +∞
-         for each child of node
-             v := minimax(child, depth − 1, TRUE)
-             bestValue := min(bestValue, v)
-         return bestValue
-*/
+std::vector<Eigen::Array2i> MinMax::_get_open_moves(t_state game_state) {
+    std::vector<Eigen::Array2i> open_moves;
+
+    for (uint32_t i = 0; i < game_state.grid.size(); i++) {
+        if (*(game_state.grid.data()+i) == 0 || *(game_state.grid.data()+i) == (game_state.current_player_id == 1 ? 10 : -10))
+            open_moves.push_back((Eigen::Array2i){ i % game_state.grid.rows(), i / game_state.grid.rows() });
+    }
+    return open_moves;
+}
