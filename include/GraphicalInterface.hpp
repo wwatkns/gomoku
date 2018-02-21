@@ -59,6 +59,7 @@ private:
     void            _init_grid(void);
     void            _init_grid_points(void);
     void            _init_grid_indicators(void);
+    void            _init_forbidden(void);
 
     void            _render_board(void);
     void            _render_stones(void);
@@ -100,7 +101,8 @@ private:
     SDL_Texture     *_white_stone_tex;
     SDL_Texture     *_black_stone_tex;
     SDL_Texture     *_select_stone_tex;
-    SDL_Texture     *_stripes_tex;
+    SDL_Texture     *_forbidden_tex;
+    SDL_Rect        _forbidden_rect;
     /* Computed textures */
     SDL_Texture     *_board_grid_tex;
     /* Event keys */
@@ -136,10 +138,10 @@ private:
 
     /* misc */
     bool            _end_game;
-    TTF_Font        *_winning_font;
     SDL_Color       _winning_color;
     std::string     _winning_text;
     FontText        *_winning_font_text;
+    TTF_Font        *_winning_font;
 };
 
 #endif
