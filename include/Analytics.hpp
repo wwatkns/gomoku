@@ -37,6 +37,7 @@ public:
     Chronometer     *get_chronometer(void) const { return (_chrono); };
     GameEngine      *get_game_engine(void) const { return (_game_engine); };
     FontHandler     *get_font_handler(void) const { return (_font_handler); };
+    Player          *get_c_player(void) const { return (_c_player); };
 
     void            set_players(Player *cp, Player *p1, Player *p2) { _c_player = cp; _player_1 = p1; _player_2 = p2; };
     void            set_c_player(Player *c_player) { _c_player = c_player; };

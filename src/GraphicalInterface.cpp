@@ -252,13 +252,16 @@ void    GraphicalInterface::_render_stones(void) {
 
     for (int j = 0; j < COLS; j++) {
         for (int i = 0; i < ROWS; i++) {
+            /* stones */
             if (this->_game_engine->grid(j,i) == -1 || this->_game_engine->grid(j,i) == 1) { /* TODO: more modular, change 1 and -1 */
                 s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
                 rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
                 stone = (this->_game_engine->grid(j,i) == -1 ? this->_black_stone_tex : this->_white_stone_tex);
                 SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
             }
-            if (this->_game_engine->grid(j,i) == -10 || this->_game_engine->grid(j,i) == 10) {
+            /* forbidden */
+            // if (this->_game_engine->grid(j,i) == -10 || this->_game_engine->grid(j,i) == 10) { /* show all forbiddens */
+            if (this->_game_engine->grid(j,i) == (this->_analytics->get_c_player()->get_id()==1?-1:1)*10) { /* show current player forbiddens */
                 s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
                 /* rect */
                 size = { this->_forbidden_rect.w*3, this->_forbidden_rect.h*1.5 };
@@ -292,6 +295,8 @@ void    GraphicalInterface::_render_select(void) {
     if (this->check_mouse_on_board() && !this->check_pause()) {
         s_pos = this->snap_to_grid(this->_mouse_pos);
         g_pos = this->screen_to_grid(this->_mouse_pos);
+        if (this->_game_engine->grid(g_pos[0], g_pos[1]) == (this->_analytics->get_c_player()->get_id()==1?-1:1)*10) /* don't display select circle on forbidden */
+            return;
         rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
         if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
             SDL_RenderCopy(this->_renderer, this->_select_stone_tex, NULL, &rect);
