@@ -118,8 +118,8 @@ bool    GameEngine::_check_boundary(int row, int col) {
 void    GameEngine::update_game_state(t_action &action, Player *player) {
     this->grid(action.pos[0], action.pos[1]) = (action.player->get_id() == 1 ? state::black : state::white);
     // TODO (alain) : detecter les db db threes et mettre 20 par exemple
-    _double_threes_detection();
     player->set_pair_captured(player->get_pair_captured() + _pair_detection(action.pos));
+    _double_threes_detection();
     this->_history.push_back(action);
 }
 
@@ -196,13 +196,13 @@ void    GameEngine::_double_threes_detection(void) {
                     if (_detect_threes_xcoxox(row, col, 1, -1, p) || _detect_threes_xcxoox(row, col, 1, -1, p) ||
                         _detect_threes_xocxox(row, col, 1, -1, p) || _detect_threes_xcoox(row, col, 1, -1, p)  ||
                         _detect_threes_xocox(row, col, 1, -1, p))  // ↙︎
-                        count(2) += 1;
+                        count(3) += 1;
                     if (_detect_threes_xcoxox(row, col, -1, 1, p) || _detect_threes_xcxoox(row, col, -1, 1, p) ||
                         _detect_threes_xocxox(row, col, -1, 1, p) || _detect_threes_xcoox(row, col, -1, 1, p)) // ↗︎
                         count(3) += 1;
                     if (_detect_threes_xcoxox(row, col, 1, 1, p) || _detect_threes_xcxoox(row, col, 1, 1, p) ||
                         _detect_threes_xocxox(row, col, 1, 1, p) || _detect_threes_xcoox(row, col, 1, 1, p)) // ↘︎
-                        count(3) += 1;
+                        count(2) += 1;
                     if (p == -1)
                         countblack = count;
                     else
@@ -264,8 +264,8 @@ bool    GameEngine::_detect_threes_xcxoox(int row, int col, int row_dir, int col
        _check_boundary(row + 4 * row_dir, col + 4 * col_dir)) {
         if ((this->grid(row -     row_dir, col -     col_dir) == 20 || this->grid(row -     row_dir, col -     col_dir) == -10 || this->grid(row -     row_dir, col -     col_dir) == 10 || this->grid(row -     row_dir, col -     col_dir) == 0) &&
             (this->grid(row +     row_dir, col +     col_dir) == 20 || this->grid(row +     row_dir, col +     col_dir) == -10 || this->grid(row +     row_dir, col +     col_dir) == 10 || this->grid(row +     row_dir, col +     col_dir) == 0) &&
-            this->grid(row + 2 * row_dir, col + 2 * col_dir) == p &&
-            this->grid(row + 3 * row_dir, col + 3 * col_dir) == p &&
+             this->grid(row + 2 * row_dir, col + 2 * col_dir) == p &&
+             this->grid(row + 3 * row_dir, col + 3 * col_dir) == p &&
             (this->grid(row + 4 * row_dir, col + 4 * col_dir) == 20 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == -10 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == 10 || this->grid(row + 4 * row_dir, col + 4 * col_dir) == 0)) {
             return true;
         }
