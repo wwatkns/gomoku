@@ -276,7 +276,7 @@ void    GraphicalInterface::_render_stones(void) {
         }
     }
     /* look for the last action and display an indicator on it */
-    if (this->_game_engine->get_history()->size() > 0) {
+    if (this->_game_engine->get_history()->size() > 0 and !this->_end_game) {
         t_action    last = this->_game_engine->get_history()->back();
         int32_t     size = (int32_t)(this->_stone_size * 0.1);
 
@@ -351,14 +351,22 @@ void    GraphicalInterface::_render_pause(void) {
 
 void    GraphicalInterface::_render_winning_screen(void) {
     if (this->_end_game) {
-        /* winning line */
+        /* draw line alignment */
         Eigen::Array22i line = this->_game_engine->get_end_line();
         Eigen::Array2i  p1 = this->grid_to_screen(line.row(0));
         Eigen::Array2i  p2 = this->grid_to_screen(line.row(1));
         SDL_Color       color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_white : this->_color_black);
-        SDL_SetRenderDrawColor(this->_renderer, color.r, color.g, color.b, 100);
+        SDL_SetRenderDrawColor(this->_renderer, color.r, color.g, color.b, color.a);
         SDL_RenderDrawLine(this->_renderer, p1(0), p1(1), p2(0), p2(1));
-        /* winning text */
+        /* draw stones indicators */
+        if (!(p1(0) == p2(0) && p1(1) == p2(1))) {
+            int32_t     size = (int32_t)(this->_stone_size * 0.1);
+            SDL_Rect    rect2 = { p1(0)-size/2, p1(1)-size/2, size, size };
+            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(line(0,1),line(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
+            rect2 = { p2(0)-size/2, p2(1)-size/2, size, size };
+            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(line(0,1),line(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
+        }
+        /* draw winning text */
         SDL_Rect    rect = { this->_winning_font_text->get_pos()[0], this->_winning_font_text->get_pos()[1], 0, 0 };
         TTF_SizeText(this->_winning_font_text->get_font(), this->_winning_font_text->get_text()->c_str(), &rect.w, &rect.h);
         rect.w += 20;
