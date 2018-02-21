@@ -4,8 +4,15 @@
 # include <iostream>
 # include <vector>
 # include <Eigen/Dense>
+# include <limits>
+# include "GameEngine.hpp"
 
 class Player;
+
+typedef struct  s_sim {
+    Eigen::Array2i  pos;
+    uint32_t        score;
+}               t_sim;
 
 class MinMax {
 
@@ -21,10 +28,11 @@ public:
     Eigen::Array2i  minmax(Eigen::ArrayXXi game_state, Player *player);
 
 private:
+    GameEngine      *_game_engine;
     uint8_t         _depth;
 
-    int32_t         _min(Eigen::ArrayXXi game_state);
-    int32_t         _max(Eigen::ArrayXXi game_state);
+    int32_t         _min(Eigen::ArrayXXi game_state, uint8_t current_depth);
+    int32_t         _max(Eigen::ArrayXXi game_state, uint8_t current_depth);
     int32_t         _score(Eigen::ArrayXXi game_state);
     std::vector<Eigen::Array2i> _get_open_moves(Eigen::ArrayXXi game_state, Player *player);
 
