@@ -46,6 +46,7 @@ private:
     int32_t                     _min(t_state game_state, uint8_t current_depth);
     int32_t                     _max(t_state game_state, uint8_t current_depth);
     int32_t                     _score(t_state game_state);
+    std::vector<Eigen::Array2i> _get_around_stone_moves(t_state game_state);
     std::vector<Eigen::Array2i> _get_open_moves(t_state game_state);
 
 };

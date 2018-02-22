@@ -116,7 +116,29 @@ int32_t     MinMax::_score(t_state game_state) {
         pair captures
 
     */
+    
     return 1;
+}
+
+std::vector<Eigen::Array2i> MinMax::_get_around_stone_moves(t_state game_state) {
+    std::vector<Eigen::Array2i> open_moves;
+
+    for (uint32_t j = 0; j < game_state.grid.cols(); j++) {
+        for (uint32_t i = 0; i < game_state.grid.rows(); i++) {
+            /* absolute to get -1 and 1 */
+            if (std::abs(game_state.grid(i, j)) == 1) { /* should use hashmaps to avoid duplicate as we can have position that are already present if stones are side to side */
+                if (i >  0 && std::abs(game_state.grid(i-1, j)) != 1) open_moves.push_back({ i-1, j });
+                if (j >  0 && std::abs(game_state.grid(i, j-1)) != 1) open_moves.push_back({ i, j-1 });
+                if (i < 18 && std::abs(game_state.grid(i+1, j)) != 1) open_moves.push_back({ i+1, j });
+                if (j < 18 && std::abs(game_state.grid(i, j+1)) != 1) open_moves.push_back({ i, j+1 });
+                if (i >  0 && j >  0 && std::abs(game_state.grid(i-1, j-1)) != 1) open_moves.push_back({ i-1, j-1 });
+                if (i < 18 && j >  0 && std::abs(game_state.grid(i+1, j-1)) != 1) open_moves.push_back({ i+1, j-1 });
+                if (i >  0 && j < 18 && std::abs(game_state.grid(i-1, j+1)) != 1) open_moves.push_back({ i-1, j+1 });
+                if (i < 18 && j < 18 && std::abs(game_state.grid(i+1, j+1)) != 1) open_moves.push_back({ i+1, j+1 });
+            }
+        }
+    }
+    return open_moves;
 }
 
 std::vector<Eigen::Array2i> MinMax::_get_open_moves(t_state game_state) {
