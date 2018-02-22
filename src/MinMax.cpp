@@ -29,7 +29,9 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
     game_state.p1_pairs_captured = player->get_pair_captured(); // TODO : do better
     game_state.p2_pairs_captured = player->get_pair_captured(); // TODO : do better
 
-    open_moves = this->_get_open_moves(game_state);
+    // open_moves = this->_get_open_moves(game_state);
+    open_moves = this->_get_around_stone_moves(game_state);
+    std::cout << "num moves : " << open_moves.size() << std::endl;
 
     min = std::numeric_limits<unsigned int>::max();
     pos = open_moves[0];
@@ -53,7 +55,8 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
 }
 
 int32_t     MinMax::_min(t_state game_state, uint8_t current_depth) {
-    std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state);
+    std::vector<Eigen::Array2i> open_moves = this->_get_around_stone_moves(game_state);
+    // std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state);
     uint32_t                    score;
     uint32_t                    max;
     int32_t                     tmp;
@@ -79,7 +82,8 @@ int32_t     MinMax::_min(t_state game_state, uint8_t current_depth) {
 }
 
 int32_t     MinMax::_max(t_state game_state, uint8_t current_depth) {
-    std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state);
+    std::vector<Eigen::Array2i> open_moves = this->_get_around_stone_moves(game_state);
+    // std::vector<Eigen::Array2i> open_moves = this->_get_open_moves(game_state);
     uint32_t                    score;
     uint32_t                    min;
     int32_t                     tmp;
@@ -105,7 +109,6 @@ int32_t     MinMax::_max(t_state game_state, uint8_t current_depth) {
 }
 
 int32_t     MinMax::_score(t_state game_state) {
-
     /*  We evaluate the current state of the board and add the scores of the patterns we detect in it :
         open three      : good  ( -o-oo- is better than -ooo- ), 3 variants
         open four       : win
@@ -114,9 +117,29 @@ int32_t     MinMax::_score(t_state game_state) {
         three-four      : win
         double-four     : win
         pair captures
-
     */
     return 1;
+}
+
+std::vector<Eigen::Array2i> MinMax::_get_around_stone_moves(t_state game_state) {
+    std::vector<Eigen::Array2i> open_moves;
+
+    for (uint32_t j = 0; j < game_state.grid.cols(); j++) {
+        for (uint32_t i = 0; i < game_state.grid.rows(); i++) {
+            /* absolute to get -1 and 1 */
+            if (std::abs(game_state.grid(i, j)) == 1) { /* should use hashmaps to avoid duplicate as we can have position that are already present if stones are side to side */
+                if (i >  0 && std::abs(game_state.grid(i-1, j)) != 1) open_moves.push_back({ i-1, j });
+                if (j >  0 && std::abs(game_state.grid(i, j-1)) != 1) open_moves.push_back({ i, j-1 });
+                if (i < 18 && std::abs(game_state.grid(i+1, j)) != 1) open_moves.push_back({ i+1, j });
+                if (j < 18 && std::abs(game_state.grid(i, j+1)) != 1) open_moves.push_back({ i, j+1 });
+                if (i >  0 && j >  0 && std::abs(game_state.grid(i-1, j-1)) != 1) open_moves.push_back({ i-1, j-1 });
+                if (i < 18 && j >  0 && std::abs(game_state.grid(i+1, j-1)) != 1) open_moves.push_back({ i+1, j-1 });
+                if (i >  0 && j < 18 && std::abs(game_state.grid(i-1, j+1)) != 1) open_moves.push_back({ i-1, j+1 });
+                if (i < 18 && j < 18 && std::abs(game_state.grid(i+1, j+1)) != 1) open_moves.push_back({ i+1, j+1 });
+            }
+        }
+    }
+    return open_moves;
 }
 
 std::vector<Eigen::Array2i> MinMax::_get_open_moves(t_state game_state) {
