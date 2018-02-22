@@ -61,19 +61,23 @@ static uint32_t    get_mean_action_duration(std::list<t_action> *history, uint8_
     return (uint32_t)mean;
 }
 
+static uint32_t    get_last_action_duration(std::list<t_action> *history, uint8_t player_id) {
+    for (std::list<t_action>::reverse_iterator it = history->rbegin(); it != history->rend(); it++) {
+        if ((*it).player->get_id() == player_id)
+            return (*it).duration.count();
+    }
+    return 0;
+}
+
 Eigen::Array2i  Analytics::_handle_ratio(Eigen::Array2i pos) {
     return {(int32_t)(pos[0] * this->_res_ratio), (int32_t)(pos[1] * this->_res_ratio)};
 }
-
-/*  TODO : implement last action duration to display the duration of the last action (mandatory in gomoku)
-*/
 
 void        Analytics::_update_analytics(bool init) {
     /* global */
     this->_data["g_time"] = {
         "time since start : ",
         format_time_since_start(this->_chrono->get_elapsed()),
-        // format_time_since_start(std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint()),
         this->_font,
         &this->_color_font,
         this->_handle_ratio({10, 10}),
@@ -111,12 +115,20 @@ void        Analytics::_update_analytics(bool init) {
         this->_handle_ratio({15, 120}),
         "left"
     };
+    this->_data["p1_last_action_duration"] = {
+        "last action duration : ",
+        format_duration(get_last_action_duration(this->_game_engine->get_history(), 1)),
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 140}),
+        "left"
+    };
     this->_data["p1_mean_action_duration"] = {
         "mean action duration : ",
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 1)),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 140}),
+        this->_handle_ratio({15, 160}),
         "left"
     };
     /* player 2 */
@@ -125,14 +137,14 @@ void        Analytics::_update_analytics(bool init) {
         (!init and this->_c_player->get_id() == 2?"   (current)":""),
         this->_font_title,
         &this->_color_font_title,
-        this->_handle_ratio({10, 190}),
+        this->_handle_ratio({10, 210}),
         "left"
     };
     this->_data["p2_type"] = {
         (!init and this->_player_2->type == 0 ? "human":"computer"), "",
         this->_font_small,
         &this->_color_font_small,
-        this->_handle_ratio({290, 190}),
+        this->_handle_ratio({290, 210}),
         "right"
     };
     this->_data["p2_captured_pairs"] = {
@@ -140,7 +152,15 @@ void        Analytics::_update_analytics(bool init) {
         std::to_string(!init ? this->_player_2->get_pair_captured() : 0),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 210}),
+        this->_handle_ratio({15, 230}),
+        "left"
+    };
+    this->_data["p2_last_action_duration"] = {
+        "last action duration : ",
+        format_duration(get_last_action_duration(this->_game_engine->get_history(), 2)),
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 250}),
         "left"
     };
     this->_data["p2_mean_action_duration"] = {
@@ -148,7 +168,7 @@ void        Analytics::_update_analytics(bool init) {
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 2)),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 230}),
+        this->_handle_ratio({15, 270}),
         "left"
     };
 

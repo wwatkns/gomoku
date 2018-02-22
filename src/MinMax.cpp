@@ -30,8 +30,6 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
     game_state.p2_pairs_captured = player->get_pair_captured(); // TODO : do better
 
     open_moves = this->_get_open_moves(game_state);
-    std::cout << open_moves.size() << std::endl;
-    // exit(0);
 
     min = std::numeric_limits<unsigned int>::max();
     pos = open_moves[0];
