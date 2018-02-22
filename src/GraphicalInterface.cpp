@@ -223,7 +223,7 @@ void    GraphicalInterface::update_display(void) {
 }
 
 void    GraphicalInterface::update_end_game(Player *player) {
-    if (this->_game_engine->check_end(player->get_pair_captured()) == true) {
+    if (this->_game_engine->check_end(player->get_pair_captured()) == 1) { // TODO : implement draw condition (check_end() == 2)
         std::string type = (player->type == 0 ? "human" : "computer");
         this->_winning_color = (player->type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
         this->_winning_text = std::string("Player ")+std::to_string(player->get_id())+std::string(" (")+type+std::string(") wins");

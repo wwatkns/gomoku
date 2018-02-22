@@ -44,18 +44,22 @@ bool    GameEngine::check_action(t_action &action) {
     return true;
 }
 
-bool    GameEngine::check_end(uint8_t player_pairs) {
+uint8_t GameEngine::check_end(uint8_t player_pairs) {
+    int draw = 0;
     for (size_t col = 0; col < BOARD_ROWS; ++col) {
         for (size_t row = 0; row < BOARD_COLS; ++row) {
             if (this->grid(row, col) == state::black || this->grid(row, col) == state::white) {
                 if (_check_col(col, row) || _check_row(col, row) ||
                     _check_dil(col, row) || _check_dir(col, row) ||
                     _check_pairs_captured(player_pairs))
-                    return true;
+                    return 1;
+                draw++;
             }
         }
     }
-    return false;
+    if (draw == (BOARD_COLS * BOARD_ROWS))
+        return 2;
+    return 0;
 }
 
 Eigen::Array22i GameEngine::get_end_line(void) {

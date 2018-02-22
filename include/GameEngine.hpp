@@ -32,7 +32,7 @@ public:
     GameEngine	&operator=(GameEngine const &rhs);
 
     bool                check_action(t_action &action); // check if action is valid
-    bool                check_end(uint8_t player_pairs);
+    uint8_t             check_end(uint8_t player_pairs);
     void                update_game_state(t_action &action, Player *player); // update the game state given an action
     void                delete_last_action(void);
 
