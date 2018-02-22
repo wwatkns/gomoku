@@ -2,6 +2,7 @@
 # define MINMAX_HPP
 
 # include <iostream>
+# include <cstdlib> // cmath also ?
 # include <vector>
 # include <Eigen/Dense>
 # include <limits>
@@ -16,7 +17,8 @@ class GameEngine;
     - heuristic function to set a score on each cell of the board to reduce the search space (with threshold)
     - hash function to access score associated with board state already explored (https://en.wikipedia.org/wiki/Zobrist_hashing)
     - multithreading implementation of minMax on CPU or GPU
-    - alpha-beta pruning (or negascout)
+    - MTD-f (with transposition tables)
+    - iterative deepening IDDFS
 */
 
 typedef struct  s_state {
@@ -48,6 +50,7 @@ private:
     int32_t                     _score(t_state game_state);
     std::vector<Eigen::Array2i> _get_around_stone_moves(t_state game_state);
     std::vector<Eigen::Array2i> _get_open_moves(t_state game_state);
+    std::vector<Eigen::Array2i> _get_around_stone_moves(t_state game_state);
 
 };
 
