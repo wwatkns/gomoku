@@ -52,7 +52,7 @@ static uint32_t    get_mean_action_duration(std::list<t_action> *history, uint8_
     uint32_t            n_action = 0;
     float               mean = 0.;
     for (std::list<t_action>::iterator it = history->begin(); it != history->end(); it++) {
-        if ((*it).player->get_id() == player_id) {
+        if ((*it).pid == player_id) {
             mean += (*it).duration.count();
             n_action++;
         }
@@ -63,7 +63,7 @@ static uint32_t    get_mean_action_duration(std::list<t_action> *history, uint8_
 
 static uint32_t    get_last_action_duration(std::list<t_action> *history, uint8_t player_id) {
     for (std::list<t_action>::reverse_iterator it = history->rbegin(); it != history->rend(); it++) {
-        if ((*it).player->get_id() == player_id)
+        if ((*it).pid == player_id)
             return (*it).duration.count();
     }
     return 0;
@@ -109,7 +109,7 @@ void        Analytics::_update_analytics(bool init) {
     };
     this->_data["p1_captured_pairs"] = {
         "captured pairs : ",
-        std::to_string(!init ? this->_player_1->get_pair_captured() : 0),
+        std::to_string(!init ? this->_player_1->get_pairs_captured() : 0),
         this->_font,
         &this->_color_font,
         this->_handle_ratio({15, 120}),
@@ -149,7 +149,7 @@ void        Analytics::_update_analytics(bool init) {
     };
     this->_data["p2_captured_pairs"] = {
         "captured pairs : ",
-        std::to_string(!init ? this->_player_2->get_pair_captured() : 0),
+        std::to_string(!init ? this->_player_2->get_pairs_captured() : 0),
         this->_font,
         &this->_color_font,
         this->_handle_ratio({15, 230}),

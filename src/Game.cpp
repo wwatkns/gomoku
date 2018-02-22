@@ -41,7 +41,6 @@ void        Game::_handle_fps(uint32_t *frames, uint32_t *ms) {
 
 /* TODO: implement draw game (no winners)
 */
-
 void        Game::loop(void) {
     bool        action_performed;
     bool        action_undo;
@@ -76,7 +75,7 @@ void        Game::loop(void) {
 
 bool        Game::undo(void) {
     bool    last = (this->_game_engine->get_history_size() == 0);
-    this->_game_engine->delete_last_action();
+    this->_game_engine->delete_last_action(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
     return last;
 }
 

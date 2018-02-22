@@ -14,14 +14,14 @@
 class Player;
 
 typedef struct  s_action {
-    Eigen::Array2i                              pos;
-    Player                                      *player;
-    uint64_t                                    id;
+    Eigen::Array2i                              pos;        /* action pos on grid */
+    uint8_t                                     pid;        /* player id */
+    uint8_t                                     ppc;        /* player pairs captured */
+    uint32_t                                    id;         /* action id number */
     std::chrono::duration<double, std::milli>   timepoint;  /* time since start */
     std::chrono::duration<double, std::milli>   duration;   /* duration of the action */
     Eigen::ArrayXXi                             old_grid;   /* the state of the grid before the action */
 }               t_action;
-
 
 class GameEngine {
 
@@ -34,14 +34,14 @@ public:
     bool                check_action(t_action &action); // check if action is valid
     uint8_t             check_end(uint8_t player_pairs);
     void                update_game_state(t_action &action, Player *player); // update the game state given an action
-    void                delete_last_action(void);
+    void                delete_last_action(Player *player);
 
     Eigen::Array22i     get_end_line(void);
 
     /* Getters */
     std::list<t_action>                     *get_history(void) { return &_history; };
     std::list<t_action>                     get_history_copy(void) const { return _history; };
-    uint64_t                                get_history_size(void) const { return _history.size(); };
+    uint32_t                                get_history_size(void) const { return _history.size(); };
     std::chrono::steady_clock::time_point   get_initial_timepoint(void) const { return _initial_timepoint; };
     /* Setters */
     void                                    inc_game_turn(void);
@@ -52,7 +52,7 @@ public:
 private:
     std::list<t_action>                     _history;
     std::chrono::steady_clock::time_point   _initial_timepoint;
-    uint64_t                                _game_turn;
+    uint32_t                                _game_turn;
 
     /* the possible states of the board cells */
     struct state {

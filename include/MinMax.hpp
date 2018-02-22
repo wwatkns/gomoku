@@ -2,7 +2,7 @@
 # define MINMAX_HPP
 
 # include <iostream>
-# include <cstdlib> // cmath also ?
+# include <cstdlib>
 # include <vector>
 # include <Eigen/Dense>
 # include <limits>

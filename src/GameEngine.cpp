@@ -51,7 +51,7 @@ bool    GameEngine::check_action(t_action &action) {
     int y = action.pos(0);
     int x = action.pos(1);
 
-    if (action.player->get_id() == 1) {
+    if (action.pid == 1) {
         if (this->grid(y, x) == state::black || this->grid(y, x) == state::white || this->grid(y, x) == state::black_free) {
             return false;
         }
@@ -141,9 +141,9 @@ bool    GameEngine::_check_boundary(int row, int col) {
 ******************************************************************************************************************** */
 
 void    GameEngine::update_game_state(t_action &action, Player *player) {
-    this->grid(action.pos[0], action.pos[1]) = (action.player->get_id() == 1 ? state::black : state::white);
+    this->grid(action.pos[0], action.pos[1]) = (action.pid == 1 ? state::black : state::white);
     // TODO (alain) : detecter les db db threes et mettre 20 par exemple
-    player->set_pair_captured(player->get_pair_captured() + _pair_detection(action.pos));
+    player->set_pairs_captured(player->get_pairs_captured() + _pair_detection(action.pos));
     _double_threes_detection();
     this->_history.push_back(action);
 }
@@ -341,14 +341,14 @@ bool    GameEngine::_detect_threes_xocox(int row, int col, int row_dir, int col_
     return false;
 }
 
-void    GameEngine::delete_last_action(void) {
+void    GameEngine::delete_last_action(Player *player) {
     t_action    last;
 
     if (this->_history.size() > 0) {
         last = this->_history.back();
         this->grid = last.old_grid;
-        this->grid(last.pos[0], last.pos[1]) = (last.player->get_id() == 1 ? state::black : state::white);
-        last.player->set_pair_captured(last.player->get_pair_captured() - _pair_detection(last.pos));
+        this->grid(last.pos[0], last.pos[1]) = (last.pid == 1 ? state::black : state::white);
+        player->set_pairs_captured(last.ppc);
         this->grid = last.old_grid;
         this->_history.pop_back();
     }

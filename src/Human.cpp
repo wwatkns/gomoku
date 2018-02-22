@@ -31,7 +31,9 @@ bool    Human::play(void) {
         action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
         action.id = this->_game_engine->get_history_size() + 1;
         action.old_grid = this->_game_engine->grid;
-        action.player = this;
+        // action.player = this;
+        action.pid = this->_id;
+        action.ppc = this->_pairs_captured;
         if (this->_game_engine->check_action(action)) {
             this->_game_engine->update_game_state(action, this);
             this->_action_duration = std::chrono::steady_clock::duration::zero();

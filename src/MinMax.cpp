@@ -26,8 +26,8 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
 
     game_state.grid = grid;
     game_state.current_player_id = player->get_id();
-    game_state.p1_pairs_captured = player->get_pair_captured(); // TODO : do better
-    game_state.p2_pairs_captured = player->get_pair_captured(); // TODO : do better
+    game_state.p1_pairs_captured = player->get_pairs_captured(); // TODO : do better
+    game_state.p2_pairs_captured = player->get_pairs_captured(); // TODO : do better
 
     // open_moves = this->_get_open_moves(game_state);
     open_moves = this->_get_around_stone_moves(game_state);

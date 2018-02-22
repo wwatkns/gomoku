@@ -34,7 +34,9 @@ bool        Computer::play(void) {
 
     action.id = this->_game_engine->get_history_size() + 1;
     action.old_grid = this->_game_engine->grid;
-    action.player = this;
+    // action.player = this;
+    action.pid = this->_id;
+    action.ppc = this->_pairs_captured;
     this->_game_engine->update_game_state(action, this);
     return true;
 }

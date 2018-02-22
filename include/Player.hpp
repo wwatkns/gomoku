@@ -20,9 +20,9 @@ public:
     /* Getters */
     GameEngine      *get_game_engine(void) const { return _game_engine; };
     uint8_t         get_id(void) const { return _id; };
-    uint8_t         get_pair_captured(void) const { return _pair_captured; };
+    uint8_t         get_pairs_captured(void) const { return _pairs_captured; };
     /* Setters */
-    void            set_pair_captured(uint8_t pairs) { _pair_captured = pairs; };
+    void            set_pairs_captured(uint8_t pairs) { _pairs_captured = pairs; };
 
     uint8_t         type;
 
@@ -30,7 +30,7 @@ protected:
     GameEngine          *_game_engine;
     GraphicalInterface  *_gui;
     uint8_t             _id;
-    uint8_t             _pair_captured;
+    uint8_t             _pairs_captured;
 
 };
 
