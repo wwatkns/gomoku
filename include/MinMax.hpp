@@ -16,6 +16,7 @@ class GameEngine;
     - heuristic function to set a score on each cell of the board to reduce the search space (with threshold)
     - hash function to access score associated with board state already explored (https://en.wikipedia.org/wiki/Zobrist_hashing)
     - multithreading implementation of minMax on CPU or GPU
+    - alpha-beta pruning (or negascout)
 */
 
 typedef struct  s_state {

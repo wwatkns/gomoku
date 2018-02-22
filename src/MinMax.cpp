@@ -40,8 +40,8 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
         /* save value */
         tmp = game_state.grid((*it)[0], (*it)[1]);
         /* update game state */
-        game_state->grid((*it)[0], (*it)[1]) = (game_state->current_player_id == 1 ? -1 : 1);
-        game_state->current_player_id = (game_state->current_player_id == 1 ? 2 : 1);
+        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
+        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1);
         /* call min */
         score = this->_min(game_state, 1);
         if (score > min) {
@@ -69,8 +69,8 @@ int32_t     MinMax::_min(t_state game_state, uint8_t current_depth) {
         /* save value */
         tmp = game_state.grid((*it)[0], (*it)[1]);
         /* update game state */
-        game_state->grid((*it)[0], (*it)[1]) = (game_state->current_player_id == 1 ? -1 : 1);
-        game_state->current_player_id = (game_state->current_player_id == 1 ? 2 : 1);
+        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
+        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1);
         /* call max */
         score = this->_max(game_state, current_depth+1);
         max = (score > max ? score : max);
@@ -95,8 +95,8 @@ int32_t     MinMax::_max(t_state game_state, uint8_t current_depth) {
         /* save value */
         tmp = game_state.grid((*it)[0], (*it)[1]);
         /* update game state */
-        game_state->grid((*it)[0], (*it)[1]) = (game_state->current_player_id == 1 ? -1 : 1);
-        game_state->current_player_id = (game_state->current_player_id == 1 ? 2 : 1);
+        game_state.grid((*it)[0], (*it)[1]) = (game_state.current_player_id == 1 ? -1 : 1);
+        game_state.current_player_id = (game_state.current_player_id == 1 ? 2 : 1);
         /* call min */
         score = this->_min(game_state, current_depth+1);
         min = (score < min ? score : min);
