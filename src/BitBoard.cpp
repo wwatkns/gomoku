@@ -128,6 +128,16 @@ BitBoard    &BitBoard::operator^=(BitBoard const &rhs) {
     return (*this);
 }
 
+BitBoard    &BitBoard::operator<<=(uint16_t shift) {
+    *this = (*this << shift);
+    return (*this);
+}
+
+BitBoard    &BitBoard::operator>>=(uint16_t shift) {
+    *this = (*this >> shift);
+    return (*this);
+}
+
 /*
 ** Member access operator overload
 */
@@ -136,19 +146,20 @@ uint64_t    &BitBoard::operator[](uint8_t i){
 }
 
 
-
-
 /*
 ** Non-member functions
 */
-BitBoard    dilation(BitBoard const &bitboard, uint8_t amount) { // TODO : remove amount if we don't use it
+BitBoard    dilation(BitBoard const &bitboard) {
 	BitBoard	res = bitboard;
+    for (uint8_t i = 0; i < D; i++)
+        res |= (BitBoard::shifts[i] > 0 ? (bitboard >>  BitBoard::shifts[i]) : (bitboard << -BitBoard::shifts[i]));
+    return (res);
+}
 
-    for (uint8_t i = 0; i < D; i++) // TODO : something more intelligent than those conditions
-        if (BitBoard::shifts[i] > 0)
-            res |= (bitboard >>  BitBoard::shifts[i]);
-        else
-            res |= (bitboard << -BitBoard::shifts[i]);
+BitBoard    erosion(BitBoard const &bitboard) {
+	BitBoard	res = bitboard;
+    for (uint8_t i = 0; i < D; i++)
+        res &= (BitBoard::shifts[i] > 0 ? (bitboard >>  BitBoard::shifts[i]) : (bitboard << -BitBoard::shifts[i]));
     return (res);
 }
 

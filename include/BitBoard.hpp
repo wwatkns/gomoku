@@ -4,8 +4,9 @@
 # include <iostream>
 # include <cstdlib>
 # include <array>
-# include <bitset> // for display
-# include <string> // for display
+/* includes for debug purposes */
+# include <bitset>
+# include <string>
 # include <sstream>
 
 # define N 6
@@ -38,7 +39,8 @@ public:
     BitBoard    &operator|=(BitBoard const &rhs);
     BitBoard    &operator&=(BitBoard const &rhs);
     BitBoard    &operator^=(BitBoard const &rhs);
-    // TODO : add >>= and <<= operators
+    BitBoard    &operator<<=(uint16_t shift);
+    BitBoard    &operator>>=(uint16_t shift);
 
     /* member access operator overload */
     uint64_t    &operator[](uint8_t i);
@@ -54,8 +56,9 @@ public:
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
-BitBoard    dilation(BitBoard const &rhs, uint8_t amount); // see 4.3 at https://eprints.qut.edu.au/85005/1/__staffhome.qut.edu.au_staffgroupm%24_meaton_Desktop_bits-7.pdf
-// BitBoard    erosion(BitBoard const &rhs, uint8_t amount);
+/* see 4.3 at https://eprints.qut.edu.au/85005/1/__staffhome.qut.edu.au_staffgroupm%24_meaton_Desktop_bits-7.pdf */
+BitBoard    dilation(BitBoard const &bitboard);
+BitBoard    erosion(BitBoard const &bitboard);
 
 #endif
 
@@ -64,29 +67,31 @@ BitBoard    dilation(BitBoard const &rhs, uint8_t amount); // see 4.3 at https:/
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    |                              binary                              |    hexadecimal     |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    +------------------------------------------------------------------+--------------------+
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1                              | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
+    | 1 1 1 1 1 1 1                          6   | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
                     1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1                | 1111111111111111111111111111111111111111100000000000000000000000 | 0xFFFFFFFFFF800000 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1           13   | 1111111111111111111111111111111111111111100000000000000000000000 | 0xFFFFFFFFFF800000 |
                                   1 1 1 1 1 |    +------------------------------------------------------------------+--------------------+
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1
+    | 1 1                                    1
           1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1
+    | 1 1 1 1 1 1 1 1                        7
                       1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1       15
                                       1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     +---------------------------------------+
-    BitBoard without separating bits.
+    BitBoard without separating bits. We'll benchmark the performances of the
+    algorithms once we have more stuff in place, and compare the version of the
+    BitBoard with and without the separator bits.
 
     +--Shifts---+---------------+-----+
     | direction |     value     | idx |        [indices]         [shifts]
