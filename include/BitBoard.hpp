@@ -26,9 +26,10 @@ public:
     BitBoard	&operator=(BitBoard const &rhs);
 
     void        zeros(void);
+    void        broadcastRow(uint64_t line);
     BitBoard    get_flipped(void);
-    BitBoard    get_rotated_45(void);
-    BitBoard    get_rotated_315(void);
+    BitBoard    rotateLeft45(void);
+    BitBoard    rotateRight45(void);
 
     /* arithmetic (bitwise) operator overload */
     BitBoard    operator|(BitBoard const &rhs);     // bitwise union
@@ -50,8 +51,8 @@ public:
 
     std::array<uint64_t, N>         values;
     static std::array<int16_t, D>   shifts;
-    static BitBoard                 full_mask;
-    static BitBoard                 empty_mask;
+    static BitBoard                 full;
+    static BitBoard                 empty;
 
 // private:
 
@@ -148,4 +149,65 @@ BitBoard    get_neighbours(BitBoard const &bitboard);
                 f1  g2  h3                              a3  b2  c1
                   g1  h2                                  a2  b1
                     h1                                      a1
+*/
+
+/*
+   1010101010101010101000000000000000000000000000000000000000000000 = 0xAAAAA00000000000
+   1100110011001100110000000000000000000000000000000000000000000000 = 0xCCCCC00000000000
+   1111111100000000000000000000000000000000000000000000000000000000 = 0xFF00000000000000
+
+   0xAAAAAAAAAAAAAAAA
+    1 0 1 0 1 0 1 0
+    1 0 1 0 1 0 1 0
+    1 0 1 0 1 0 1 0
+    1 0 1 0 1 0 1 0
+    1 0 1 0 1 0 1 0
+    1 0 1 0 1 0 1 0
+    1 0 1 0 1 0 1 0
+    1 0 1 0 1 0 1 0
+   0xCCCCCCCCCCCCCCCC
+    1 1 0 0 1 1 0 0
+    1 1 0 0 1 1 0 0
+    1 1 0 0 1 1 0 0
+    1 1 0 0 1 1 0 0
+    1 1 0 0 1 1 0 0
+    1 1 0 0 1 1 0 0
+    1 1 0 0 1 1 0 0
+    1 1 0 0 1 1 0 0
+   0xF0F0F0F0F0F0F0F0
+    1 1 1 1 0 0 0 0
+    1 1 1 1 0 0 0 0
+    1 1 1 1 0 0 0 0
+    1 1 1 1 0 0 0 0
+    1 1 1 1 0 0 0 0
+    1 1 1 1 0 0 0 0
+    1 1 1 1 0 0 0 0
+    1 1 1 1 0 0 0 0
+
+    +--19x19 BitBoard-----------------------+
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64 - 19           | 45
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64 - (19 * 2)     | 26
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64 - (19 * 3)     | 7
+    | 1 1 1 1 1 1 1                           64 - (19 * 4)     | -12 (so we shift right 12)
+                    1 1 1 1 1 1 1 1 1 1 1 1 | 64 - 12           | we use the last value if negative
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64 - 12 - 19      | ...
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64 - 12 -(19 * 2) | ...
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1             64 - 12 -(19 * 3) | -5 (so we shift right 5)
+                                  1 1 1 1 1 | 64 - 5            | ...
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | ...
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1
+          1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1
+                      1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                                      1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    +---------------------------------------+
 */

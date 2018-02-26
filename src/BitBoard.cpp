@@ -2,8 +2,8 @@
 
 /* assignation of static variables */
 std::array<int16_t, D>  BitBoard::shifts = { -19, -18, 1, 20, 19, 18, -1, -20 };
-BitBoard                BitBoard::full_mask = (std::array<uint64_t, N>){ 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF800000 };
-BitBoard                BitBoard::empty_mask = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0 };
+BitBoard                BitBoard::full = (std::array<uint64_t, N>){ 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF800000 };
+BitBoard                BitBoard::empty = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0 };
 
 BitBoard::BitBoard(void) {
     this->zeros();
@@ -33,6 +33,40 @@ void    BitBoard::zeros(void) {
         this->values[i] = 0;
 }
 
+void    BitBoard::broadcastRow(uint64_t row) {
+    /* will broadcast the given row (only the first 19 bits) to all rows */
+    uint16_t    offset = 19;
+    int32_t     shift = 0;
+
+    row >>= BITS-19; /* if the pattern is encoded in the first 19 bits */
+    this->zeros();
+    for (uint8_t i = 0; i < N; i++) {
+        shift = 1;
+        for (uint8_t j = 0; shift > 0; j++) {
+            shift = BITS - offset - (19 * j);
+            this->values[i] |= (shift > 0 ? row << shift : row >> -shift);
+        }
+        offset = -shift;
+    }
+}
+
+// BitBoard    BitBoard::rotatedLeft45(void) {
+// }
+
+BitBoard    BitBoard::rotateRight45(void) {
+    BitBoard    res;
+    BitBoard    k1;
+    BitBoard    k2;
+    BitBoard    k4;
+    k1.broadcastRow(0xAAAAA00000000000);
+    k2.broadcastRow(0xCCCCC00000000000);
+    k4.broadcastRow(0xFF00000000000000);
+    *this ^= k1 & (*this ^ rotateRight(x,  8));
+    *this ^= k2 & (*this ^ rotateRight(x, 16));
+    *this ^= k4 & (*this ^ rotateRight(x, 32));
+}
+
+
 /*
 ** Arithmetic operator overload
 */
@@ -60,7 +94,7 @@ BitBoard    BitBoard::operator^(BitBoard const &rhs) {
 BitBoard	BitBoard::operator~(void) {
 	BitBoard	res;
     for (uint8_t i = 0; i < N; i++)
-        res.values[i] = (~this->values[i]) & BitBoard::full_mask[i];
+        res.values[i] = (~this->values[i]) & BitBoard::full[i];
 	return (res);
 }
 
