@@ -16,16 +16,26 @@ int     main(int argc, char **argv) {
     // p1->broadcastRow(0xCCCCA00000000000);
     // p1->broadcastRow(0x00000000000CCCCA);
 
-    std::cout << (*p1) << std::endl;
-    p1->broadcastRow(0xAAAAA00000000000);
-    std::cout << (*p1) << std::endl;
-    p1->broadcastRow(0xCCCCC00000000000);
-    std::cout << (*p1) << std::endl;
-    p1->broadcastRow(0xFF00000000000000);
-    std::cout << (*p1) << std::endl;
+    p1->values[1] = 0x000FFFFE00000000;
 
-    p1->rotateRight45();
     std::cout << (*p1) << std::endl;
+    std::cout << (*p1 >> -1) << std::endl;
+
+    // for (uint8_t i = 0; i < 19; i++) {
+    //     std::cout << (*p1 >> 19*i) << std::endl;
+    //     break;
+    // }
+
+    // p1->broadcastRow(0xAAAAA00000000000);
+    // std::cout << (*p1) << std::endl;
+    // p1->broadcastRow(0xCCCCC00000000000);
+    // std::cout << (*p1) << std::endl;
+    // p1->broadcastRow(0xFF00000000000000);
+    // std::cout << (*p1) << std::endl;
+
+    // std::cout << p1->rotateRight45() << std::endl;
+
+    // std::cout << (*p1) << std::endl;
 
     // p1->values[3] = 129;
     // std::cout << (*p1) << std::endl;

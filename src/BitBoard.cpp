@@ -34,7 +34,8 @@ void    BitBoard::zeros(void) {
 }
 
 void    BitBoard::broadcastRow(uint64_t row) {
-    /* will broadcast the given row (only the first 19 bits) to all rows */
+    /* will broadcast the given row (only the first 19 bits) to all rows,
+        the pattern must be encoded */
     uint16_t    offset = 19;
     int32_t     shift = 0;
 
@@ -50,20 +51,31 @@ void    BitBoard::broadcastRow(uint64_t row) {
     }
 }
 
-// BitBoard    BitBoard::rotatedLeft45(void) {
+
+// static uint64_t rotateLeft(uint64_t v, uint8_t amount) { // rotate bits to the left
+//     return (v << amount) | v >> (BITS - amount);
+// }
+//
+// static uint64_t rotateRight(uint64_t v, uint8_t amount) { // rotate bits to the right
+//     return (v >> amount) | v << (BITS - amount);
 // }
 
+// BitBoard    BitBoard::rotatedLeft45(void) {
+// }
 BitBoard    BitBoard::rotateRight45(void) {
     BitBoard    res;
-    BitBoard    k1;
-    BitBoard    k2;
-    BitBoard    k4;
-    k1.broadcastRow(0xAAAAA00000000000);
-    k2.broadcastRow(0xCCCCC00000000000);
-    k4.broadcastRow(0xFF00000000000000);
-    *this ^= k1 & (*this ^ rotateRight(x,  8));
-    *this ^= k2 & (*this ^ rotateRight(x, 16));
-    *this ^= k4 & (*this ^ rotateRight(x, 32));
+    BitBoard    mask;
+    uint64_t    val = 1;
+
+    val <<= BITS - 1;
+    for (uint64_t j = 0; j < 19; j++) {
+        mask.broadcastRow(val);
+        res |= ((*this >> (19 * j) | *this << (19 * (19 - j)))) & mask;
+        std::cout << (*this >> (19 * j)) << std::endl;
+        // std::cout << (((*this >> (19 * j)) | (*this << (19 * (19 - j)))) & mask) << std::endl;
+        val >>= 1;
+    }
+    return (res);
 }
 
 
@@ -98,29 +110,35 @@ BitBoard	BitBoard::operator~(void) {
 	return (res);
 }
 
-BitBoard    BitBoard::operator>>(uint16_t shift) const {
+BitBoard    BitBoard::operator>>(int32_t shift) const {
     BitBoard	res;
-    if (shift < BITS) {
+    if (shift <= 0)
+        return (*this);
+    else if (shift < BITS) {
         for (uint8_t i = N-1; i > 0; i--)
             res.values[i] = (this->values[i] >> shift) | (this->values[i-1] << (BITS - shift));
         res.values[0] = (this->values[0] >> shift);
     } else {
         uint16_t    n = shift / BITS;
         uint16_t    a = shift % BITS;
+        std::cout << "n: " << n << std::endl;
+        std::cout << "a: " << a << std::endl;
         for (uint8_t i = N-1; i > n; i--) {
             if (a == 0)
                 res.values[i] = (this->values[i-n] << (BITS - a));
             else
                 res.values[i] = (this->values[i-n] >> a) | (this->values[i-(n+1)] << (BITS - a));
         }
-        res.values[n] = (this->values[n] >> a);
+        res.values[n] = (this->values[0] >> a);
     }
 	return (res);
 }
 
-BitBoard    BitBoard::operator<<(uint16_t shift) const {
+BitBoard    BitBoard::operator<<(int32_t shift) const {
     BitBoard	res;
-    if (shift < BITS) {
+    if (shift <= 0)
+        return (*this);
+    else if (shift < BITS) {
         for (uint8_t i = 0; i < N; i++)
             res.values[i] = (this->values[i] << shift) | (this->values[i+1] >> (BITS - shift));
         res.values[N-1] = (this->values[N-1] << shift);
@@ -160,12 +178,12 @@ BitBoard    &BitBoard::operator^=(BitBoard const &rhs) {
     return (*this);
 }
 
-BitBoard    &BitBoard::operator<<=(uint16_t shift) {
+BitBoard    &BitBoard::operator<<=(int32_t shift) {
     *this = (*this << shift);
     return (*this);
 }
 
-BitBoard    &BitBoard::operator>>=(uint16_t shift) {
+BitBoard    &BitBoard::operator>>=(int32_t shift) {
     *this = (*this >> shift);
     return (*this);
 }
