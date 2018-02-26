@@ -13,6 +13,8 @@
 # define D 8
 # define BITS 64
 
+# define SHIFT(bb)
+
 /*  Implementation of a bitboard representation of a square board of 19*19 using
     6 long integers (64bits), and bit operations.
 */
@@ -24,10 +26,15 @@ public:
     BitBoard(BitBoard const &src);
     ~BitBoard(void);
     BitBoard	&operator=(BitBoard const &rhs);
+    BitBoard	&operator=(uint64_t const &val);
 
+    void        write_move(uint8_t x, uint8_t y);
+    void        delete_move(uint8_t x, uint8_t y);
     void        zeros(void);
-    void        broadcastRow(uint64_t line);
-    BitBoard    get_flipped(void);
+    void        broadcast_row(uint64_t line);
+    bool        is_empty(void);
+
+    BitBoard    shifted(uint8_t dir, uint8_t n = 1) const;
     BitBoard    rotateLeft45(void);
     BitBoard    rotateRight45(void);
 
@@ -36,8 +43,8 @@ public:
     BitBoard    operator&(BitBoard const &rhs);     // bitwise intersection
     BitBoard    operator^(BitBoard const &rhs);     // bitwise exclusive or
     BitBoard    operator~(void);                    // bitwise complement
-    BitBoard    operator>>(int32_t shift) const;   // bitwise right shift
-    BitBoard    operator<<(int32_t shift) const;   // bitwise left shift
+    BitBoard    operator>>(int32_t shift) const;    // bitwise right shift
+    BitBoard    operator<<(int32_t shift) const;    // bitwise left shift
 
     /* assignment operator overload */
     BitBoard    &operator|=(BitBoard const &rhs);
@@ -48,6 +55,10 @@ public:
 
     /* member access operator overload */
     uint64_t    &operator[](uint8_t i);
+
+    /* comparison operator overload */
+    bool        operator==(BitBoard const &rhs);
+    bool        operator!=(BitBoard const &rhs);
 
     std::array<uint64_t, N>         values;
     static std::array<int16_t, D>   shifts;
@@ -64,34 +75,35 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 BitBoard    dilation(BitBoard const &bitboard);
 BitBoard    erosion(BitBoard const &bitboard);
 BitBoard    get_neighbours(BitBoard const &bitboard);
+bool        detect_five_alignment(BitBoard  &bitboard);
 
 #endif
 
 /*
     +--19x19 BitBoard-----------------------+    +--Full Masks------------------------------------------------------+--------------------+
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    |                              binary                              |    hexadecimal     |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    +------------------------------------------------------------------+--------------------+
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w+------------------------------------------------------------------+--------------------+
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1                          6   | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
+    | 1 1 1 1 1 1 1                         7-12 | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
                     1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w| 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1           13   | 1111111111111111111111111111111111111111100000000000000000000000 | 0xFFFFFFFFFF800000 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1           14-5 | 1111111111111111111111111111111111111111100000000000000000000000 | 0xFFFFFFFFFF800000 |
                                   1 1 1 1 1 |    +------------------------------------------------------------------+--------------------+
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1                                    1
+    | 1 1                                   2-17
           1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1                        7
+    | 1 1 1 1 1 1 1 1                       8-11
                       1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1       15
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1       16-3
                                       1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
+    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 41w
     | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
     +---------------------------------------+
     BitBoard without separating bits. We'll benchmark the performances of the
@@ -152,8 +164,6 @@ BitBoard    get_neighbours(BitBoard const &bitboard);
 
 
 
-
-
 ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
 
     +--9x9 Board-------------------------+ : board
@@ -181,8 +191,8 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
     +------------------------------------+
 
     +--9x9 Board-------------------------+ : board << (9 * (9-2))
-    | a1  b1  c1  d1  e1  f1  g1  h1  i1 |
     | a2  b2  c2  d2  e2  f2  g2  h2  i2 |
+    | a1  b1  c1  d1  e1  f1  g1  h1  i1 |
     |  .   .   .   .   .   .   .   .   . |
     |  .   .   .   .   .   .   .   .   . |
     |  .   .   .   .   .   .   .   .   . |
@@ -192,8 +202,8 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
     +------------------------------------+
 
     +--9x9 Board-------------------------+ : (board >> (9 * 2)) | (board << (9 * (9-2)))
-    | a1  b1  c1  d1  e1  f1  g1  h1  i1 |
     | a2  b2  c2  d2  e2  f2  g2  h2  i2 |
+    | a1  b1  c1  d1  e1  f1  g1  h1  i1 |
     | a9  b9  c9  d9  e9  f9  g9  h9  i9 |
     | a8  b8  c8  d8  e8  f8  g8  h8  i8 |
     | a7  b7  c7  d7  e7  f7  g7  h7  i7 |
@@ -204,8 +214,8 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
     +------------------------------------+
 
     +--9x9 Board-------------------------+ : ( (board >> (9 * 2)) | (board << (9 * (9-2))) ) & mask
-    |  .   .  c1   .   .   .   .   .   . |
     |  .   .  c2   .   .   .   .   .   . |
+    |  .   .  c1   .   .   .   .   .   . |
     |  .   .  c9   .   .   .   .   .   . |
     |  .   .  c8   .   .   .   .   .   . |
     |  .   .  c7   .   .   .   .   .   . |
@@ -214,7 +224,6 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
     |  .   .  c4   .   .   .   .   .   . |
     |  .   .  c3   .   .   .   .   .   . |
     +------------------------------------+
-
 
 
     We want to find the rules to get from the normal 9x9 board
@@ -236,14 +245,6 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
     We are going to scan each column with a binary mask and the
     intersection operator.
 
-    1111111111111111111000000000000000000000000000000000000000000000 -> 0xFFFFE00000000000
-
-
-
-
-
-
-
     +--19x19 BitBoard-----------------------+
     | . . . . . . . . . . . . . . . . . . . |
     | . . . . . . . . . . . . . . . . . . . |
@@ -266,33 +267,47 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
     | . . . . . . . . . . . . . . . . . . . |
     +---------------------------------------+
 
-    board >> (19 * 4)    ==    board >> 76
-
-    +--19x19 BitBoard-----------------------+
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . ./. . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . ./. . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . ./. . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . ./. . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . ./. . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    +---------------------------------------+
 
 
 
-    i := 5
-    board[4] >> 12
+    +-16bit position storage---------+
+    |     x    |    y    |    pad    |
+    +----------+---------+-----------+-------------+
+    | 1 1 1 1 1|1 1 1 1 1|0 0 0 0 0 0| binary mask |
+    +----------+---------+-----------+-------------+
+    |  0xF800  |  0x7C0  |           |    hex mask |
+    +----------+---------+-----------+-------------+
+
+    Encode :
+     $ uint16_t pos = (x << 11) | (y << 6);
+    Decode :
+     $ x = pos & 0xF800;
+     $ y = pos & 0x7C0;
+
+     1001001111000000 is (18, 15)
+
+     +-----------+        +-----------+        +-----------+
+     | 1 . . . . |        | . . . . . |        | . . . . . |
+     | . 1 . . . |        | . 1 . . . |        | . 1 . . . |
+     | . . 1 . . |   >>   | . . 1 . . |    &   | . . 1 . . |
+     | . . . . . |        | . . . 1 . |        | . . . . . |
+     | . . . . . |        | . . . . . |        | . . . . . |
+     +-----------+        +-----------+        +-----------+
+
+     +-----------+        +-----------+        +-----------+
+     | 1 . . . . |        | . . . . . |        | . . . . . |
+     | . 1 . . . |        | . . . . . |        | . . . . . |
+     | . . 1 . . |   >>   | . . 1 . . |    &   | . . 1 . . |
+     | . . . . . |        | . . . 1 . |        | . . . . . |
+     | . . . . . |        | . . . . 1 |        | . . . . . |
+     +-----------+        +-----------+        +-----------+
+
+     +-----------+        +-----------+        +-----------+
+     | 1 . . . . |        | . . . . . |        | . . . . . |
+     | . 1 . . . |        | . . . . . |        | . . . . . |
+     | . . 1 . . |   >>   | . . . . . |    &   | . . . . . |
+     | . . . . . |        | . . . 1 . |        | . . . . . |
+     | . . . . . |        | . . . . 1 |        | . . . . . |
+     +-----------+        +-----------+        +-----------+
 
 */

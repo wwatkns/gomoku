@@ -25,6 +25,13 @@ BitBoard	&BitBoard::operator=(BitBoard const &rhs) {
     return (*this);
 }
 
+BitBoard	&BitBoard::operator=(uint64_t const &val) {
+    this->values[4] = (val >> 41);
+    this->values[5] = (val << 23);
+    return (*this);
+}
+
+
 /*
 ** Helper functions
 */
@@ -33,13 +40,13 @@ void    BitBoard::zeros(void) {
         this->values[i] = 0;
 }
 
-void    BitBoard::broadcastRow(uint64_t row) {
+void    BitBoard::broadcast_row(uint64_t row) {
     /* will broadcast the given row (only the first 19 bits) to all rows,
-        the pattern must be encoded */
+       the pattern must be encoded in the first 19 bits */
     uint16_t    offset = 19;
     int32_t     shift = 0;
 
-    row >>= BITS-19; /* if the pattern is encoded in the first 19 bits */
+    row >>= BITS-19;
     this->zeros();
     for (uint8_t i = 0; i < N; i++) {
         shift = 1;
@@ -51,33 +58,53 @@ void    BitBoard::broadcastRow(uint64_t row) {
     }
 }
 
+void    BitBoard::write_move(uint8_t x, uint8_t y) {
+    uint16_t    n = (19 * y + x);
+    this->values[n / BITS] |= (0x8000000000000000 >> (n % BITS));
+}
+
+void    BitBoard::delete_move(uint8_t x, uint8_t y) {
+    uint16_t    n = (19 * y + x);
+    this->values[n / BITS] &= ~(0x8000000000000000 >> (n % BITS));
+}
+
+bool    BitBoard::is_empty(void) {
+    for (uint8_t i = 0; i < N; i++)
+        if (this->values[i] != 0)
+            return (true);
+    return (false);
+}
+
+BitBoard    BitBoard::shifted(uint8_t dir, uint8_t n) const {
+    return (BitBoard::shifts[dir] > 0 ? (*this >> BitBoard::shifts[dir]*n) : (*this << -BitBoard::shifts[dir]*n));
+}
 
 // static uint64_t rotateLeft(uint64_t v, uint8_t amount) { // rotate bits to the left
 //     return (v << amount) | v >> (BITS - amount);
 // }
-//
+
 // static uint64_t rotateRight(uint64_t v, uint8_t amount) { // rotate bits to the right
 //     return (v >> amount) | v << (BITS - amount);
 // }
 
 // BitBoard    BitBoard::rotatedLeft45(void) {
+//     /* non optimized */
 // }
+
 BitBoard    BitBoard::rotateRight45(void) {
+    /* non optimized, but working */
     BitBoard    res;
     BitBoard    mask;
-    uint64_t    val = 1;
+    uint64_t    v = 1;
 
-    val <<= BITS - 1;
+    v <<= BITS - 1;
     for (uint64_t j = 0; j < 19; j++) {
-        mask.broadcastRow(val);
+        mask.broadcast_row(v);
         res |= ((*this >> (19 * j) | *this << (19 * (19 - j)))) & mask;
-        std::cout << (*this >> (19 * j)) << std::endl;
-        // std::cout << (((*this >> (19 * j)) | (*this << (19 * (19 - j)))) & mask) << std::endl;
-        val >>= 1;
+        v >>= 1;
     }
     return (res);
 }
-
 
 /*
 ** Arithmetic operator overload
@@ -106,7 +133,7 @@ BitBoard    BitBoard::operator^(BitBoard const &rhs) {
 BitBoard	BitBoard::operator~(void) {
 	BitBoard	res;
     for (uint8_t i = 0; i < N; i++)
-        res.values[i] = (~this->values[i]) & BitBoard::full[i];
+        res.values[i] = ~this->values[i];
 	return (res);
 }
 
@@ -121,8 +148,6 @@ BitBoard    BitBoard::operator>>(int32_t shift) const {
     } else {
         uint16_t    n = shift / BITS;
         uint16_t    a = shift % BITS;
-        std::cout << "n: " << n << std::endl;
-        std::cout << "a: " << a << std::endl;
         for (uint8_t i = N-1; i > n; i--) {
             if (a == 0)
                 res.values[i] = (this->values[i-n] << (BITS - a));
@@ -195,6 +220,22 @@ uint64_t    &BitBoard::operator[](uint8_t i){
     return (this->values[i]);
 }
 
+/*
+** Comparison operator overload
+*/
+bool        BitBoard::operator==(BitBoard const &rhs) {
+    for (uint8_t i = 0; i < N; i++)
+        if (this->values[i] != rhs.values[i])
+            return (false);
+    return (true);
+}
+
+bool        BitBoard::operator!=(BitBoard const &rhs) {
+    for (uint8_t i = 0; i < N; i++)
+        if (this->values[i] != rhs.values[i])
+            return (false);
+    return (true);
+}
 
 /*
 ** Non-member functions
@@ -202,14 +243,14 @@ uint64_t    &BitBoard::operator[](uint8_t i){
 BitBoard    dilation(BitBoard const &bitboard) {
 	BitBoard	res = bitboard;
     for (uint8_t i = 0; i < D; i++)
-        res |= (BitBoard::shifts[i] > 0 ? (bitboard >>  BitBoard::shifts[i]) : (bitboard << -BitBoard::shifts[i]));
+        res |= bitboard.shifted(i);
     return (res);
 }
 
 BitBoard    erosion(BitBoard const &bitboard) {
 	BitBoard	res = bitboard;
     for (uint8_t i = 0; i < D; i++)
-        res &= (BitBoard::shifts[i] > 0 ? (bitboard >>  BitBoard::shifts[i]) : (bitboard << -BitBoard::shifts[i]));
+        res &= bitboard.shifted(i);
     return (res);
 }
 
@@ -219,6 +260,17 @@ BitBoard    get_neighbours(BitBoard const &bitboard) {
     return (res);
 }
 
+bool        detect_five_alignment(BitBoard &bitboard) {
+    uint8_t n;
+    for (uint8_t i = 0; i < D; i++) {
+        n = 1;
+        while((bitboard & bitboard.shifted(i, n)).is_empty() != false && n < 5)
+            n++;
+        if (n == 5)
+            return (true);
+    }
+    return (false);
+}
 
 /*
     a pattern should be able to fit on a 64bit variable if we use rotated BitBoards
@@ -227,15 +279,14 @@ BitBoard    get_neighbours(BitBoard const &bitboard) {
 */
 // bool       find_pattern(BitBoard const &bitboard, uint64_t pattern) {
 // }
-//
+
 // bool       rfind_pattern(BitBoard const &bitboard, uint64_t pattern) {
 // }
-//
+
 // bool       count_pattern(BitBoard const &bitboard, uint64_t pattern) {
 // }
 
 // bool        match_pattern() {
-//
 // }
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
@@ -255,7 +306,3 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
     os << ss.str();
 	return (os);
 }
-
-/*
-
-*/
