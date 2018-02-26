@@ -240,14 +240,14 @@ bool        BitBoard::operator!=(BitBoard const &rhs) {
 /*
 ** Non-member functions
 */
-BitBoard    dilation(BitBoard const &bitboard) {
+BitBoard    dilation(BitBoard const &bitboard) { // does not take into account the board 2d topology
 	BitBoard	res = bitboard;
     for (uint8_t i = 0; i < D; i++)
         res |= bitboard.shifted(i);
     return (res);
 }
 
-BitBoard    erosion(BitBoard const &bitboard) {
+BitBoard    erosion(BitBoard const &bitboard) { // does not take into account the board 2d topology
 	BitBoard	res = bitboard;
     for (uint8_t i = 0; i < D; i++)
         res &= bitboard.shifted(i);
@@ -283,12 +283,6 @@ bool        detect_five_alignment(BitBoard &bitboard) {
 // bool       rfind_pattern(BitBoard const &bitboard, uint64_t pattern) {
 // }
 
-// bool       count_pattern(BitBoard const &bitboard, uint64_t pattern) {
-// }
-
-// bool        match_pattern() {
-// }
-
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
     std::string         tmp = "";
     std::string         sub = "";
@@ -306,3 +300,15 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
     os << ss.str();
 	return (os);
 }
+
+/*
+    More operations :
+
+    +--Operations-------+-----------------------------------+
+    |       type        |               code                |
+    +-------------------+-----------------------------------+
+    |   occupied cells  | (p1 | p2)                         |
+    |      empty cells  | (p1 | p2) ^ full                  |
+    | empty neighbours  | dilation(p1 | p2) ^ (p1 | p2)     |
+    +-------------------+-----------------------------------+
+*/

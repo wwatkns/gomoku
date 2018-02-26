@@ -24,7 +24,12 @@ int     main(int argc, char **argv) {
     p1->values[4] = 0x003FFFF800000000;
     p1->values[5] = 0x000003FFFF800000;
 
-    std::cout << (*p1) << std::endl;
+    //p1->values[3] = 129;
+    //std::cout << (*p1) << std::endl;
+    //*p1 = dilation(*p1);
+    //*p1 = dilation(*p1);
+    //std::cout << (*p1) << std::endl;
+    //*p1 >>= 20;
     // p1->broadcast_row(0xAAAAA00000000000);
     // std::cout << (*p1) << std::endl;
     // p1->broadcast_row(0xCCCCC00000000000);
@@ -53,7 +58,7 @@ int     main(int argc, char **argv) {
     p1->delete_move(5, 5);
     std::cout << *p1 << std::endl;
     std::cout << std::to_string( detect_five_alignment(*p1) ) << std::endl;
-    
+
     // std::cout << p1->shifted(2, 2) << std::endl;
 
     // std::cout << (*p1) << std::endl;
