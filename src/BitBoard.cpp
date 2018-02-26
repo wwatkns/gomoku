@@ -1,8 +1,6 @@
 #include "BitBoard.hpp"
 
 /* assignation of static variables */
-// std::array<int16_t, D>  BitBoard::shifts = { -20, -19, 1, 21, 20, 19, -1, -21 };
-// BitBoard                BitBoard::full_mask = (std::array<uint64_t, N>){ 0xFFFFEFFFFEFFFFEF, 0xFFFEFFFFEFFFFEFF, 0xFFEFFFFEFFFFEFFF, 0xFEFFFFEFFFFEFFFF, 0xEFFFFEFFFFEFFFFE, 0xFFFFEFFFFEFFFFE0 };
 std::array<int16_t, D>  BitBoard::shifts = { -19, -18, 1, 20, 19, 18, -1, -20 };
 BitBoard                BitBoard::full_mask = (std::array<uint64_t, N>){ 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF800000 };
 BitBoard                BitBoard::empty_mask = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0 };
@@ -163,26 +161,29 @@ BitBoard    erosion(BitBoard const &bitboard) {
     return (res);
 }
 
-// bool        match_pattern() {
+BitBoard    get_neighbours(BitBoard const &bitboard) {
+	BitBoard	res;
+    res = dilation(bitboard) ^ bitboard;
+    return (res);
+}
+
+
+/*
+    a pattern should be able to fit on a 64bit variable if we use rotated BitBoards
+    to check for matches (as the pattern would fit on successive bits, ex :
+        010110 would be a variant of open three).
+*/
+// bool       find_pattern(BitBoard const &bitboard, uint64_t pattern) {
+// }
 //
+// bool       rfind_pattern(BitBoard const &bitboard, uint64_t pattern) {
+// }
+//
+// bool       count_pattern(BitBoard const &bitboard, uint64_t pattern) {
 // }
 
-// std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
-//     std::string         tmp = "";
-//     std::string         sub = "";
-//     std::stringstream   ss;
+// bool        match_pattern() {
 //
-//     for (uint8_t i = 0; i < N; i++)
-//         tmp += std::bitset<64>(bitboard.values[i]).to_string();
-//
-//     for (uint32_t i = 0; i < 19; i++) {
-//         sub = tmp.substr(i*20, 20);
-//         for (uint32_t j = 0; j < 20; j++)
-//             ss << (((i*20)+j)%BITS!=0?" ":"/") << (sub[j]=='0'?"◦":"◉");
-//         ss << std::endl;
-//     }
-//     os << ss.str();
-// 	return (os);
 // }
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
@@ -202,3 +203,7 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
     os << ss.str();
 	return (os);
 }
+
+/*
+
+*/

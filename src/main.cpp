@@ -17,8 +17,9 @@ int     main(int argc, char **argv) {
     *p1 = dilation(*p1);
     *p1 = dilation(*p1);
     std::cout << (*p1) << std::endl;
-    *p1 >>= 20;
+    *p1 >>= 21;
     std::cout << (*p1) << std::endl;
+    std::cout << get_neighbours(*p1) << std::endl;
     // std::cout << erosion(*p1) << std::endl;
 
     // p1->values[1] = 127;
