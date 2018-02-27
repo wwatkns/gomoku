@@ -59,6 +59,12 @@ int     main(int argc, char **argv) {
     std::cout << *p1 << std::endl;
     std::cout << std::to_string( detect_five_alignment(*p1) ) << std::endl;
 
+    for (uint8_t i = 0; i < 5; i++)
+        p1->write_move(i, i);
+    std::cout << *p1 << std::endl;
+    std::cout << std::to_string( detect_five_alignment(*p1) ) << std::endl;
+
+
     // std::cout << p1->shifted(2, 2) << std::endl;
 
     // std::cout << (*p1) << std::endl;

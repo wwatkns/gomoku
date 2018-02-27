@@ -261,13 +261,12 @@ BitBoard    get_neighbours(BitBoard const &bitboard) {
 }
 
 bool        detect_five_alignment(BitBoard &bitboard) {
-    uint8_t n;
+    BitBoard    tmp;
     for (uint8_t i = 0; i < D; i++) {
-        n = 1;
-        while((bitboard & bitboard.shifted(i, n)).is_empty() != false && n < 5)
-            n++;
-        if (n == 5)
-            return (true);
+        tmp = bitboard;
+        for(uint8_t n = 1; (tmp &= tmp.shifted(i)).is_empty(); ++n)
+            if (n >= 4)
+                return (true);
     }
     return (false);
 }
