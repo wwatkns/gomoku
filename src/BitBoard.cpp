@@ -4,6 +4,10 @@
 std::array<int16_t, D>  BitBoard::shifts = { -19, -18, 1, 20, 19, 18, -1, -20 };
 BitBoard                BitBoard::full = (std::array<uint64_t, N>){ 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF800000 };
 BitBoard                BitBoard::empty = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0 };
+BitBoard                BitBoard::border_right = (std::array<uint64_t, N>){ 0x200004000080, 0x10000200004000, 0x800010000200004, 0x800010000200, 0x40000800010000, 0x2000040000800010 };
+BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000400008 };
+BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
+BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
 
 BitBoard::BitBoard(void) {
     this->zeros();
@@ -75,23 +79,48 @@ bool    BitBoard::is_empty(void) {
     return (false);
 }
 
-BitBoard    BitBoard::shifted(uint8_t dir, uint8_t n) const {
-    return (BitBoard::shifts[dir] > 0 ? (*this >> BitBoard::shifts[dir]*n) : (*this << -BitBoard::shifts[dir]*n));
+BitBoard    BitBoard::opens(void) const {
+    return (~(*this));
 }
 
-// static uint64_t rotateLeft(uint64_t v, uint8_t amount) { // rotate bits to the left
-//     return (v << amount) | v >> (BITS - amount);
-// }
+BitBoard    BitBoard::neighbours(void) const {
+    return (dilation(*this) ^ (*this));
+}
 
-// static uint64_t rotateRight(uint64_t v, uint8_t amount) { // rotate bits to the right
-//     return (v >> amount) | v << (BITS - amount);
-// }
+/* shift either right or left depending on the sign of the shift, if we shift right we handle the overflow to the extra bits */
+BitBoard    BitBoard::shifted(uint8_t dir, uint8_t n) const {
+    return (BitBoard::shifts[dir] > 0 ? (*this >> BitBoard::shifts[dir]*n) & BitBoard::full : (*this << -BitBoard::shifts[dir]*n));
+}
 
-// BitBoard    BitBoard::rotatedLeft45(void) {
+/* return the dilated board taking into account the board boundaries */
+BitBoard    BitBoard::dilated(void) const {
+	BitBoard	res = *this;
+    for (uint8_t i = 1; i < 4; i++)
+        res |= this->shifted(i) & ~BitBoard::border_left;
+    for (uint8_t i = 5; i < 8; i++)
+        res |= this->shifted(i) & ~BitBoard::border_right;
+    res |= this->shifted(0);
+    res |= this->shifted(4);
+    return (res);
+}
+
+/* return the eroded board taking into account the board boundaries */
+BitBoard    BitBoard::eroded(void) const {
+	BitBoard	res = *this;
+    for (uint8_t i = 1; i < 4; i++)
+        res &= this->shifted(i) & ~BitBoard::border_left;
+    for (uint8_t i = 5; i < 8; i++)
+        res &= this->shifted(i) & ~BitBoard::border_right;
+    res &= this->shifted(0);
+    res &= this->shifted(4);
+    return (res);
+}
+
+// BitBoard    BitBoard::rotated_315(void) {
 //     /* non optimized */
 // }
 
-BitBoard    BitBoard::rotateRight45(void) {
+BitBoard    BitBoard::rotate_45(void) {
     /* non optimized, but working */
     BitBoard    res;
     BitBoard    mask;
@@ -109,28 +138,28 @@ BitBoard    BitBoard::rotateRight45(void) {
 /*
 ** Arithmetic operator overload
 */
-BitBoard	BitBoard::operator|(const BitBoard &rhs) {
+BitBoard	BitBoard::operator|(const BitBoard &rhs) const {
 	BitBoard	res;
     for (uint8_t i = 0; i < N; i++)
         res.values[i] = this->values[i] | rhs.values[i];
 	return (res);
 }
 
-BitBoard	BitBoard::operator&(const BitBoard &rhs) {
+BitBoard	BitBoard::operator&(const BitBoard &rhs) const {
 	BitBoard	res;
     for (uint8_t i = 0; i < N; i++)
         res.values[i] = this->values[i] & rhs.values[i];
 	return (res);
 }
 
-BitBoard    BitBoard::operator^(BitBoard const &rhs) {
+BitBoard    BitBoard::operator^(BitBoard const &rhs) const {
     BitBoard	res;
     for (uint8_t i = 0; i < N; i++)
         res.values[i] = this->values[i] ^ rhs.values[i];
     return (res);
 }
 
-BitBoard	BitBoard::operator~(void) {
+BitBoard	BitBoard::operator~(void) const {
 	BitBoard	res;
     for (uint8_t i = 0; i < N; i++)
         res.values[i] = ~this->values[i];
@@ -254,13 +283,23 @@ BitBoard    erosion(BitBoard const &bitboard) { // does not take into account th
     return (res);
 }
 
-BitBoard    get_neighbours(BitBoard const &bitboard) {
-	BitBoard	res;
-    res = dilation(bitboard) ^ bitboard;
-    return (res);
+
+/* return the neighboring cells of both players */
+BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2) {
+    return (dilation(p1 | p2) ^ (p1 | p2));
 }
 
-bool        detect_five_aligned(BitBoard &bitboard) {
+/* return the open cells of both players */
+BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2) {
+    return (~(p1 | p2));
+}
+
+/* return the occupied cells of both players */
+BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2) {
+    return (p1 | p2);
+}
+
+bool        detect_five_aligned(BitBoard const &bitboard) {
     BitBoard    tmp;
     for (uint8_t i = 0; i < D; i++) {
         tmp = bitboard;
@@ -271,11 +310,32 @@ bool        detect_five_aligned(BitBoard &bitboard) {
     return (false);
 }
 
-/*
-    a pattern should be able to fit on a 64bit variable if we use rotated BitBoards
-    to check for matches (as the pattern would fit on successive bits, ex :
-        010110 would be a variant of open three).
-*/
+// bool        detect_test(BitBoard const &bitboard) {
+//     BitBoard    tmp;
+//     uint8_t     pattern = 0x1A << 1; // it's a pattern of size 6 but we bitshift 8 - (2 + 1) = 1
+//     // & 0x80
+//     // for (uint8_t i = 0; i < D; i++) {
+//     for (uint8_t i = 2; i < 3; i++) {
+//         tmp = bitboard;
+//         // for(uint8_t n = 1; (tmp = ((pattern << n & 0x80)==0 ?tmp & tmp.shifted(i):tmp ^ tmp.shifted(i)) ).is_empty(); ++n) {
+//         for(uint8_t n = 1; n < 6; ++n) {
+//             tmp = tmp & (((pattern<<(n-1)&0x80)>>7) ? ~tmp : tmp);
+//             tmp &= tmp.shifted(i);
+//             // std::cout << ((pattern<<(n-1)&0x80)>>7) << std::endl;
+//             // std::cout << (((pattern<<(n-1)&0x80)>>7) ? tmp : ~tmp) << std::endl;
+//             std::cout << tmp << std::endl;
+//             // if (n >= 4)
+//                 // return (true);
+//             // if (tmp.is_empty() == false)
+//                 // break;
+//         }
+//     }
+//     return (false);
+// }
+
+// bool        detect_gomoku_pattern_around(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y) {
+// }
+
 // bool       find_pattern(BitBoard const &bitboard, uint64_t pattern) {
 // }
 
@@ -296,54 +356,11 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
             ss << (((i*19)+j)%BITS!=0?" ":"/") << (sub[j]=='0'?"◦":"◉");
         ss << std::endl;
     }
+    /* show the extra bits */
+    // sub = tmp.substr(19*19, 23);
+    // for (uint32_t j = 0; j < 21; j++)
+    //     ss << (((19*19)+j)%BITS!=0?" ":"/") << (sub[j]=='0'?"◦":"◉");
+    // os << ss.str()  << std::endl;
     os << ss.str();
 	return (os);
 }
-
-/*
-    More operations :
-
-    +--Operations-------+-----------------------------------+
-    |       type        |               code                |
-    +-------------------+-----------------------------------+
-    |   occupied cells  | (p1 | p2)                         |
-    |      empty cells  | (p1 | p2) ^ full                  |
-    | empty neighbours  | dilation(p1 | p2) ^ (p1 | p2)     |
-    +-------------------+-----------------------------------+
-
-
-             +--Patterns--+------------+-----------+-----------+
-             |  binary p1 |  binary p2 |   hex p1  |   hex p2  |
-    +--------+------------+------------+-----------+-----------+
-    |        |     01110  |     00001  |    0xE    |    0x1    |
-    |        |     01110  |     10000  |    0xE    |    0x10   |
-    |  close |    010110  |    100000  |    0x16   |    0x20   |
-    | threes |    010110  |    000001  |    0x16   |    0x1    |
-    |        |    011010  |    100000  |    0x1A   |    0x20   |
-    |        |    011010  |    000001  |    0x1A   |    0x1    |
-    +--------+------------+------------+-----------+-----------+
-    |        |    011110  |    000001  |    0x1E   |    0x1    |
-    |        |    011110  |    100000  |    0x1E   |    0x20   |
-    |        |   0101110  |   1000000  |    0x2E   |    0x40   |
-    |        |   0101110  |   0000001  |    0x2E   |    0x1    |
-    |  close |   0111010  |   1000000  |    0x3A   |    0x40   |
-    |  fours |   0111010  |   0000001  |    0x3A   |    0x1    |
-    |        |   0110110  |   1000000  |    0x36   |    0x40   |
-    |        |   0110110  |   0000001  |    0x36   |    0x1    |
-    |        |  01011010  |  10000000  |    0x5A   |    0x80   | ?
-    |        |  01011010  |  00000001  |    0x5A   |    0x1    | ?
-    +--------+------------+------------+-----------+-----------+
-    |  open  |     01110  |     00000  |    0xE    |    0x0    |
-    | threes |    010110  |    000000  |    0x16   |    0x0    |
-    |        |    011010  |    000000  |    0x1A   |    0x0    |
-    +--------+------------+------------+-----------+-----------+
-    |        |    011110  |    000000  |    0x1E   |    0x0    |
-    |  open  |   0101110  |   0000000  |    0x2E   |    0x0    |
-    | fours  |   0111010  |   0000000  |    0x3A   |    0x0    |
-    |        |   0110110  |   0000000  |    0x36   |    0x0    |
-    |        |  01011010  |  00000000  |    0x5A   |    0x0    |
-    +--------+------------+------------+-----------+-----------+
-    Patterns take at most 8 bits, in order to detect open and closed
-    patterns we must look at both player boards to see if extremities
-    of patterns are blocked.
-*/

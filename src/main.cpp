@@ -17,12 +17,12 @@ int     main(int argc, char **argv) {
     // p1->broadcast_row(0xCCCCA00000000000);
     // p1->broadcast_row(0x00000000000CCCCA);
 
-    p1->values[0] = 0xFFFFE00000000000;
-    p1->values[1] = 0x000FFFFE00000000;
-    p1->values[2] = 0x07FFFF0000000000;
-    p1->values[3] = 0x00007FFFF0000000;
-    p1->values[4] = 0x003FFFF800000000;
-    p1->values[5] = 0x000003FFFF800000;
+    // p1->values[0] = 0xFFFFE00000000000;
+    // p1->values[1] = 0x000FFFFE00000000;
+    // p1->values[2] = 0x07FFFF0000000000;
+    // p1->values[3] = 0x00007FFFF0000000;
+    // p1->values[4] = 0x003FFFF800000000;
+    // p1->values[5] = 0x000003FFFF800000;
 
     //p1->values[3] = 129;
     //std::cout << (*p1) << std::endl;
@@ -37,32 +37,77 @@ int     main(int argc, char **argv) {
     // p1->broadcast_row(0xFF00000000000000);
     // std::cout << (*p1) << std::endl;
 
-    *p1 = p1->rotateRight45();
-    std::cout << *p1 << std::endl;
-
-    *p1 &= ~(*p1);
-    std::cout << *p1 << std::endl;
+    // *p1 = p1->rotateRight45();
+    // std::cout << *p1 << std::endl;
+    //
+    // *p1 &= ~(*p1);
+    // std::cout << *p1 << std::endl;
 
     // p1->values[0] = 0x8000000000000000;
     // *p1 <<= 360;
 
-    for (uint8_t i = 0; i < 6; i++)
-        p1->write_move(i, i);
-    std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
+    /* debug dilated */
+    // p1->values[0] = 0x1A << 2;
+    // p1->write_move(17, 16);
+    // p1->write_move(18, 11);
+    // std::cout << *p1 << std::endl;
+    // for (uint8_t i = 0; i < 3; i++) {
+    //     *p1 = p1->dilated();
+    //     std::cout << *p1 << std::endl;
+    // }
 
-    p1->delete_move(4, 4);
-    std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
+    /* debug eroded */
+    std::cout << ~0xFFFFFFFFFF800000 << std::endl; // 7FFFFF
 
-    p1->delete_move(5, 5);
+    *p1 = BitBoard::border_left;
+    p1->write_move(18, 9);
+    p1->write_move(18, 10);
+    *p1 = p1->dilated();
+    *p1 = p1->dilated();
+    *p1 = p1->dilated();
     std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
+    for (uint8_t i = 0; i < 1; i++) {
+        *p1 = p1->eroded();
+        std::cout << *p1 << std::endl;
+    }
 
-    for (uint8_t i = 0; i < 5; i++)
-        p1->write_move(i, i);
-    std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
+
+    // p1->broadcast_row(9223372036854775808);
+    // std::cout << *p1 << std::endl;
+    // for (uint8_t i = 0; i < 6; ++i)
+        // std::cout << p1->values[i] << std::endl;
+
+    // p1->write_move(6, 3);
+    // std::cout << *p1 << std::endl;
+    // std::cout << std::to_string(detect_test(*p1)) << std::endl;
+    //
+    // p1->delete_move(6, 3);
+    // p1->write_move(1, 3);
+    // std::cout << *p1 << std::endl;
+    // std::cout << std::to_string(detect_test(*p1)) << std::endl;
+    //
+    // p1->delete_move(1, 3);
+    // p1->write_move(4, 3);
+    // std::cout << *p1 << std::endl;
+    // std::cout << std::to_string(detect_test(*p1)) << std::endl;
+
+
+    /* base pattern */
+    // p1->write_move(1, 1);
+    // p1->write_move(2, 2);
+    // p1->write_move(4, 4);
+    // std::cout << *p1 << std::endl;
+    // std::cout << std::to_string(detect_test(*p1)) << std::endl;
+
+    // p1->write_move(5, 5);
+    // std::cout << *p1 << std::endl;
+    // std::cout << std::to_string(detect_test(*p1)) << std::endl;
+    //
+    // p1->delete_move(5, 5);
+    // p1->write_move(0, 0);
+    // std::cout << *p1 << std::endl;
+    // std::cout << std::to_string(detect_test(*p1)) << std::endl;
+
 
 
     // std::cout << p1->shifted(2, 2) << std::endl;

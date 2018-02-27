@@ -13,8 +13,6 @@
 # define D 8
 # define BITS 64
 
-# define SHIFT(bb)
-
 /*  Implementation of a bitboard representation of a square board of 19*19 using
     6 long integers (64bits), and bit operations.
 */
@@ -28,23 +26,31 @@ public:
     BitBoard	&operator=(BitBoard const &rhs);
     BitBoard	&operator=(uint64_t const &val);
 
+    void        zeros(void);
+
     void        write_move(uint8_t x, uint8_t y);
     void        delete_move(uint8_t x, uint8_t y);
-    void        zeros(void);
+
     void        broadcast_row(uint64_t line);
     bool        is_empty(void);
 
+    BitBoard    opens(void) const;
+    BitBoard    neighbours(void) const;
+
     BitBoard    shifted(uint8_t dir, uint8_t n = 1) const;
-    BitBoard    rotateLeft45(void);
-    BitBoard    rotateRight45(void);
+    BitBoard    dilated(void) const;
+    BitBoard    eroded(void) const;
+
+    BitBoard    rotate_315(void);
+    BitBoard    rotate_45(void);
 
     /* arithmetic (bitwise) operator overload */
-    BitBoard    operator|(BitBoard const &rhs);     // bitwise union
-    BitBoard    operator&(BitBoard const &rhs);     // bitwise intersection
-    BitBoard    operator^(BitBoard const &rhs);     // bitwise exclusive or
-    BitBoard    operator~(void);                    // bitwise complement
-    BitBoard    operator>>(int32_t shift) const;    // bitwise right shift
-    BitBoard    operator<<(int32_t shift) const;    // bitwise left shift
+    BitBoard    operator|(BitBoard const &rhs) const; // bitwise union
+    BitBoard    operator&(BitBoard const &rhs) const; // bitwise intersection
+    BitBoard    operator^(BitBoard const &rhs) const; // bitwise exclusive or
+    BitBoard    operator~(void) const;                // bitwise complement
+    BitBoard    operator>>(int32_t shift) const;      // bitwise right shift
+    BitBoard    operator<<(int32_t shift) const;      // bitwise left shift
 
     /* assignment operator overload */
     BitBoard    &operator|=(BitBoard const &rhs);
@@ -64,6 +70,10 @@ public:
     static std::array<int16_t, D>   shifts;
     static BitBoard                 full;
     static BitBoard                 empty;
+    static BitBoard                 border_right;
+    static BitBoard                 border_left;
+    static BitBoard                 border_top;
+    static BitBoard                 border_bottom;
 
 // private:
 
@@ -74,38 +84,40 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 /* see 4.3 at https://eprints.qut.edu.au/85005/1/__staffhome.qut.edu.au_staffgroupm%24_meaton_Desktop_bits-7.pdf */
 BitBoard    dilation(BitBoard const &bitboard);
 BitBoard    erosion(BitBoard const &bitboard);
-BitBoard    get_neighbours(BitBoard const &bitboard);
-bool        detect_five_aligned(BitBoard  &bitboard);
+
+BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2);
+BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2);
+BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
+
+bool        detect_five_aligned(BitBoard const &bitboard);
+bool        detect_gomoku_pattern_around(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y);
+bool        detect_test(BitBoard const &bitboard);
 
 #endif
 
-/*
-    +--19x19 BitBoard-----------------------+    +--Full Masks------------------------------------------------------+--------------------+
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    |                              binary                              |    hexadecimal     |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w+------------------------------------------------------------------+--------------------+
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1                         7-12 | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-                    1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w| 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |    | 1111111111111111111111111111111111111111111111111111111111111111 | 0xFFFFFFFFFFFFFFFF |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1           14-5 | 1111111111111111111111111111111111111111100000000000000000000000 | 0xFFFFFFFFFF800000 |
-                                  1 1 1 1 1 |    +------------------------------------------------------------------+--------------------+
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1                                   2-17
-          1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1                       8-11
-                      1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 64w
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1       16-3
-                                      1 1 1 |
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 | 41w
-    | 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 |
-    +---------------------------------------+
+/*     +--19x19 BitBoard-----------------------+
+     0 | . . . . . . . . . . . . . . . . . . . | 0
+     1 | . . . . . . . . . . . . . . . . . . . | 1
+     2 | . . . . . . . . . . . . . . . . . . . | 2
+     3 | . . . . . . ./. . . . . . . . . . . . | 3
+     4 | . . . . . . . . . . . . . . . . . . . | 4
+     5 | . . . . . . . . . . . . . . . . . . . | 5
+     6 | . . . . . . . . . . . . . ./. . . . . | 6
+     7 | . . . . . . . . . . . . . . . . . . . | 7
+     8 | . . . . . . . . . . . . . . . . . . . | 8
+     9 | . . . . . . . . . . . . . . . . . . . | 9
+    10 | . ./. . . . . . . . . . . . . . . . . | 10
+    11 | . . . . . . . . . . . . . . . . . . . | 11
+    12 | . . . . . . . . . . . . . . . . . . . | 12
+    13 | . . . . . . . ./. . . . . . . . . . . | 13
+    14 | . . . . . . . . . . . . . . . . . . . | 14
+    15 | . . . . . . . . . . . . . . . . . . . | 15
+    16 | . . . . . . . . . . . . . . . ./. . . | 16
+    17 | . . . . . . . . . . . . . . . . . . . | 17
+    18 | . . . . . . . . . . . . . . . . . . . | 18
+       +---------------------------------------+
+         0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8
+
     BitBoard without separating bits. We'll benchmark the performances of the
     algorithms once we have more stuff in place, and compare the version of the
     BitBoard with and without the separator bits.
@@ -161,7 +173,6 @@ bool        detect_five_aligned(BitBoard  &bitboard);
                 f1  g2  h3                              a3  b2  c1
                   g1  h2                                  a2  b1
                     h1                                      a1
-
 
              +--Patterns--+------------+-----------+-----------+
              |  binary p1 |  binary p2 |   hex p1  |   hex p2  |
@@ -280,30 +291,6 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
     We are going to scan each column with a binary mask and the
     intersection operator.
 
-    +--19x19 BitBoard-----------------------+
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . ./. . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . ./. . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . ./. . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . ./. . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . ./. . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    | . . . . . . . . . . . . . . . . . . . |
-    +---------------------------------------+
-
-
-
 
     +-16bit position storage---------+
     |     x    |    y    |    pad    |
@@ -320,5 +307,24 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
      $ y = pos & 0x7C0;
 
      1001001111000000 is (18, 15)
+
+    get_all_neighbours(p1, p2) :
+     p1                p2                (p1 | p2)         di(p1 | p2)      di(p1 | p2) ^ (p1 | p2)
+     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
+     | . . . . . |     | . . . . . |     | . . . . . |     | 1 1 1 . . |    | 1 1 1 . . |
+     | . 1 1 . . |     | 1 . . . . |     | 1 1 1 . . |     | 1 1 1 1 . |    | . . . 1 . |
+     | . . . . . |     | . . . . . |     | . . . . . |     | 1 1 1 1 . |    | 1 1 . 1 . |
+     | . . . 1 . |     | . . 1 . . |     | . . 1 1 . |     | . 1 1 1 1 |    | . 1 . . 1 |
+     | . . . . . |     | . . . 1 . |     | . . . 1 . |     | . . 1 1 1 |    | . . 1 . 1 |
+     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
+
+
+     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
+     | . . . . . |     | . . . . 1 |     | . . . . . |     | . . . . . |    | . . . . . |
+     | . . . . . |     | 1 1 . . 1 |     | 1 1 . . . |     | . . . . . |    | . . . . . |
+     | 1 . . . . |     | 1 1 . . 1 |     | 1 1 . . . |     | . . . . . |    | . . . . . |
+     | . . . . . |     | 1 1 1 1 1 |     | 1 1 1 1 1 |     | . . . . . |    | . . . . . |
+     | . . . 1 . |     | . . 1 1 1 |     | . . 1 1 1 |     | . . . . . |    | . . . . . |
+     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
 
 */
