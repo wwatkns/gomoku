@@ -48,8 +48,8 @@ int     main(int argc, char **argv) {
 
     /* debug dilated */
     // p1->values[0] = 0x1A << 2;
-    // p1->write_move(17, 16);
-    // p1->write_move(18, 11);
+    // p1->write(17, 16);
+    // p1->write(18, 11);
     // std::cout << *p1 << std::endl;
     // for (uint8_t i = 0; i < 3; i++) {
     //     *p1 = p1->dilated();
@@ -58,8 +58,8 @@ int     main(int argc, char **argv) {
 
     /* debug eroded */
     *p1 = BitBoard::border_left;
-    p1->write_move(18, 9);
-    p1->write_move(18, 10);
+    p1->write(18, 9);
+    p1->write(18, 10);
     *p1 = p1->dilated();
     *p1 = p1->dilated();
     *p1 = p1->dilated();
@@ -75,34 +75,34 @@ int     main(int argc, char **argv) {
     // for (uint8_t i = 0; i < 6; ++i)
         // std::cout << p1->values[i] << std::endl;
 
-    // p1->write_move(6, 3);
+    // p1->write(6, 3);
     // std::cout << *p1 << std::endl;
     // std::cout << std::to_string(detect_test(*p1)) << std::endl;
     //
-    // p1->delete_move(6, 3);
-    // p1->write_move(1, 3);
+    // p1->remove(6, 3);
+    // p1->write(1, 3);
     // std::cout << *p1 << std::endl;
     // std::cout << std::to_string(detect_test(*p1)) << std::endl;
     //
-    // p1->delete_move(1, 3);
-    // p1->write_move(4, 3);
+    // p1->remove(1, 3);
+    // p1->write(4, 3);
     // std::cout << *p1 << std::endl;
     // std::cout << std::to_string(detect_test(*p1)) << std::endl;
 
 
     /* base pattern */
-    // p1->write_move(1, 1);
-    // p1->write_move(2, 2);
-    // p1->write_move(4, 4);
+    // p1->write(1, 1);
+    // p1->write(2, 2);
+    // p1->write(4, 4);
     // std::cout << *p1 << std::endl;
     // std::cout << std::to_string(detect_test(*p1)) << std::endl;
 
-    // p1->write_move(5, 5);
+    // p1->write(5, 5);
     // std::cout << *p1 << std::endl;
     // std::cout << std::to_string(detect_test(*p1)) << std::endl;
     //
-    // p1->delete_move(5, 5);
-    // p1->write_move(0, 0);
+    // p1->remove(5, 5);
+    // p1->write(0, 0);
     // std::cout << *p1 << std::endl;
     // std::cout << std::to_string(detect_test(*p1)) << std::endl;
 

@@ -27,13 +27,10 @@ public:
     BitBoard	&operator=(uint64_t const &val);
 
     void        zeros(void);
-
-    void        write_move(uint8_t x, uint8_t y);
-    void        delete_move(uint8_t x, uint8_t y);
-
+    void        write(uint8_t x, uint8_t y);
+    void        remove(uint8_t x, uint8_t y);
     void        broadcast_row(uint64_t line);
     bool        is_empty(void);
-
     BitBoard    opens(void) const;
     BitBoard    neighbours(void) const;
 
@@ -41,8 +38,8 @@ public:
     BitBoard    dilated(void) const;
     BitBoard    eroded(void) const;
 
-    BitBoard    rotate_315(void);
-    BitBoard    rotate_45(void);
+    BitBoard    rotated_315(void);
+    BitBoard    rotated_45(void);
 
     /* arithmetic (bitwise) operator overload */
     BitBoard    operator|(BitBoard const &rhs) const; // bitwise union

@@ -61,12 +61,12 @@ void    BitBoard::broadcast_row(uint64_t row) {
     }
 }
 
-void    BitBoard::write_move(uint8_t x, uint8_t y) {
+void    BitBoard::write(uint8_t x, uint8_t y) {
     uint16_t    n = (19 * y + x);
     this->values[n / BITS] |= (0x8000000000000000 >> (n % BITS));
 }
 
-void    BitBoard::delete_move(uint8_t x, uint8_t y) {
+void    BitBoard::remove(uint8_t x, uint8_t y) {
     uint16_t    n = (19 * y + x);
     this->values[n / BITS] &= ~(0x8000000000000000 >> (n % BITS));
 }
@@ -119,7 +119,7 @@ BitBoard    BitBoard::eroded(void) const {
 //     /* non optimized */
 // }
 
-BitBoard    BitBoard::rotate_45(void) {
+BitBoard    BitBoard::rotated_45(void) {
     /* non optimized, but working */
     BitBoard    res;
     BitBoard    mask;
