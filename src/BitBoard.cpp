@@ -35,7 +35,6 @@ BitBoard	&BitBoard::operator=(uint64_t const &val) {
     return (*this);
 }
 
-
 /*
 ** Helper functions
 */
@@ -44,9 +43,9 @@ void    BitBoard::zeros(void) {
         this->values[i] = 0;
 }
 
+/* will broadcast the given row (only the first 19 bits) to all rows,
+   the pattern must be encoded in the first 19 bits */
 void    BitBoard::broadcast_row(uint64_t row) {
-    /* will broadcast the given row (only the first 19 bits) to all rows,
-       the pattern must be encoded in the first 19 bits */
     uint16_t    offset = 19;
     int32_t     shift = 0;
 
@@ -84,7 +83,7 @@ BitBoard    BitBoard::opens(void) const {
 }
 
 BitBoard    BitBoard::neighbours(void) const {
-    return (dilation(*this) ^ (*this));
+    return (dilation(*this) ^ *this);
 }
 
 /* shift either right or left depending on the sign of the shift, if we shift right we handle the overflow to the extra bits */
@@ -95,24 +94,24 @@ BitBoard    BitBoard::shifted(uint8_t dir, uint8_t n) const {
 /* return the dilated board taking into account the board boundaries */
 BitBoard    BitBoard::dilated(void) const {
 	BitBoard	res = *this;
-    for (uint8_t i = 1; i < 4; i++)
+    for (uint8_t i = direction::north_east; i < direction::south; ++i)
         res |= this->shifted(i) & ~BitBoard::border_left;
-    for (uint8_t i = 5; i < 8; i++)
+    for (uint8_t i = direction::south_west; i < 8; ++i)
         res |= this->shifted(i) & ~BitBoard::border_right;
-    res |= this->shifted(0);
-    res |= this->shifted(4);
+    res |= this->shifted(direction::north);
+    res |= this->shifted(direction::south);
     return (res);
 }
 
 /* return the eroded board taking into account the board boundaries */
 BitBoard    BitBoard::eroded(void) const {
 	BitBoard	res = *this;
-    for (uint8_t i = 1; i < 4; i++)
+    for (uint8_t i = direction::north_east; i < direction::south; ++i)
         res &= this->shifted(i) & ~BitBoard::border_left;
-    for (uint8_t i = 5; i < 8; i++)
+    for (uint8_t i = direction::south_west; i < 8; ++i)
         res &= this->shifted(i) & ~BitBoard::border_right;
-    res &= this->shifted(0);
-    res &= this->shifted(4);
+    res &= this->shifted(direction::north);
+    res &= this->shifted(direction::south);
     return (res);
 }
 
@@ -262,8 +261,8 @@ bool        BitBoard::operator==(BitBoard const &rhs) {
 bool        BitBoard::operator!=(BitBoard const &rhs) {
     for (uint8_t i = 0; i < N; i++)
         if (this->values[i] != rhs.values[i])
-            return (false);
-    return (true);
+            return (true);
+    return (false);
 }
 
 /*

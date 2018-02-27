@@ -75,8 +75,6 @@ public:
     static BitBoard                 border_top;
     static BitBoard                 border_bottom;
 
-// private:
-
 };
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
@@ -92,6 +90,19 @@ BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
 bool        detect_five_aligned(BitBoard const &bitboard);
 bool        detect_gomoku_pattern_around(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y);
 bool        detect_test(BitBoard const &bitboard);
+
+namespace direction {
+    enum direction {
+        north,
+        north_east,
+        east,
+        south_east,
+        south,
+        south_west,
+        west,
+        north_west
+    };
+};
 
 #endif
 

@@ -57,8 +57,6 @@ int     main(int argc, char **argv) {
     // }
 
     /* debug eroded */
-    std::cout << ~0xFFFFFFFFFF800000 << std::endl; // 7FFFFF
-
     *p1 = BitBoard::border_left;
     p1->write_move(18, 9);
     p1->write_move(18, 10);
