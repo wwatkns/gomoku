@@ -75,7 +75,7 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 BitBoard    dilation(BitBoard const &bitboard);
 BitBoard    erosion(BitBoard const &bitboard);
 BitBoard    get_neighbours(BitBoard const &bitboard);
-bool        detect_five_alignment(BitBoard  &bitboard);
+bool        detect_five_aligned(BitBoard  &bitboard);
 
 #endif
 
@@ -162,6 +162,41 @@ bool        detect_five_alignment(BitBoard  &bitboard);
                   g1  h2                                  a2  b1
                     h1                                      a1
 
+
+             +--Patterns--+------------+-----------+-----------+
+             |  binary p1 |  binary p2 |   hex p1  |   hex p2  |
+    +--------+------------+------------+-----------+-----------+
+    |        |     01110  |     00001  |    0xE    |    0x1    |
+    |        |     01110  |     10000  |    0xE    |    0x10   |
+    |  close |    010110  |    100000  |    0x16   |    0x20   |
+    | threes |    010110  |    000001  |    0x16   |    0x1    |
+    |        |    011010  |    100000  |    0x1A   |    0x20   |
+    |        |    011010  |    000001  |    0x1A   |    0x1    |
+    +--------+------------+------------+-----------+-----------+
+    |        |    011110  |    000001  |    0x1E   |    0x1    |
+    |        |    011110  |    100000  |    0x1E   |    0x20   |
+    |        |   0101110  |   1000000  |    0x2E   |    0x40   |
+    |        |   0101110  |   0000001  |    0x2E   |    0x1    |
+    |  close |   0111010  |   1000000  |    0x3A   |    0x40   |
+    |  fours |   0111010  |   0000001  |    0x3A   |    0x1    |
+    |        |   0110110  |   1000000  |    0x36   |    0x40   |
+    |        |   0110110  |   0000001  |    0x36   |    0x1    |
+    |        |  01011010  |  10000000  |    0x5A   |    0x80   | ?
+    |        |  01011010  |  00000001  |    0x5A   |    0x1    | ?
+    +--------+------------+------------+-----------+-----------+
+    |  open  |     01110  |     00000  |    0xE    |    0x0    |
+    | threes |    010110  |    000000  |    0x16   |    0x0    |
+    |        |    011010  |    000000  |    0x1A   |    0x0    |
+    +--------+------------+------------+-----------+-----------+
+    |        |    011110  |    000000  |    0x1E   |    0x0    |
+    |  open  |   0101110  |   0000000  |    0x2E   |    0x0    |
+    | fours  |   0111010  |   0000000  |    0x3A   |    0x0    |
+    |        |   0110110  |   0000000  |    0x36   |    0x0    |
+    |        |  01011010  |  00000000  |    0x5A   |    0x0    |
+    +--------+------------+------------+-----------+-----------+
+    Patterns take at most 8 bits, in order to detect open and closed
+    patterns we must look at both player boards to see if extremities
+    of patterns are blocked.
 
 
 ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:

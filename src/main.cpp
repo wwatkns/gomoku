@@ -49,20 +49,20 @@ int     main(int argc, char **argv) {
     for (uint8_t i = 0; i < 6; i++)
         p1->write_move(i, i);
     std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_alignment(*p1) ) << std::endl;
+    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
 
     p1->delete_move(4, 4);
     std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_alignment(*p1) ) << std::endl;
+    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
 
     p1->delete_move(5, 5);
     std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_alignment(*p1) ) << std::endl;
+    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
 
     for (uint8_t i = 0; i < 5; i++)
         p1->write_move(i, i);
     std::cout << *p1 << std::endl;
-    std::cout << std::to_string( detect_five_alignment(*p1) ) << std::endl;
+    std::cout << std::to_string( detect_five_aligned(*p1) ) << std::endl;
 
 
     // std::cout << p1->shifted(2, 2) << std::endl;
