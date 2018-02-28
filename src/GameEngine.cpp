@@ -142,6 +142,7 @@ bool    GameEngine::_check_boundary(int row, int col) {
 
 void    GameEngine::update_game_state(t_action &action, Player *player) {
     this->grid(action.pos[0], action.pos[1]) = (action.pid == 1 ? state::black : state::white);
+    player->board.write(action.pos[1], action.pos[0]); /* NEW */
     // TODO (alain) : detecter les db db threes et mettre 20 par exemple
     player->set_pairs_captured(player->get_pairs_captured() + _pair_detection(action.pos));
     _double_threes_detection();

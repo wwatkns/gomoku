@@ -7,10 +7,11 @@
 #include <bitset>
 
 int     main(int argc, char **argv) {
-    // Game                *game = new Game();
-    //
-    // game->loop();
-    // exit(0);
+    Game                *game = new Game();
+
+    game->loop();
+    exit(0);
+
     BitBoard *p1 = new BitBoard();
 
     // std::cout << (*p1) << std::endl;
@@ -57,15 +58,24 @@ int     main(int argc, char **argv) {
     // }
 
     /* debug eroded */
-    *p1 = BitBoard::border_left;
+    *p1 = BitBoard::border_bottom;
+    std::cout << *p1 << std::endl;
     p1->write(18, 9);
     p1->write(18, 10);
+    std::cout << *p1 << std::endl;
     *p1 = p1->dilated();
+    std::cout << *p1 << std::endl;
     *p1 = p1->dilated();
+    std::cout << *p1 << std::endl;
     *p1 = p1->dilated();
     std::cout << *p1 << std::endl;
     for (uint8_t i = 0; i < 1; i++) {
         *p1 = p1->eroded();
+        std::cout << *p1 << std::endl;
+    }
+
+    for (uint8_t i = 0; i < 2; i++) {
+        *p1 = get_all_neighbours(*p1, BitBoard::empty);
         std::cout << *p1 << std::endl;
     }
 

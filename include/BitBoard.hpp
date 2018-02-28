@@ -85,8 +85,12 @@ BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
 
 bool        detect_five_aligned(BitBoard const &bitboard);
-bool        detect_gomoku_pattern_around(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y);
+// bool        detect_gomoku_pattern_around(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y);
+bool        detect_future_pattern_at(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y);
 bool        detect_test(BitBoard const &bitboard);
+
+BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
+BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
 
 namespace direction {
     enum direction {
@@ -102,6 +106,13 @@ namespace direction {
 };
 
 #endif
+
+/*  Algorithm overview :
+     - we select only the positions open for the current player
+     - we iterate through those positions
+     - we check with `detect_future_pattern_at()` if the move will yield an interesting pattern
+     - we compute the most interesting one
+*/
 
 /*     +--19x19 BitBoard-----------------------+
      0 | . . . . . . . . . . . . . . . . . . . | 0

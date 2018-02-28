@@ -3,6 +3,7 @@
 
 # include <Eigen/Dense>
 # include "GraphicalInterface.hpp"
+# include "BitBoard.hpp"
 
 class           GameEngine;
 typedef struct  s_action t_action;
@@ -25,6 +26,7 @@ public:
     void            set_pairs_captured(uint8_t pairs) { _pairs_captured = pairs; };
 
     uint8_t         type;
+    BitBoard        board;
 
 protected:
     GameEngine          *_game_engine;

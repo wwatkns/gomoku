@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "BitBoard.hpp" // TMP
 
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
@@ -65,8 +66,12 @@ void        Game::loop(void) {
             break;
         if (action_undo == false)
             this->_gui->update_end_game(this->_c_player);
-        if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game()))
+        if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
+            std::cout << this->_c_player->board << std::endl;
+            std::cout << get_player_open_pairs_captures_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
+            // std::cout << get_player_open_adjacent_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
+        }
         this->_gui->get_analytics()->set_c_player(this->_c_player);
         this->_gui->update_display();
         // this->_handle_fps(&frames, &ms);

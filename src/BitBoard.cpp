@@ -4,8 +4,8 @@
 std::array<int16_t, D>  BitBoard::shifts = { -19, -18, 1, 20, 19, 18, -1, -20 };
 BitBoard                BitBoard::full = (std::array<uint64_t, N>){ 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF800000 };
 BitBoard                BitBoard::empty = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0 };
-BitBoard                BitBoard::border_right = (std::array<uint64_t, N>){ 0x200004000080, 0x10000200004000, 0x800010000200004, 0x800010000200, 0x40000800010000, 0x2000040000800010 };
-BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000400008 };
+BitBoard                BitBoard::border_right = (std::array<uint64_t, N>){ 0x200004000080, 0x10000200004000, 0x800010000200004, 0x800010000200, 0x40000800010000, 0x2000040000800000 };
+BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000000000 };
 BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
 BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
 
@@ -83,7 +83,7 @@ BitBoard    BitBoard::opens(void) const {
 }
 
 BitBoard    BitBoard::neighbours(void) const {
-    return (dilation(*this) ^ *this);
+    return (this->dilated() ^ *this);
 }
 
 /* shift either right or left depending on the sign of the shift, if we shift right we handle the overflow to the extra bits */
@@ -285,7 +285,7 @@ BitBoard    erosion(BitBoard const &bitboard) { // does not take into account th
 
 /* return the neighboring cells of both players */
 BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2) {
-    return (dilation(p1 | p2) ^ (p1 | p2));
+    return ((p1.dilated() | p2.dilated()) ^ (p1 | p2));
 }
 
 /* return the open cells of both players */
@@ -296,6 +296,43 @@ BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2) {
 /* return the occupied cells of both players */
 BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2) {
     return (p1 | p2);
+}
+
+/* will return the interesting positions to explore for p1,
+   it creates a star pattern of size 2 around p1 positions taking into account
+   p2 pieces (so a potential position behind an enemy stone will be ignored)
+   +-----------+
+   | 1 . 1 . 1 |
+   | . 1 1 1 . |
+   | 1 1 . 1 1 |
+   | . 1 1 1 . |
+   | 1 . 1 . 1 |
+   +-----------+
+*/
+BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2) {
+    BitBoard res = p1.dilated();
+    for (uint8_t i = direction::north_east; i < direction::south; ++i)
+        res |= (p1.shifted(i) & p2).shifted(i) ^ p1.shifted(i, 2) & ~BitBoard::border_left;
+    for (uint8_t i = direction::south_west; i < 8; ++i)
+        res |= (p1.shifted(i) & p2).shifted(i) ^ p1.shifted(i, 2) & ~BitBoard::border_right;
+    res |= (p1.shifted(direction::north) & p2).shifted(direction::north) ^ p1.shifted(direction::north, 2);
+    res |= (p1.shifted(direction::south) & p2).shifted(direction::south) ^ p1.shifted(direction::south, 2);
+    return (res & ~p1 & ~p2);
+}
+
+/* will return the bitboard of all the open positions for open pair captures for p1,
+   I dont't even know how I made this algorithm, but it works alright ! could be
+   adapted to the patterns matching to get all the positions of future open-threes, ...
+*/
+BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2) {
+    BitBoard res;
+    for (uint8_t i = direction::north_east; i < direction::south; ++i)
+        res |= ((p1.shifted(i) & p2).shifted(i) & p2).shifted(i) & p1.shifted(i, 3) & ~BitBoard::border_left;
+    for (uint8_t i = direction::south_west; i < 8; ++i)
+        res |= ((p1.shifted(i) & p2).shifted(i) & p2).shifted(i) & p1.shifted(i, 3) & ~BitBoard::border_right;
+    res |= ((p1.shifted(direction::north) & p2).shifted(direction::north) & p2).shifted(direction::north) & p1.shifted(direction::north, 3);
+    res |= ((p1.shifted(direction::south) & p2).shifted(direction::south) & p2).shifted(direction::south) & p1.shifted(direction::south, 3);
+    return (res & ~p1 & ~p2);
 }
 
 bool        detect_five_aligned(BitBoard const &bitboard) {
@@ -332,8 +369,9 @@ bool        detect_five_aligned(BitBoard const &bitboard) {
 //     return (false);
 // }
 
-// bool        detect_gomoku_pattern_around(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y) {
+// bool        detect_future_pattern_at(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y) {
 // }
+
 
 // bool       find_pattern(BitBoard const &bitboard, uint64_t pattern) {
 // }
