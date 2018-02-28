@@ -12,6 +12,16 @@ int     main(int argc, char **argv) {
     game->loop();
     exit(0);
 
+    // uint8_t open_split_three = 0x68; // -00-0-  or  01101000
+    // std::cout << std::bitset<8>(open_split_three) << std::endl;
+    //
+    // for (uint8_t i = 0; i < 8; ++i) {
+    //     std::cout << ( (open_split_three << i & 0x80) == 0x80 ? "pos ": "") << std::endl;
+    // }
+    //
+    // open_split_three
+
+    // exit(0);
     BitBoard *p1 = new BitBoard();
 
     // std::cout << (*p1) << std::endl;

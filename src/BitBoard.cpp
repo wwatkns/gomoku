@@ -91,6 +91,11 @@ BitBoard    BitBoard::shifted(uint8_t dir, uint8_t n) const {
     return (BitBoard::shifts[dir] > 0 ? (*this >> BitBoard::shifts[dir]*n) & BitBoard::full : (*this << -BitBoard::shifts[dir]*n));
 }
 
+/* shift in the inverse direction from BitBoard::shifted (useful for pattern detection) */
+BitBoard    BitBoard::shifted_inv(uint8_t dir, uint8_t n) const {
+    return (BitBoard::shifted(dir < 4 ? dir + 4 : dir - 4, n));
+}
+
 /* return the dilated board taking into account the board boundaries */
 BitBoard    BitBoard::dilated(void) const {
 	BitBoard	res = *this;
@@ -335,6 +340,60 @@ BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoar
     return (res & ~p1 & ~p2);
 }
 
+
+/* we light up the moves ending up in a split-three pattern
+
+  open-split-three-left       open-split-three-right
+        -*0-0-                       -*-00-
+        -0*-0-                       -0-*0-
+        -00-*-                       -0-0*-
+
+
+close-left-split-three-left  close-left-split-three-right
+         -*0-0-                        -*-00-
+         -0*-0-                        -0-*0-
+         -00-*-                        -0-0*-
+
+
+    (...).shifted(i) & p1    :  check if the next cell contains a stone of current player
+    (...).shifted(i) & empty :  check if the next cell is empty of both player
+    (...).shifted_inv(i, N)  :  once we reach the last check we shift in the inverse direction N times (depending on the pattern length)
+
+*/
+
+/*  will compute a bitboard for all the open moves around a specific pattern,
+    patterns must be encoded in big-endian, and length of pattern must be provided
+    ex : -0-00- pattern will be 01011000 with length 6
+          -0-0- pattern will be 01010000 with length 5
+*/
+BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
+    // there is still a minor issue with board borders not being correctly handled ...
+    BitBoard res;
+    BitBoard tmp;
+    BitBoard empty = ~p1 & ~p2;
+
+    for (uint8_t d = direction::north; d < 8; ++d) {
+        tmp = (~p1);
+        for (uint8_t n = 0; n < length; n++) {
+            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+        }
+        res |= tmp;
+    }
+    return (res & empty);
+}
+
+/*         a                    ~a              >> 1              & a              >> 1             &~a              >> 1             & a
+    +-------------+  <|   +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+
+    | . . . . . . |   |>  | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
+    | . . . . . . |  <|   | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
+    | . * 1 . 1 . |   |>  | 1 1 . 1 . 1 |  | . 1 1 . 1 . |  | . . 1 . . . |  | . . . 1 . . |  | . . . 1 . . |  | . . . . 1 . |  | . . . . 1 . |
+    | . . . . . . |  <|   | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
+    | . . . . . . |   |>  | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
+    | . . . . . . |  <|   | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
+    +-------------+   |>  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+
+*/
+
 bool        detect_five_aligned(BitBoard const &bitboard) {
     BitBoard    tmp;
     for (uint8_t i = 0; i < D; i++) {
@@ -345,6 +404,7 @@ bool        detect_five_aligned(BitBoard const &bitboard) {
     }
     return (false);
 }
+
 
 // bool        detect_test(BitBoard const &bitboard) {
 //     BitBoard    tmp;

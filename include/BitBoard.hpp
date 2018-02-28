@@ -35,6 +35,7 @@ public:
     BitBoard    neighbours(void) const;
 
     BitBoard    shifted(uint8_t dir, uint8_t n = 1) const;
+    BitBoard    shifted_inv(uint8_t dir, uint8_t n = 1) const;
     BitBoard    dilated(void) const;
     BitBoard    eroded(void) const;
 
@@ -92,6 +93,8 @@ bool        detect_test(BitBoard const &bitboard);
 BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
 
+BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length);
+
 namespace direction {
     enum direction {
         north,
@@ -107,13 +110,13 @@ namespace direction {
 
 #endif
 
-/*  Algorithm overview :
-     - we select only the positions open for the current player
-     - we iterate through those positions
-     - we check with `detect_future_pattern_at()` if the move will yield an interesting pattern
-     - we compute the most interesting one
+/*
+    for the evaluation function, we have a list of bitboard for each pattern and
+    for both players, each board is worth a certain score (the board representing
+    open-fours is worth a lot more than the one representing close-split-threes)
+    the score is computed by overlaying all the board and multiplying them with
+    their scores (giving a score for each position)
 */
-
 /*     +--19x19 BitBoard-----------------------+
      0 | . . . . . . . . . . . . . . . . . . . | 0
      1 | . . . . . . . . . . . . . . . . . . . | 1
@@ -150,8 +153,8 @@ namespace direction {
     |     W     |       -1      |  6  |          ↙ ↓ ↘︎            ↙ ↓ ↘︎
     |    N-E    |      -18      |  1  |        5   4   3       +18 +19 +20
     |    S-E    |       20      |  3  |
-    |    N-W    |      -20      |  7  |
-    |    S-W    |       18      |  5  |
+    |    N-W    |      -20      |  7  |        inverse direction :
+    |    S-W    |       18      |  5  |        (dir < 4 ? dir + 4 : dir - 4)
     +-----------+---------------+-----+
 
     +--Normal Board------------------+      +--Flipped Board-----------------+
