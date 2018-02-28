@@ -358,7 +358,6 @@ close-left-split-three-left  close-left-split-three-right
     (...).shifted(i) & p1    :  check if the next cell contains a stone of current player
     (...).shifted(i) & empty :  check if the next cell is empty of both player
     (...).shifted_inv(i, N)  :  once we reach the last check we shift in the inverse direction N times (depending on the pattern length)
-
 */
 
 /*  will compute a bitboard for all the open moves around a specific pattern,
@@ -367,23 +366,27 @@ close-left-split-three-left  close-left-split-three-right
           -0-0- pattern will be 01010000 with length 5
 */
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
-    // there is still a minor issue with board borders not being correctly handled ...
     BitBoard res;
     BitBoard tmp;
     BitBoard empty = ~p1 & ~p2;
 
-    for (uint8_t d = direction::north; d < 8; ++d) {
+    for (uint8_t d = direction::north; d < 8; ++d) { // TODO : if the pattern is mirror we can explore only 4 directions (ex : -000-)
         tmp = (~p1);
         for (uint8_t n = 0; n < length; n++) {
-            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
         }
+        for (uint8_t n = 0; n < length; n++)
+            tmp |= tmp.shifted_inv(d) & ((pattern >> (8-length+n) & 0x1) == 0x1 ? p1 : empty);
         res |= tmp;
     }
     return (res & empty);
 }
 
-/*         a                    ~a              >> 1              & a              >> 1             &~a              >> 1             & a
+/*
+    two patterns are discernible, mirror ones (-00-, -000-, -0-0-, -0000-, -0--0-)
+    and non-mirror (-00-0-, -0-00-, -0--, --0-, -00--, --00-, ...)
+           a                    ~a              >> 1              & a              >> 1             &~a              >> 1             & a
     +-------------+  <|   +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+
     | . . . . . . |   |>  | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
     | . . . . . . |  <|   | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
