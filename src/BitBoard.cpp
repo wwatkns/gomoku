@@ -395,31 +395,14 @@ BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoar
 // }
 
 
-
-static BitBoard open_sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s) {
+static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type) {
     BitBoard    res;
     BitBoard    tmp;
     BitBoard    empty = (~p1 & ~p2);
 
     for (uint8_t d = direction::north; d < 8; ++d) {
-        tmp = BitBoard::full;
+        tmp = (type == 0 ? BitBoard::full : p2);
         for (uint8_t n = 0; n < length; n++) {
-            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
-            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
-        }
-        res |= tmp.shifted_inv(d, s);
-    }
-    return (res & empty);
-}
-
-static BitBoard close_sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s) {
-    BitBoard    res;
-    BitBoard    tmp;
-    BitBoard    empty = (~p1 & ~p2);
-
-    for (uint8_t d = direction::north; d < 8; ++d) {
-        tmp = p2;
-        for (uint8_t n = 0; n < length; n++) { // 1
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
         }
@@ -435,86 +418,11 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t
 
     for (uint8_t s = 0; s < length; s++) {
         sub = pattern & ~(0x80 >> s);
-        if (sub != pattern) {
-            if (type == 0)
-                res |=  open_sub_pattern_detector(p1, p2, sub, length, length-s-1);
-            else
-                res |= close_sub_pattern_detector(p1, p2, sub, length, length-s-1);
-        }
+        if (sub != pattern)
+            res |= sub_pattern_detector(p1, p2, sub, length, length-s-1, type);
     }
     return (res & ~p1 & ~p2);
 }
-
-/*
-    |OO-O-
-    -OO-O|
-
-    -OO-O-  |  -O-OO-  |  -OOO-  |  -OOOO-
-    --------+----------+---------+---------
-    -*O-O-  |  -*-OO-  |  -*OO-  |  -*OOO-
-    -O*-O-  |  -O-*O-  |  -O*O-  |  -O*OO-
-    -OO-*-  |  -O-O*-  |  -OO*-  |  -OO*O-
-                                 |  -OOO*-
-
-generate sub-patterns :
-
-    uint8_t pattern = 0x58; // -O-OO-
-    uint8_t length = 6;
-    uint8_t sub_pattern;
-
-    for (uint8_t i = 0; i < length; i++) {
-        sub_pattern = pattern & ~(0x80 >> i);
-        if (sub_pattern != pattern) {
-            ... do stuff ...
-        }
-    }
-
-    start sub_pattern detection, if is_empty() is false,
-
-    or we could do pattern matching by showing the pattern we want to optain, it'll then detect if sub patterns composed from initial
-    (there are as much subpatterns as lit bits in search pattern, so here 3), then we lit all the cells which contain the pattern
-    and no
-    -*-OO-   >   ---OO-   >   OOO--O
-    -O-*O-   >   -O--O-   >   O-OO-O
-    -O-O*-   >   -O-O--   >   O-O-OO
-
-
-
-    I don't detect those :
-    -OO-*-
-    -*-OO-
-
-    +---Patterns-----+---------------------+----------+-------+------------+--------+---------------------------------+
-    | num |  pattern |        moves        |  binary  |  hex  | directions | length |              names              |
-    +-----+----------+---------------------+----------+-------+------------+--------+---------------------------------+
-    |  1  |   -O-O-  |        -O*O-        | 01010000 |  0x50 |      4     |    5   |  open three                     |
-    |  2  |   -OO--  |   -OO*-  &  -*OO-   | 01100000 |  0x60 |      8     |    5   |  open three                     |
-    |  3  |  -O--O-  |        -O**O-       | 01001000 |  0x48 |      4     |    6   |  open split threes              |
-    |  4  |  -O-O--  |  -O*O*-  &  -*O*O-  | 01010000 |  0x50 |      8     |    6   |  open three | open split three  |
-    |  5  |  -OO---  |  -OO**-  &  -**OO-  | 01100000 |  0x60 |      8     |    6   |  open three | open split three  | TODO : detect -OO-*- instead of -OO**-
-    |  6  |  -O-OO-  |  -O*OO-  &  -OO*O-  | 01011000 |  0x58 |      8     |    6   |  open four                      |
-    |  7  |  -OOO--  |  -OOO*-  &  -*OOO-  | 01110000 |  0x70 |      8     |    6   |  open four                      |
-    +-----+----------+---------------------+----------+-------+------------+--------+---------------------------------+
-
-
-    for the close pattern we could either encode a second pattern for p2 or encode as follow :
-    000-  :  |000-
-    -000  :  -000|
-    0-0-  :  |0-0-| (if length is 5, otherwise it's |0-0-)
-
-
-    two patterns are discernible, mirror ones (-00-, -000-, -0-0-, -0000-, -0--0-)
-    and non-mirror (-00-0-, -0-00-, -0--, --0-, -00--, --00-, ...)
-           a                    ~a              >> 1              & a              >> 1             &~a              >> 1             & a
-    +-------------+  <|   +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+
-    | . . . . . . |   |>  | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
-    | . . . . . . |  <|   | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
-    | . * 1 . 1 . |   |>  | 1 1 . 1 . 1 |  | . 1 1 . 1 . |  | . . 1 . . . |  | . . . 1 . . |  | . . . 1 . . |  | . . . . 1 . |  | . . . . 1 . |
-    | . . . . . . |  <|   | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
-    | . . . . . . |   |>  | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
-    | . . . . . . |  <|   | 1 1 1 1 1 1 |  | . 1 1 1 1 1 |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |  | . . . . . . |
-    +-------------+   |>  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+  +-------------+
-*/
 
 bool        detect_five_aligned(BitBoard const &bitboard) {
     BitBoard    tmp;

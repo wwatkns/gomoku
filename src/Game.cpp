@@ -82,8 +82,8 @@ void        Game::loop(void) {
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x50, 5) << std::endl;   // -0-0-
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x78, 6) << std::endl;   // -0000-
             // std::cout << forbidden_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
-            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x78, 6) << std::endl;   // 00-0-
-            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xD0, 5) << std::endl;   // 00-0-
+            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x78, 6) << std::endl;   // -0000-
+            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xD0, 5) << std::endl;   // 00-0-
 
             // std::cout << get_player_split_three_left(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << get_player_open_pairs_captures_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
