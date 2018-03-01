@@ -398,17 +398,17 @@ BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoar
 static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type) {
     BitBoard    res;
     BitBoard    tmp;
-    BitBoard    empty = (~p1 & ~p2);
+    BitBoard    open_cells = (~p1 & ~p2);
 
     for (uint8_t d = direction::north; d < 8; ++d) {
         tmp = (type == 0 ? BitBoard::full : p2);
         for (uint8_t n = 0; n < length; n++) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
-            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
+            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : open_cells);
         }
         res |= tmp.shifted_inv(d, s);
     }
-    return (res & empty);
+    return (res & open_cells);
 }
 
 BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {

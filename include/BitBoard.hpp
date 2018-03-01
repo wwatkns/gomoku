@@ -208,7 +208,7 @@ namespace direction {
     |  7  |    OOO-  |                      |*OO-,   |O*O-,   |OO*-  | 11100000 |  0xE0 |      8     |    4   |  close three         |
     |  8  |   OOOO-  |            |*OOO-,  |O*OO-,  |OO*O-,  |OOO*-  | 11110000 |  0xF0 |      8     |    5   |  close four          |
     |  9  |  OOOOO-  |  |*OOOO-, |O*OOO-, |OO*OO-, |OOO*O-, |OOOO*-  | 11111000 |  0xF8 |      8     |    6   |  close five          |
-    | 10  |   OOOOO  |  |*OOOO|, |O*OOO|, |OO*OO|, |OOO*O|, |OOOO*|  | 11111000 |  0xF8 |      8     |    5   |  close five both     |
+    | 10  |   OOOOO  |  |*OOOO|, |O*OOO|, |OO*OO|, |OOO*O|, |OOOO*|  | 11111000 |  0xF8 |      8     |    5   |  close five both     | # TODO
     +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
     TODO : there is no way to check a pattern with both extremities closed for now (we need it to check |OOOOO| )
            or instead we could check for OOOOO with first cell skipped for all five-aligned cases.
@@ -217,7 +217,7 @@ namespace direction {
      bitboard showing the open cells leading to such arrangements.
     -> patterns are encoded in 8 bits and in big-endian (from left to right) as shown in table above.
     -> patterns must have a length associated to them (is it still true ?).
-    -> close pattern mean they have one extremity blocked by enemy stone, both extremities closed
+    -> close pattern mean they have one extremity blocked by an enemy stone, both extremities closed
      are not checked as it will lead to nothing.
     -> asymmetric patterns such as -OO-O- are checked on 4 axis and both directions, so -O-OO- is
      checked as the same time.
