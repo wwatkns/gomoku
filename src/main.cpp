@@ -7,6 +7,22 @@
 #include <bitset>
 
 int     main(int argc, char **argv) {
+
+    // uint8_t pattern = 0x58; // -O-OO-
+    // uint8_t length = 6;
+    // uint8_t sub_pattern;
+    // uint8_t mask;
+    //
+    // std::cout << std::bitset<8>(pattern) << std::endl << std::endl;
+    // for (uint8_t i = 0; i < length; i++) {
+    //     sub_pattern = pattern & ~(0x80 >> i);
+    //     if (sub_pattern != pattern) {
+    //         std::cout << std::bitset<8>(sub_pattern) << std::endl;
+    //     }
+    // }
+    // exit(0);
+
+
     Game                *game = new Game();
 
     game->loop();

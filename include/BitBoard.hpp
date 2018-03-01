@@ -86,14 +86,13 @@ BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
 
 bool        detect_five_aligned(BitBoard const &bitboard);
-// bool        detect_gomoku_pattern_around(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y);
-bool        detect_future_pattern_at(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &x, uint8_t const &y);
-bool        detect_test(BitBoard const &bitboard);
 
 BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
 
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length);
+BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
+
 
 namespace direction {
     enum direction {
@@ -195,6 +194,17 @@ namespace direction {
                 f1  g2  h3                              a3  b2  c1
                   g1  h2                                  a2  b1
                     h1                                      a1
+
+    +---Patterns-----+---------------------+----------+-------+------------+--------+---------------------------------+
+    | num |  pattern |        moves        |  binary  |  hex  | directions | length |              names              |
+    +-----+----------+---------------------+----------+-------+------------+--------+---------------------------------+
+    |  1  |   -0-0-  |        -0*0-        | 01010000 |  0x50 |      4     |    5   |  open three                     |
+    |  2  |   -00--  |   -00*-  &  -*00-   | 01100000 |  0x60 |      8     |    5   |  open three                     |
+    |  3  |  -0--0-  |        -0**0-       | 01001000 |  0x48 |      4     |    6   |  open split threes              |
+    |  4  |  -0-0--  |  -0*0*-  &  -*0*0-  | 01010000 |  0x50 |      8     |    6   |  open three | open split three  |
+    |  5  |  -000--  |  -000*-  &  -*000-  | 01110000 |  0x70 |      8     |    6   |  open four                      |
+    |  6  |  -0-00-  |  -0*00-  &  -00*0-  | 01011000 |  0x58 |      8     |    6   |  open four                      |
+    +-----+----------+---------------------+----------+-------+------------+--------+---------------------------------+
 
              +--Patterns--+------------+-----------+-----------+
              |  binary p1 |  binary p2 |   hex p1  |   hex p2  |
