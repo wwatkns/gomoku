@@ -195,51 +195,32 @@ namespace direction {
                   g1  h2                                  a2  b1
                     h1                                      a1
 
-    +---Patterns-----+---------------------+----------+-------+------------+--------+---------------------------------+
-    | num |  pattern |        moves        |  binary  |  hex  | directions | length |              names              |
-    +-----+----------+---------------------+----------+-------+------------+--------+---------------------------------+
-    |  1  |   -0-0-  |        -0*0-        | 01010000 |  0x50 |      4     |    5   |  open three                     |
-    |  2  |   -00--  |   -00*-  &  -*00-   | 01100000 |  0x60 |      8     |    5   |  open three                     |
-    |  3  |  -0--0-  |        -0**0-       | 01001000 |  0x48 |      4     |    6   |  open split threes              |
-    |  4  |  -0-0--  |  -0*0*-  &  -*0*0-  | 01010000 |  0x50 |      8     |    6   |  open three | open split three  |
-    |  5  |  -000--  |  -000*-  &  -*000-  | 01110000 |  0x70 |      8     |    6   |  open four                      |
-    |  6  |  -0-00-  |  -0*00-  &  -00*0-  | 01011000 |  0x58 |      8     |    6   |  open four                      |
-    +-----+----------+---------------------+----------+-------+------------+--------+---------------------------------+
+    +---Patterns-(open)----------------------------------------------+----------+-------+------------+--------+----------------------+
+    | num |  pattern |                     moves                     |  binary  |  hex  | directions | length |         names        |
+    +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
+    |  1  |  -OO-O-  |                     -*O-O-,  -O*-O-,  -OO-*-  | 01101000 |  0x68 |      8     |    6   |  open split three    |
+    |  2  |   -OOO-  |                      -*OO-,   -O*O-,   -OO*-  | 01110000 |  0x70 |      4     |    5   |  open three          |
+    |  3  |  -OOOO-  |            -*OOO-,  -O*OO-,  -OO*O-,  -OOO*-  | 01111000 |  0x78 |      4     |    6   |  open four           |
+    |  4  | -OOOOO-  |  -*OOOO-, -O*OOO-, -OO*OO-, -OOO*O-, -OOOO*-  | 01111100 |  0x7C |      4     |    7   |  open five           |
+    +---Patterns-(close)---------------------------------------------+----------+-------+------------+--------+----------------------+
+    |  5  |   OO-O-  |                     |*O-O-,  |O*-O-,  |OO-*-  | 11010000 |  0xD0 |      8     |    5   |  close split three   |
+    |  6  |   O-OO-  |                     |*O-O-,  |O*-O-,  |OO-*-  | 10110000 |  0xB0 |      8     |    5   |  close split three   |
+    |  7  |    OOO-  |                      |*OO-,   |O*O-,   |OO*-  | 11100000 |  0xE0 |      8     |    4   |  close three         |
+    |  8  |   OOOO-  |            |*OOO-,  |O*OO-,  |OO*O-,  |OOO*-  | 11110000 |  0xF0 |      8     |    5   |  close four          |
+    |  9  |  OOOOO-  |  |*OOOO-, |O*OOO-, |OO*OO-, |OOO*O-, |OOOO*-  | 11111000 |  0xF8 |      8     |    6   |  close five          |
+    | 10  |   OOOOO  |  |*OOOO|, |O*OOO|, |OO*OO|, |OOO*O|, |OOOO*|  | 11111000 |  0xF8 |      8     |    5   |  close five both     |
+    +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
+    TODO : there is no way to check a pattern with both extremities closed for now (we need it to check |OOOOO| )
+           or instead we could check for OOOOO with first cell skipped for all five-aligned cases.
 
-             +--Patterns--+------------+-----------+-----------+
-             |  binary p1 |  binary p2 |   hex p1  |   hex p2  |
-    +--------+------------+------------+-----------+-----------+
-    |        |     01110  |     00001  |    0xE    |    0x1    |
-    |        |     01110  |     10000  |    0xE    |    0x10   |
-    |  close |    010110  |    100000  |    0x16   |    0x20   |
-    | threes |    010110  |    000001  |    0x16   |    0x1    |
-    |        |    011010  |    100000  |    0x1A   |    0x20   |
-    |        |    011010  |    000001  |    0x1A   |    0x1    |
-    +--------+------------+------------+-----------+-----------+
-    |        |    011110  |    000001  |    0x1E   |    0x1    |
-    |        |    011110  |    100000  |    0x1E   |    0x20   |
-    |        |   0101110  |   1000000  |    0x2E   |    0x40   |
-    |        |   0101110  |   0000001  |    0x2E   |    0x1    |
-    |  close |   0111010  |   1000000  |    0x3A   |    0x40   |
-    |  fours |   0111010  |   0000001  |    0x3A   |    0x1    |
-    |        |   0110110  |   1000000  |    0x36   |    0x40   |
-    |        |   0110110  |   0000001  |    0x36   |    0x1    |
-    |        |  01011010  |  10000000  |    0x5A   |    0x80   | ?
-    |        |  01011010  |  00000001  |    0x5A   |    0x1    | ?
-    +--------+------------+------------+-----------+-----------+
-    |  open  |     01110  |     00000  |    0xE    |    0x0    |
-    | threes |    010110  |    000000  |    0x16   |    0x0    |
-    |        |    011010  |    000000  |    0x1A   |    0x0    |
-    +--------+------------+------------+-----------+-----------+
-    |        |    011110  |    000000  |    0x1E   |    0x0    |
-    |  open  |   0101110  |   0000000  |    0x2E   |    0x0    |
-    | fours  |   0111010  |   0000000  |    0x3A   |    0x0    |
-    |        |   0110110  |   0000000  |    0x36   |    0x0    |
-    |        |  01011010  |  00000000  |    0x5A   |    0x0    |
-    +--------+------------+------------+-----------+-----------+
-    Patterns take at most 8 bits, in order to detect open and closed
-    patterns we must look at both player boards to see if extremities
-    of patterns are blocked.
+    -> pattern depict desired stone arrangements, as such the function pattern_detection returns a
+     bitboard showing the open cells leading to such arrangements.
+    -> patterns are encoded in 8 bits and in big-endian (from left to right) as shown in table above.
+    -> patterns must have a length associated to them (is it still true ?).
+    -> close pattern mean they have one extremity blocked by enemy stone, both extremities closed
+     are not checked as it will lead to nothing.
+    -> asymmetric patterns such as -OO-O- are checked on 4 axis and both directions, so -O-OO- is
+     checked as the same time.
 
 
 ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:

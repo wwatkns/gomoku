@@ -341,19 +341,7 @@ BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoar
 }
 
 
-/* we light up the moves ending up in a split-three pattern
-
-  open-split-three-left       open-split-three-right
-        -*0-0-                       -*-00-
-        -0*-0-                       -0-*0-
-        -00-*-                       -0-0*-
-
-
-close-left-split-three-left  close-left-split-three-right
-         -*0-0-                        -*-00-
-         -0*-0-                        -0-*0-
-         -00-*-                        -0-0*-
-
+/*
     (...).shifted(i) & p1    :  check if the next cell contains a stone of current player
     (...).shifted(i) & empty :  check if the next cell is empty of both player
     (...).shifted_inv(i, N)  :  once we reach the last check we shift in the inverse direction N times (depending on the pattern length)
@@ -391,29 +379,27 @@ close-left-split-three-left  close-left-split-three-right
 */
 // BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
 //     BitBoard res;
-//     BitBoard tmp[5];
+//     BitBoard tmp[2];
 //     BitBoard empty = ~p1 & ~p2;
 //
-//     uint8_t patterns[5] = { 0x50, 0x60, 0x48, 0x50 };
-//     uint8_t  lengths[5] = {    5,    5,    6,    6 };
+//     uint8_t patterns[2] = { 0x68, 0x70 };
+//     uint8_t  lengths[2] = {    6,    5 };
 //
-//     for (uint8_t p = 0; p < 5; p++) {
+//     for (uint8_t p = 0; p < 2; p++) {
 //         res = BitBoard::empty;
-//         tmp[p] = pattern_detector(p1, p2, patterns[p], lengths[p]);
-//         // std::cout << tmp[p] << std::endl;
+//         tmp[p] = open_pattern_detector(p1, p2, patterns[p], lengths[p]);
 //         for (int8_t i = p-1; i >= 0; i--)
 //             res |= (tmp[p] & tmp[i]);
 //     }
 //     return (res);
 // }
 
-/* ================================== */
 
-static BitBoard    pattern_detector_simple(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s) {
-    // TODO : implement other function to test for close patterns (here this works only for open patterns)
-    BitBoard res;
-    BitBoard tmp;
-    BitBoard empty = ~p1 & ~p2;
+
+static BitBoard open_sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s) {
+    BitBoard    res;
+    BitBoard    tmp;
+    BitBoard    empty = (~p1 & ~p2);
 
     for (uint8_t d = direction::north; d < 8; ++d) {
         tmp = BitBoard::full;
@@ -426,35 +412,42 @@ static BitBoard    pattern_detector_simple(BitBoard const &p1, BitBoard const &p
     return (res & empty);
 }
 
-/*  will find all the positions for a given pattern, ex : -OO-O-
-    -OO-O- encoded as big-endian is 01101000 or 0x68 en hexadecimal, the pattern length is 6 so you call
-      $  pattern_detector(p1, p2, 0x68, 6);
-
-    * it will return a bitboard will the bits lit where playing a stone will lead to the pattern (and in
-      both way, -OO-O- pattern is also -O-OO- which is convenient as their score for evalutation are the same)
-
-    * from -OO-O- we will generate all sub-patterns --O-O-, -O--O- and -OO--- and return the bitboards of
-      their existence (or not) on the board.
-*/
-BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
+static BitBoard close_sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s) {
     BitBoard    res;
-    BitBoard    empty = ~p1 & ~p2;
-    uint8_t     sub;
+    BitBoard    tmp;
+    BitBoard    empty = (~p1 & ~p2);
 
-    for (uint8_t s = 0; s < length; s++) {
-        sub = pattern & ~(0x80 >> s);
-        if (sub != pattern)
-            res |= pattern_detector_simple(p1, p2, sub, length, length-s-1);
+    for (uint8_t d = direction::north; d < 8; ++d) {
+        tmp = p2;
+        for (uint8_t n = 0; n < length; n++) { // 1
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
+        }
+        res |= tmp.shifted_inv(d, s);
     }
     return (res & empty);
 }
 
+BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
+    BitBoard    res;
+    uint8_t     sub;
+    uint8_t     type = pattern & 0x80;
+
+    for (uint8_t s = 0; s < length; s++) {
+        sub = pattern & ~(0x80 >> s);
+        if (sub != pattern) {
+            if (type == 0)
+                res |=  open_sub_pattern_detector(p1, p2, sub, length, length-s-1);
+            else
+                res |= close_sub_pattern_detector(p1, p2, sub, length, length-s-1);
+        }
+    }
+    return (res & ~p1 & ~p2);
+}
 
 /*
-    -OO-O-
-    -O--O-
-    -----O
-    --O---
+    |OO-O-
+    -OO-O|
 
     -OO-O-  |  -O-OO-  |  -OOO-  |  -OOOO-
     --------+----------+---------+---------
