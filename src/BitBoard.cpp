@@ -273,20 +273,6 @@ bool        BitBoard::operator!=(BitBoard const &rhs) {
 /*
 ** Non-member functions
 */
-BitBoard    dilation(BitBoard const &bitboard) { // does not take into account the board 2d topology
-	BitBoard	res = bitboard;
-    for (uint8_t i = 0; i < D; i++)
-        res |= bitboard.shifted(i);
-    return (res);
-}
-
-BitBoard    erosion(BitBoard const &bitboard) { // does not take into account the board 2d topology
-	BitBoard	res = bitboard;
-    for (uint8_t i = 0; i < D; i++)
-        res &= bitboard.shifted(i);
-    return (res);
-}
-
 
 /* return the neighboring cells of both players */
 BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2) {
@@ -340,59 +326,50 @@ BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoar
     return (res & ~p1 & ~p2);
 }
 
+static BitBoard sub_pattern_detector_alt(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type, uint8_t const &dir) {
+    BitBoard    res;
+    BitBoard    open_cells = (~p1 & ~p2);
 
-/*
-    (...).shifted(i) & p1    :  check if the next cell contains a stone of current player
-    (...).shifted(i) & empty :  check if the next cell is empty of both player
-    (...).shifted_inv(i, N)  :  once we reach the last check we shift in the inverse direction N times (depending on the pattern length)
+    res = (type == 0x80 ? p2 : BitBoard::full);
+    for (uint8_t n = 0; n < length; n++) {
+        res = (dir > 0 && dir < 4 ? res & ~BitBoard::border_right : (dir > 4 && dir < 8 ? res & ~BitBoard::border_left : res));
+        res = res.shifted(dir) & ((pattern << n & 0x80) == 0x80 ? p1 : open_cells);
+    }
+    return (res.shifted_inv(dir, s) & open_cells);
+}
+
+/*  will return a bitboard showing the forbidden cells for p1, it achieves that
+    by searching for open threes patterns and checking if we have overlapping open
+    moves leading to those. It's not the most efficient algorithm, we must improve
+    it in the future, but it is robust.
 */
+BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
+    BitBoard    res;
+    BitBoard    tmp[36]; // 36 is patterns * sub_patterns * directions
+    BitBoard    open_cells = (~p1 & ~p2);
+    uint8_t     j;
+    uint8_t     sub;
+    uint8_t     type;
+    uint8_t     patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
+    uint8_t      lengths[3] = {    6,    6,    5 };
 
-/*  will compute a bitboard for all the open moves around a specific pattern,
-    patterns must be encoded in big-endian, and length of pattern must be provided
-    ex : -0-00- pattern will be 01011000 with length 6
-          -0-0- pattern will be 01010000 with length 5
-*/
-// BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
-//     // TODO : implement other function to test for close patterns (here this works only for open patterns)
-//     BitBoard res;
-//     BitBoard tmp;
-//     BitBoard tmp_alt; // I don't like that it needs this extra bitboard, we could come up with a more efficient way...
-//     BitBoard empty = ~p1 & ~p2;
-//
-//     for (uint8_t d = direction::north; d < 8; ++d) {
-//         tmp = BitBoard::full;
-//         for (uint8_t n = 0; n < length; n++) {
-//             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
-//             tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
-//         }
-//         tmp_alt = tmp;
-//         for (uint8_t n = length-1; n > 0; n--)
-//             tmp_alt |= tmp_alt.shifted_inv(d) & ((pattern << n & 0x80) == 0x80 ? p1 : empty);
-//         res |= tmp_alt ^ tmp;
-//     }
-//     return (res & empty);
-// }
-
-
-/*
-    we only have to check two open-three to be formed by one stone, three-four or four-four are okay.
-*/
-// BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
-//     BitBoard res;
-//     BitBoard tmp[2];
-//     BitBoard empty = ~p1 & ~p2;
-//
-//     uint8_t patterns[2] = { 0x68, 0x70 };
-//     uint8_t  lengths[2] = {    6,    5 };
-//
-//     for (uint8_t p = 0; p < 2; p++) {
-//         res = BitBoard::empty;
-//         tmp[p] = open_pattern_detector(p1, p2, patterns[p], lengths[p]);
-//         for (int8_t i = p-1; i >= 0; i--)
-//             res |= (tmp[p] & tmp[i]);
-//     }
-//     return (res);
-// }
+    for (uint8_t p = 0; p < 3; p++) // iterate through patterns{
+        type = (patterns[p] & 0x80) | (0x1 << (8-lengths[p]) & patterns[p]);
+        j = 0;
+        for (uint8_t s = 0; s < lengths[p]; s++) { // iterate through sub patterns
+            sub = patterns[p] & ~(0x80 >> s);
+            if (sub != patterns[p]) {
+                for (uint8_t d = direction::north; d < 4; ++d) { // iterate through directions
+                    tmp[(p*12+j*4)+d] = sub_pattern_detector_alt(p1, p2, sub, lengths[p], lengths[p]-s-1, type, d);
+                    for (int8_t i = (p*12+j*4)+d-1; i >= 0; i--) // TODO : optimize this sub_pattern overlap loop, for now we loop 615 times total here
+                        res |= (tmp[(p*12+j*4)+d] & tmp[i]);
+                }
+                j++;
+            }
+        }
+    }
+    return (res & open_cells);
+}
 
 /*  TODO :
     -> finish forbidden_detector function
@@ -415,6 +392,10 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uin
     return (res & open_cells);
 }
 
+/*  will return the bitboard showing the open moves for p1 leading to the specified pattern.
+    the patterns must be encoded in big-endian and have a length defined (-OO-O- is 01101000
+    so 0x68 with length 6) see the Patterns table in BitBoard.hpp for all the patterns.
+*/
 BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
     BitBoard    res;
     uint8_t     sub;
@@ -423,7 +404,7 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t
     for (uint8_t s = 0; s < length; s++) {
         sub = pattern & ~(0x80 >> s);
         if (sub != pattern)
-            res |= sub_pattern_detector(p1, p2, sub, length, length-s-1, type);
+            res |= sub_pattern_detector(p1, p2, sub, length, length-s-1, type); // TODO : move code from sub_pattern_detector here (optimization)
     }
     return (res & ~p1 & ~p2);
 }

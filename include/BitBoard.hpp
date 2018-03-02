@@ -77,10 +77,6 @@ public:
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
-/* see 4.3 at https://eprints.qut.edu.au/85005/1/__staffhome.qut.edu.au_staffgroupm%24_meaton_Desktop_bits-7.pdf */
-BitBoard    dilation(BitBoard const &bitboard);
-BitBoard    erosion(BitBoard const &bitboard);
-
 BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
