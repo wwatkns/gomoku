@@ -69,11 +69,20 @@ void        Game::loop(void) {
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
             std::cout << "________________________" << std::endl;
             // std::cout << forbidden_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
-            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x78, 6) << std::endl;   // -0000-
-            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xD0, 5) << std::endl;   // 00-0-
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x78, 6) << std::endl;   // -0000-
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xD0, 5) << std::endl;   // 00-0-
             // std::cout << get_player_open_pairs_captures_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << get_player_open_adjacent_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
-            
+
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xF8, 5) << std::endl; // OOOOO
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xB0, 5) << std::endl;
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x70, 5) << std::endl;
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x7C, 7) << std::endl;
+            // 0xF8, 5   OOOOO
+            // 0xB0, 5   O-OO-
+            // 0x70, 5   -OOO-
+            // 0x7c, 7 -OOOOO-
+
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);

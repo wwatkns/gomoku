@@ -198,20 +198,17 @@ namespace direction {
     +---Patterns-(open)----------------------------------------------+----------+-------+------------+--------+----------------------+
     | num |  pattern |                     moves                     |  binary  |  hex  | directions | length |         names        |
     +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
-    |  1  |  -OO-O-  |                     -*O-O-,  -O*-O-,  -OO-*-  | 01101000 |  0x68 |      8     |    6   |  open split three    |
-    |  2  |   -OOO-  |                      -*OO-,   -O*O-,   -OO*-  | 01110000 |  0x70 |      4     |    5   |  open three          |
-    |  3  |  -OOOO-  |            -*OOO-,  -O*OO-,  -OO*O-,  -OOO*-  | 01111000 |  0x78 |      4     |    6   |  open four           |
-    |  4  | -OOOOO-  |  -*OOOO-, -O*OOO-, -OO*OO-, -OOO*O-, -OOOO*-  | 01111100 |  0x7C |      4     |    7   |  open five           |
-    +---Patterns-(close)---------------------------------------------+----------+-------+------------+--------+----------------------+
-    |  5  |   OO-O-  |                     |*O-O-,  |O*-O-,  |OO-*-  | 11010000 |  0xD0 |      8     |    5   |  close split three   |
-    |  6  |   O-OO-  |                     |*O-O-,  |O*-O-,  |OO-*-  | 10110000 |  0xB0 |      8     |    5   |  close split three   |
-    |  7  |    OOO-  |                      |*OO-,   |O*O-,   |OO*-  | 11100000 |  0xE0 |      8     |    4   |  close three         |
-    |  8  |   OOOO-  |            |*OOO-,  |O*OO-,  |OO*O-,  |OOO*-  | 11110000 |  0xF0 |      8     |    5   |  close four          |
-    |  9  |  OOOOO-  |  |*OOOO-, |O*OOO-, |OO*OO-, |OOO*O-, |OOOO*-  | 11111000 |  0xF8 |      8     |    6   |  close five          |
-    | 10  |   OOOOO  |  |*OOOO|, |O*OOO|, |OO*OO|, |OOO*O|, |OOOO*|  | 11111000 |  0xF8 |      8     |    5   |  close five both     | # TODO
+    |  1  |   -OOO-  |                     -*OO-    -O*O-    -OO*-   | 01110000 |  0x70 |      4     |    5   |  open three          |
+    |  2  |  -OO-O-  |                     -*O-O-   -O*-O-   -OO-*-  | 01101000 |  0x68 |      8     |    6   |  open split three    |  Moves Symbols :
+    |  3  |  -OOOO-  |            -*OOO-   -O*OO-   -OO*O-   -OOO*-  | 01111000 |  0x78 |      4     |    6   |  open four           |  | O | p1 stones
+    +---Patterns-(close)---------------------------------------------+----------+-------+------------+--------+----------------------+  | | | p2 stones
+    |  4  |    OOO-  |                     |*OO-    |O*O-    |OO*-   | 11100000 |  0xE0 |      8     |    4   |  close three         |  | - | an open position
+    |  5  |   OO-O-  |                     |*O-O-   |O*-O-   |OO-*-  | 11010000 |  0xD0 |      8     |    5   |  close split three   |  | ~ | any one of the above
+    |  6  |   O-OO-  |                     |*O-O-   |O*-O-   |OO-*-  | 10110000 |  0xB0 |      8     |    5   |  close split three   |  | * | an open move that'll complete the pattern
+    |  7  |   OOOO-  |            |*OOO-   |O*OO-   |OO*O-   |OOO*-  | 11110000 |  0xF0 |      8     |    5   |  close four          |
+    +---Patterns-(other)---------------------------------------------+----------+-------+------------+--------+----------------------+
+    |  8  |   OOOOO  |  ~*OOOO~  ~O*OOO~  ~OO*OO~  ~OOO*O~  ~OOOO*~  | 11111000 |  0xF8 |      4     |    5   |  five                |
     +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
-    TODO : there is no way to check a pattern with both extremities closed for now (we need it to check |OOOOO| )
-           or instead we could check for OOOOO with first cell skipped for all five-aligned cases.
 
     -> pattern depict desired stone arrangements, as such the function pattern_detection returns a
      bitboard showing the open cells leading to such arrangements.

@@ -394,6 +394,10 @@ BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoar
 //     return (res);
 // }
 
+/*  TODO :
+    -> finish forbidden_detector function
+    -> implement first iteration of evaluation function with the pattern_detector
+*/
 
 static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type) {
     BitBoard    res;
@@ -401,7 +405,7 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uin
     BitBoard    open_cells = (~p1 & ~p2);
 
     for (uint8_t d = direction::north; d < 8; ++d) {
-        tmp = (type == 0 ? BitBoard::full : p2);
+        tmp = (type == 0x80 ? p2 : BitBoard::full);
         for (uint8_t n = 0; n < length; n++) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : open_cells);
@@ -414,7 +418,7 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uin
 BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
     BitBoard    res;
     uint8_t     sub;
-    uint8_t     type = pattern & 0x80;
+    uint8_t     type = (pattern & 0x80) | (0x1 << (8-length) & pattern);
 
     for (uint8_t s = 0; s < length; s++) {
         sub = pattern & ~(0x80 >> s);
