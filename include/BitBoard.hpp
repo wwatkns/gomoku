@@ -201,7 +201,7 @@ namespace direction {
         [2 turns]
          * open-four
          * double-close-four
-         * double-split-four
+         * double-split-four (they include -OO-O-O-OO-)
          * split-four & close-four
         [4 turns]
          * close-four & open-three
@@ -336,4 +336,38 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
      $ y = pos & 0x7C0;
 
      1001001111000000 is (18, 15)
+
+     bitboard to positions :
+
+     +-----------------+    +-----------------+ +-----------------+     +-----------------+
+     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  0 --------
+     | . O . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  1 -O------
+     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  2 ------O-
+     | . . . O . . . . |    | O . . . . . . . | | . O . . . . . . | ... | . . . . . . . O |  3 ---O----
+     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  4 --------
+     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  5 --------
+     | . . O . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  6 --------
+     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  7 --------
+     +-----------------+    +-----------------+ +-----------------+     +-----------------+
+
+
+
+     you scan the bitboard from left to right with
+     you
+     >> 1 & 0x1
+
+    void    bitboard_to_pos(BitBoard const &bitboard) {
+        BitBoard    mask = BitBoard::border_left;
+        BitBoard    scanline;
+
+        for (uint8_t y = 0; y < 19; y++) {
+            scanline = (mask.shifted(direction::south, y) & bitboard);
+            if (scanline.is_empty() == false) {
+                for (uint8_t x = 0; x < 19; x++) {
+                    p = scanline << y & 0x80;
+                }
+            }
+        }
+    }
+
 */
