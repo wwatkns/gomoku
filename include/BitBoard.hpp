@@ -73,7 +73,7 @@ public:
 
     std::array<uint64_t, N>         values;
     static std::array<int16_t, D>   shifts;
-    static std::array<t_pattern, 8> patterns;
+    static std::array<t_pattern,11> patterns;
     static BitBoard                 full;
     static BitBoard                 empty;
     static BitBoard                 border_right;
@@ -115,13 +115,6 @@ namespace direction {
 
 #endif
 
-/*
-    for the evaluation function, we have a list of bitboard for each pattern and
-    for both players, each board is worth a certain score (the board representing
-    open-fours is worth a lot more than the one representing close-split-threes)
-    the score is computed by overlaying all the board and multiplying them with
-    their scores (giving a score for each position)
-*/
 /*     +--19x19 BitBoard-----------------------+
      0 | . . . . . . . . . . . . . . . . . . . | 0
      1 | . . . . . . . . . . . . . . . . . . . | 1
@@ -201,23 +194,20 @@ namespace direction {
                   g1  h2                                  a2  b1
                     h1                                      a1
 
-    evaluation :
-
-        // wins
-        pattern_detector(p1, p2, BitBoard::patterns[7])  // five, win at this turn
-        pattern_detector(p1, p2, BitBoard::patterns[2])  // open-four, win in 2 more total turns
-        // double-close-split-four
-        double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[6])  // double-close-four, win in 2 more total turns
-        double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[0])  // close-four & open-three, win in 4 more total turns
-        double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[1])  // close-four & open-split-three, win in 4 more total turns
-
-        for (uint8_t i = BitBoard::patterns.size()-1; i > 0; i--) {
-            pattern_bitboards[i] = pattern_detector(p1, p2, BitBoard::patterns[i]);
-        }
-
-        |O-OOO-
-        |OO-OO-
-        |OOO-O-
+    Winning strategies :
+        [instant]
+         * five
+         * 5 pairs captured
+        [2 turns]
+         * open-four
+         * double-close-four
+         * double-split-four
+         * split-four & close-four
+        [4 turns]
+         * close-four & open-three
+         * close-four & open-split-three
+         * split-four & open-three
+         * split-four & open-split-three
 
     +---Patterns-(open)----------------------------------------------+----------+-------+------------+--------+----------------------+
     | num |  pattern |                     moves                     |  binary  |  hex  | directions | length |         names        |
@@ -230,12 +220,11 @@ namespace direction {
     |  5  |   OO-O-  |                     |*O-O-   |O*-O-   |OO-*-  | 11010000 |  0xD0 |      8     |    5   |  close split three 1 |  | ~ | any one of the above
     |  6  |   O-OO-  |                     |*-OO-   |O-*O-   |O-O*-  | 10110000 |  0xB0 |      8     |    5   |  close split three 2 |  | * | an open move that'll complete the pattern
     |  7  |   OOOO-  |            |*OOO-   |O*OO-   |OO*O-   |OOO*-  | 11110000 |  0xF0 |      8     |    5   |  close four          |
-    + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+
-    |  .  |  O-OOO-  |            |*-OOO-  |O-*OO-  |O-O*O-  |O-OO*- | 10111000 |  0xB8 |      8     |    6   |  close split four 1  |
-    |  .  |  OO-OO-  |            |*O-OO-  |O*-OO-  |OO-*O-  |OO-O*- | 11011000 |  0xD8 |      8     |    6   |  close split four 2  |
-    |  .  |  OOO-O-  |            |*OO-O-  |O*O-O-  |OO*-O-  |OOO-*- | 11101000 |  0xE8 |      8     |    6   |  close split four 3  |
     +---Patterns-(other)---------------------------------------------+----------+-------+------------+--------+----------------------+
-    |  8  |   OOOOO  |   ~*OOOO~  ~O*OOO~  ~OO*OO~  ~OOO*O~  ~OOOO*~ | 11111000 |  0xF8 |      4     |    5   |  five                |
+    |  8  |  -O-OOO  |            -*-OOO~  -O-*OO~  -O-O*O~  -O-OO*~ | 01011100 |  0x5C |      8     |    6   |  split four 1        |
+    |  9  |  -OO-OO  |            -*O-OO~  -O*-OO~  -OO-*O~  -OO-O*~ | 01101100 |  0x6C |      8     |    6   |  split four 2        |
+    | 10  |  -OOO-O  |            -*OO-O~  -O*O-O~  -OO*-O~  -OOO-*~ | 01110100 |  0x74 |      8     |    6   |  split four 3        |
+    | 11  |   OOOOO  |   ~*OOOO~  ~O*OOO~  ~OO*OO~  ~OOO*O~  ~OOOO*~ | 11111000 |  0xF8 |      4     |    5   |  five                |
     +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
 
     -> pattern depict desired stone arrangements, as such the function pattern_detection returns a
@@ -246,6 +235,8 @@ namespace direction {
      are not checked as it will lead to nothing.
     -> asymmetric patterns such as -OO-O- are checked on 4 axis and both directions, so -O-OO- is
      checked as the same time.
+    -> with this pattern encoding you can do (open & open), (open & close), (any & any), (open & any),
+     (close & any) and the mirrors.
 
 
 ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
@@ -345,24 +336,4 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
      $ y = pos & 0x7C0;
 
      1001001111000000 is (18, 15)
-
-    get_all_neighbours(p1, p2) :
-     p1                p2                (p1 | p2)         di(p1 | p2)      di(p1 | p2) ^ (p1 | p2)
-     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
-     | . . . . . |     | . . . . . |     | . . . . . |     | 1 1 1 . . |    | 1 1 1 . . |
-     | . 1 1 . . |     | 1 . . . . |     | 1 1 1 . . |     | 1 1 1 1 . |    | . . . 1 . |
-     | . . . . . |     | . . . . . |     | . . . . . |     | 1 1 1 1 . |    | 1 1 . 1 . |
-     | . . . 1 . |     | . . 1 . . |     | . . 1 1 . |     | . 1 1 1 1 |    | . 1 . . 1 |
-     | . . . . . |     | . . . 1 . |     | . . . 1 . |     | . . 1 1 1 |    | . . 1 . 1 |
-     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
-
-
-     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
-     | . . . . . |     | . . . . 1 |     | . . . . . |     | . . . . . |    | . . . . . |
-     | . . . . . |     | 1 1 . . 1 |     | 1 1 . . . |     | . . . . . |    | . . . . . |
-     | 1 . . . . |     | 1 1 . . 1 |     | 1 1 . . . |     | . . . . . |    | . . . . . |
-     | . . . . . |     | 1 1 1 1 1 |     | 1 1 1 1 1 |     | . . . . . |    | . . . . . |
-     | . . . 1 . |     | . . 1 1 1 |     | . . 1 1 1 |     | . . . . . |    | . . . . . |
-     +-----------+     +-----------+     +-----------+     +-----------+    +-----------+
-
 */

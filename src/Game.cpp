@@ -86,12 +86,14 @@ void        Game::loop(void) {
             // std::cout << get_player_open_pairs_captures_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << get_player_open_adjacent_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
 
-            std::cout << double_pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[6], BitBoard::patterns[6]) << std::endl; // OOOOO
+            // std::cout << double_pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[6], BitBoard::patterns[6]) << std::endl; // OOOOO
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[7]) << std::endl; // OOOOO
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xF8, 5) << std::endl; // OOOOO
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xB0, 5) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x70, 5) << std::endl;
-            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x7C, 7) << std::endl;
+            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[8]) << std::endl;
+            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[9]) << std::endl;
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[8]) << std::endl;
             // 0xF8, 5   OOOOO
             // 0xB0, 5   O-OO-
             // 0x70, 5   -OOO-

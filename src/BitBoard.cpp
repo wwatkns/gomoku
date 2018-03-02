@@ -8,16 +8,20 @@ BitBoard                BitBoard::border_right = (std::array<uint64_t, N>){ 0x20
 BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000000000 };
 BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
 BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
-std::array<t_pattern,8> BitBoard::patterns = {
+std::array<t_pattern,11> BitBoard::patterns = {
     (t_pattern){ 0x70, 5, 4,  30 },  //   -OOO-  :  open three
     (t_pattern){ 0x68, 6, 8,  40 },  //  -OO-O-  :  open split three
-    (t_pattern){ 0x78, 6, 4, 220 },  //  -OOOO-  :  open four           > lead to a win in two turns
+    (t_pattern){ 0x78, 6, 4, 220 },  //  -OOOO-  :  open four
     (t_pattern){ 0xE0, 4, 8,   5 },  //    OOO-  :  close three
-    (t_pattern){ 0xD0, 5, 8,  10 },  //   OO-O-  :  close split three
-    (t_pattern){ 0xB0, 5, 8,  15 },  //   O-OO-  :  close split three
+    (t_pattern){ 0xD0, 5, 8,  10 },  //   OO-O-  :  close split three #1
+    (t_pattern){ 0xB0, 5, 8,  15 },  //   O-OO-  :  close split three #2
     (t_pattern){ 0xF0, 5, 8,  25 },  //   OOOO-  :  close four
-    (t_pattern){ 0xF8, 5, 4, 255 }   //   OOOOO  :  five                > lead to a win
+    (t_pattern){ 0x5C, 6, 8,   0 },  //  -O-OOO  :  split four #1
+    (t_pattern){ 0x6C, 6, 8,   0 },  //  -OO-OO  :  split four #2
+    (t_pattern){ 0x74, 6, 8,   0 },  //  -OOO-O  :  split four #3
+    (t_pattern){ 0xF8, 5, 4, 255 }   //   OOOOO  :  five
 };
+
 
 BitBoard::BitBoard(void) {
     this->zeros();
@@ -84,8 +88,8 @@ void    BitBoard::remove(uint8_t x, uint8_t y) {
 bool    BitBoard::is_empty(void) {
     for (uint8_t i = 0; i < N; i++)
         if (this->values[i] != 0)
-            return (true);
-    return (false);
+            return (false);
+    return (true);
 }
 
 BitBoard    BitBoard::opens(void) const {
@@ -431,7 +435,7 @@ bool        detect_five_aligned(BitBoard const &bitboard) {
     BitBoard    tmp;
     for (uint8_t i = 0; i < D; i++) {
         tmp = bitboard;
-        for(uint8_t n = 1; (tmp &= tmp.shifted(i)).is_empty(); ++n)
+        for(uint8_t n = 1; (tmp &= tmp.shifted(i)).is_empty() == false; ++n)
             if (n >= 4)
                 return (true);
     }
