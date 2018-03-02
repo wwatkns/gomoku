@@ -353,7 +353,7 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
     uint8_t     patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
     uint8_t      lengths[3] = {    6,    6,    5 };
 
-    for (uint8_t p = 0; p < 3; p++) // iterate through patterns{
+    for (uint8_t p = 0; p < 3; p++) { // iterate through patterns
         type = (patterns[p] & 0x80) | (0x1 << (8-lengths[p]) & patterns[p]);
         j = 0;
         for (uint8_t s = 0; s < lengths[p]; s++) { // iterate through sub patterns
