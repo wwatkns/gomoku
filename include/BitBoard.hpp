@@ -206,7 +206,7 @@ namespace direction {
         // wins
         pattern_detector(p1, p2, BitBoard::patterns[7])  // five, win at this turn
         pattern_detector(p1, p2, BitBoard::patterns[2])  // open-four, win in 2 more total turns
-        // double-split-four
+        // double-close-split-four
         double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[6])  // double-close-four, win in 2 more total turns
         double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[0])  // close-four & open-three, win in 4 more total turns
         double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[1])  // close-four & open-split-three, win in 4 more total turns
@@ -215,6 +215,9 @@ namespace direction {
             pattern_bitboards[i] = pattern_detector(p1, p2, BitBoard::patterns[i]);
         }
 
+        |O-OOO-
+        |OO-OO-
+        |OOO-O-
 
     +---Patterns-(open)----------------------------------------------+----------+-------+------------+--------+----------------------+
     | num |  pattern |                     moves                     |  binary  |  hex  | directions | length |         names        |
@@ -224,9 +227,13 @@ namespace direction {
     |  3  |  -OOOO-  |            -*OOO-   -O*OO-   -OO*O-   -OOO*-  | 01111000 |  0x78 |      4     |    6   |  open four           |  | O | p1 stones
     +---Patterns-(close)---------------------------------------------+----------+-------+------------+--------+----------------------+  | | | p2 stones
     |  4  |    OOO-  |                     |*OO-    |O*O-    |OO*-   | 11100000 |  0xE0 |      8     |    4   |  close three         |  | - | an open position
-    |  5  |   OO-O-  |                     |*O-O-   |O*-O-   |OO-*-  | 11010000 |  0xD0 |      8     |    5   |  close split three   |  | ~ | any one of the above
-    |  6  |   O-OO-  |                     |*-OO-   |O-*O-   |O-O*-  | 10110000 |  0xB0 |      8     |    5   |  close split three   |  | * | an open move that'll complete the pattern
+    |  5  |   OO-O-  |                     |*O-O-   |O*-O-   |OO-*-  | 11010000 |  0xD0 |      8     |    5   |  close split three 1 |  | ~ | any one of the above
+    |  6  |   O-OO-  |                     |*-OO-   |O-*O-   |O-O*-  | 10110000 |  0xB0 |      8     |    5   |  close split three 2 |  | * | an open move that'll complete the pattern
     |  7  |   OOOO-  |            |*OOO-   |O*OO-   |OO*O-   |OOO*-  | 11110000 |  0xF0 |      8     |    5   |  close four          |
+    + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -+
+    |  .  |  O-OOO-  |            |*-OOO-  |O-*OO-  |O-O*O-  |O-OO*- | 10111000 |  0xB8 |      8     |    6   |  close split four 1  |
+    |  .  |  OO-OO-  |            |*O-OO-  |O*-OO-  |OO-*O-  |OO-O*- | 11011000 |  0xD8 |      8     |    6   |  close split four 2  |
+    |  .  |  OOO-O-  |            |*OO-O-  |O*O-O-  |OO*-O-  |OOO-*- | 11101000 |  0xE8 |      8     |    6   |  close split four 3  |
     +---Patterns-(other)---------------------------------------------+----------+-------+------------+--------+----------------------+
     |  8  |   OOOOO  |   ~*OOOO~  ~O*OOO~  ~OO*OO~  ~OOO*O~  ~OOOO*~ | 11111000 |  0xF8 |      4     |    5   |  five                |
     +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+

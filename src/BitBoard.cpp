@@ -421,9 +421,7 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_patte
     return (res & ~p1 & ~p2);
 }
 
-/*  we should have a double-pattern-detector which takes two patterns as check if we have one position
-    intersect with both.
-        for example a close-four with all open-threes lead to a 2 turn win
+/*  Cannot handle the same pattern yet (it should check different directions similarly as forbidden_detector)
 */
 BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2) {
     return (pattern_detector(p1, p2, pattern1) & pattern_detector(p1, p2, pattern2));

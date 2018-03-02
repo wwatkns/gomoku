@@ -34,7 +34,7 @@ Game	&Game::operator=(Game const &src) {
 void        Game::_debug_fps(void) {
     static int32_t frames = -1;
     static uint32_t ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
-    
+
     frames++;
     if (this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - ms >= 1000) {
         std::cout << "fps : " << frames << std::endl;
@@ -47,7 +47,7 @@ void        Game::_cap_framerate(uint32_t const &framerate) {
     static double last = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
     double delta;
 
-    delta = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - last;
+    delta = std::abs(this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - last);
     if (delta < (1000. / framerate))
         std::this_thread::sleep_for(std::chrono::milliseconds((uint64_t)(1000. / framerate - delta)));
     last = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
@@ -101,7 +101,7 @@ void        Game::loop(void) {
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);
         this->_gui->update_display();
-        this->_debug_fps();
+        // this->_debug_fps();
         this->_cap_framerate(30);
     }
 }
