@@ -94,8 +94,10 @@ bool        detect_five_aligned(BitBoard const &bitboard);
 BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
 
-BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length);
+BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
+BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
+
 
 
 namespace direction {
@@ -199,6 +201,21 @@ namespace direction {
                   g1  h2                                  a2  b1
                     h1                                      a1
 
+    evaluation :
+
+        // wins
+        pattern_detector(p1, p2, BitBoard::patterns[7])  // five, win at this turn
+        pattern_detector(p1, p2, BitBoard::patterns[2])  // open-four, win in 2 more total turns
+        // double-split-four
+        double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[6])  // double-close-four, win in 2 more total turns
+        double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[0])  // close-four & open-three, win in 4 more total turns
+        double_pattern_detector(p1, p2, BitBoard::patterns[6], BitBoard::patterns[1])  // close-four & open-split-three, win in 4 more total turns
+
+        for (uint8_t i = BitBoard::patterns.size()-1; i > 0; i--) {
+            pattern_bitboards[i] = pattern_detector(p1, p2, BitBoard::patterns[i]);
+        }
+
+
     +---Patterns-(open)----------------------------------------------+----------+-------+------------+--------+----------------------+
     | num |  pattern |                     moves                     |  binary  |  hex  | directions | length |         names        |
     +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
@@ -208,10 +225,10 @@ namespace direction {
     +---Patterns-(close)---------------------------------------------+----------+-------+------------+--------+----------------------+  | | | p2 stones
     |  4  |    OOO-  |                     |*OO-    |O*O-    |OO*-   | 11100000 |  0xE0 |      8     |    4   |  close three         |  | - | an open position
     |  5  |   OO-O-  |                     |*O-O-   |O*-O-   |OO-*-  | 11010000 |  0xD0 |      8     |    5   |  close split three   |  | ~ | any one of the above
-    |  6  |   O-OO-  |                     |*O-O-   |O*-O-   |OO-*-  | 10110000 |  0xB0 |      8     |    5   |  close split three   |  | * | an open move that'll complete the pattern
+    |  6  |   O-OO-  |                     |*-OO-   |O-*O-   |O-O*-  | 10110000 |  0xB0 |      8     |    5   |  close split three   |  | * | an open move that'll complete the pattern
     |  7  |   OOOO-  |            |*OOO-   |O*OO-   |OO*O-   |OOO*-  | 11110000 |  0xF0 |      8     |    5   |  close four          |
     +---Patterns-(other)---------------------------------------------+----------+-------+------------+--------+----------------------+
-    |  8  |   OOOOO  |  ~*OOOO~  ~O*OOO~  ~OO*OO~  ~OOO*O~  ~OOOO*~  | 11111000 |  0xF8 |      4     |    5   |  five                |
+    |  8  |   OOOOO  |   ~*OOOO~  ~O*OOO~  ~OO*OO~  ~OOO*O~  ~OOOO*~ | 11111000 |  0xF8 |      4     |    5   |  five                |
     +-----+----------+-----------------------------------------------+----------+-------+------------+--------+----------------------+
 
     -> pattern depict desired stone arrangements, as such the function pattern_detection returns a

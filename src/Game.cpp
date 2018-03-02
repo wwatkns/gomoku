@@ -31,22 +31,34 @@ Game	&Game::operator=(Game const &src) {
     return (*this);
 }
 
-void        Game::_handle_fps(uint32_t *frames, uint32_t *ms) {
-    (*frames)++;
-    if (this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - *ms >= 1000) {
-        std::cout << "fps : " << *frames << std::endl;
-        *ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
-        *frames = 0;
+void        Game::_debug_fps(void) {
+    static int32_t frames = -1;
+    static uint32_t ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+    
+    frames++;
+    if (this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - ms >= 1000) {
+        std::cout << "fps : " << frames << std::endl;
+        ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+        frames = 0;
     }
 }
+
+void        Game::_cap_framerate(uint32_t const &framerate) {
+    static double last = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+    double delta;
+
+    delta = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms() - last;
+    if (delta < (1000. / framerate))
+        std::this_thread::sleep_for(std::chrono::milliseconds((uint64_t)(1000. / framerate - delta)));
+    last = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
+}
+
 
 /* TODO: implement draw game (no winners)
 */
 void        Game::loop(void) {
     bool        action_performed;
     bool        action_undo;
-    uint32_t    ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
-    uint32_t    frames = 0;
 
     while (true) {
         action_undo = false;
@@ -68,12 +80,14 @@ void        Game::loop(void) {
             // this->_gui->update_end_game(this->_c_player);
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
             std::cout << "________________________" << std::endl;
-            std::cout << forbidden_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
+            // std::cout << forbidden_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x78, 6) << std::endl;   // -0000-
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xD0, 5) << std::endl;   // 00-0-
             // std::cout << get_player_open_pairs_captures_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << get_player_open_adjacent_positions(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
 
+            std::cout << double_pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[6], BitBoard::patterns[6]) << std::endl; // OOOOO
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[7]) << std::endl; // OOOOO
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xF8, 5) << std::endl; // OOOOO
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xB0, 5) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x70, 5) << std::endl;
@@ -87,7 +101,8 @@ void        Game::loop(void) {
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);
         this->_gui->update_display();
-        // this->_handle_fps(&frames, &ms);
+        this->_debug_fps();
+        this->_cap_framerate(30);
     }
 }
 

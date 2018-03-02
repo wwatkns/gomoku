@@ -11,12 +11,12 @@ BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 
 std::array<t_pattern,8> BitBoard::patterns = {
     (t_pattern){ 0x70, 5, 4,  30 },  //   -OOO-  :  open three
     (t_pattern){ 0x68, 6, 8,  40 },  //  -OO-O-  :  open split three
-    (t_pattern){ 0x78, 6, 4, 200 },  //  -OOOO-  :  open four
+    (t_pattern){ 0x78, 6, 4, 220 },  //  -OOOO-  :  open four           > lead to a win in two turns
     (t_pattern){ 0xE0, 4, 8,   5 },  //    OOO-  :  close three
     (t_pattern){ 0xD0, 5, 8,  10 },  //   OO-O-  :  close split three
     (t_pattern){ 0xB0, 5, 8,  15 },  //   O-OO-  :  close split three
     (t_pattern){ 0xF0, 5, 8,  25 },  //   OOOO-  :  close four
-    (t_pattern){ 0xF8, 5, 4, 255 }   //   OOOOO  :  five
+    (t_pattern){ 0xF8, 5, 4, 255 }   //   OOOOO  :  five                > lead to a win
 };
 
 BitBoard::BitBoard(void) {
@@ -388,16 +388,16 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
 
 /*  TODO : implement optimization for symmetric patterns -OOO-, -OOOO-, OOOOO to loop through 4 directions instead of 8
 */
-static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type) {
+static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern, uint8_t const &s, uint8_t const &type) {
     BitBoard    res;
     BitBoard    tmp;
     BitBoard    open_cells = (~p1 & ~p2);
 
-    for (uint8_t d = direction::north; d < 8; ++d) {
+    for (uint8_t d = direction::north; d < pattern.dirs; ++d) {
         tmp = (type == 0x80 ? p2 : BitBoard::full);
-        for (uint8_t n = 0; n < length; n++) {
+        for (uint8_t n = 0; n < pattern.size; n++) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
-            tmp = tmp.shifted(d) & ((pattern << n & 0x80) == 0x80 ? p1 : open_cells);
+            tmp = tmp.shifted(d) & ((pattern.repr << n & 0x80) == 0x80 ? p1 : open_cells);
         }
         res |= tmp.shifted_inv(d, s);
     }
@@ -408,17 +408,25 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, uin
     the patterns must be encoded in big-endian and have a length defined (-OO-O- is 01101000
     so 0x68 with length 6) see the Patterns table in BitBoard.hpp for all the patterns.
 */
-BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length) {
+BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
     BitBoard    res;
-    uint8_t     sub;
-    uint8_t     type = (pattern & 0x80) | (0x1 << (8-length) & pattern);
+    t_pattern   sub = pattern;
+    uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
 
-    for (uint8_t s = 0; s < length; s++) {
-        sub = pattern & ~(0x80 >> s);
-        if (sub != pattern)
-            res |= sub_pattern_detector(p1, p2, sub, length, length-s-1, type); // TODO : move code from sub_pattern_detector here (optimization)
+    for (uint8_t s = 0; s < pattern.size; s++) {
+        sub.repr = pattern.repr & ~(0x80 >> s);
+        if (sub.repr != pattern.repr)
+            res |= sub_pattern_detector(p1, p2, sub, pattern.size-s-1, type); // TODO : move code from sub_pattern_detector here (optimization)
     }
     return (res & ~p1 & ~p2);
+}
+
+/*  we should have a double-pattern-detector which takes two patterns as check if we have one position
+    intersect with both.
+        for example a close-four with all open-threes lead to a 2 turn win
+*/
+BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2) {
+    return (pattern_detector(p1, p2, pattern1) & pattern_detector(p1, p2, pattern2));
 }
 
 bool        detect_five_aligned(BitBoard const &bitboard) {
