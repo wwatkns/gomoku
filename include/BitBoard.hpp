@@ -13,6 +13,13 @@
 # define D 8
 # define BITS 64
 
+typedef struct  s_pattern {
+    uint8_t repr;   /* the pattern encoded in big-endian (ex : 01011000 for -O-OO-) */
+    uint8_t size;   /* the size of the pattern */
+    uint8_t dirs;   /* the number of directions (symmetric pattern like -OOO- need only 4 directions computed) */
+    uint8_t value;  /* the value associated with the pattern */
+}               t_pattern;
+
 /*  Implementation of a bitboard representation of a square board of 19*19 using
     6 long integers (64bits), and bit operations.
 */
@@ -66,6 +73,7 @@ public:
 
     std::array<uint64_t, N>         values;
     static std::array<int16_t, D>   shifts;
+    static std::array<t_pattern, 8> patterns;
     static BitBoard                 full;
     static BitBoard                 empty;
     static BitBoard                 border_right;
