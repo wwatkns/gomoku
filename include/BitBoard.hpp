@@ -43,7 +43,6 @@ public:
     bool        check_bit(uint8_t x, uint8_t y) const;  // check if the bit a position x, y is set to 1
     bool        is_empty(void) const;                   // check if all bits in the bitboard are set to 0
     void        broadcast_row(uint64_t line);           // copy the given row (first 19 bits) to all other rows
-    BitBoard    opens(void) const;                      // ...
     BitBoard    neighbours(void) const;                 // returns the neighbouring cells
 
     BitBoard    shifted(uint8_t dir, uint8_t n = 1) const;

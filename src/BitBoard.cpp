@@ -52,6 +52,10 @@ BitBoard	&BitBoard::operator=(uint64_t const &val) {
 /*
 ** Helper functions
 */
+/*  return a given row of the bitboard, the lookup table are the binary masks for fast
+    access to the values. there are 24 of them because 5 rows out of the 19 are splitted
+    in two uint64_t (see BitBoard.hpp to see where the splits are).
+*/
 uint64_t    BitBoard::row(uint8_t i) const {
     static const uint64_t masks[24] = {
         0xFFFFE00000000000,     0x1FFFFC000000,         0x3FFFF80,              0x7F,
@@ -72,8 +76,9 @@ void    BitBoard::zeros(void) {
         this->values[i] = 0;
 }
 
-/* will broadcast the given row (only the first 19 bits) to all rows,
-   the pattern must be encoded in the first 19 bits */
+/*  will broadcast the given row (only the first 19 bits) to all rows,
+    the pattern must be encoded in the first 19 bits
+*/
 void    BitBoard::broadcast_row(uint64_t row) {
     uint16_t    offset = 19;
     int32_t     shift = 0;
@@ -100,15 +105,16 @@ void    BitBoard::remove(uint8_t x, uint8_t y) {
     this->values[n / BITS] &= ~(0x8000000000000000 >> (n % BITS));
 }
 
+/*  return the number of bits set to 1 in the bitboard using
+    Brian Kernighan's method.
+*/
 uint16_t    BitBoard::set_count(void) const {
     uint64_t    tmp;
     uint16_t    res = 0;
 
-    for (uint8_t i = 0; i < N; i++) {
-        tmp = this->values[i];
-        for (; tmp; res++)
+    for (uint8_t i = 0; i < N; i++)
+        for (tmp = this->values[i]; tmp; res++)
             tmp &= tmp - 1;
-    }
     return (res);
 }
 
@@ -122,10 +128,6 @@ bool    BitBoard::is_empty(void) const {
         if (this->values[i] != 0)
             return (false);
     return (true);
-}
-
-BitBoard    BitBoard::opens(void) const {
-    return (~(*this));
 }
 
 BitBoard    BitBoard::neighbours(void) const {
@@ -392,34 +394,29 @@ static BitBoard sub_pattern_detector_alt(BitBoard const &p1, BitBoard const &p2,
 BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
     BitBoard    res;
     BitBoard    tmp[36]; // 36 is patterns * sub_patterns * directions
-    BitBoard    open_cells = (~p1 & ~p2);
     uint8_t     j;
     uint8_t     sub;
-    uint8_t     type;
+    uint16_t    idx;
     uint8_t     patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
     uint8_t      lengths[3] = {    6,    6,    5 };
 
     for (uint8_t p = 0; p < 3; p++) { // iterate through patterns
-        type = (patterns[p] & 0x80) | (0x1 << (8-lengths[p]) & patterns[p]);
         j = 0;
         for (uint8_t s = 0; s < lengths[p]; s++) { // iterate through sub patterns
             sub = patterns[p] & ~(0x80 >> s);
             if (sub != patterns[p]) {
                 for (uint8_t d = direction::north; d < 4; ++d) { // iterate through directions
-                    tmp[(p*12+j*4)+d] = sub_pattern_detector_alt(p1, p2, sub, lengths[p], lengths[p]-s-1, type, d);
-                    for (int8_t i = (p*12+j*4)+d-1; i >= 0; i--) // TODO : optimize this sub_pattern overlap loop, for now we loop 615 times total here
-                        res |= (tmp[(p*12+j*4)+d] & tmp[i]);
+                    idx = (p * 12 + j * 4) + d;
+                    tmp[idx] = sub_pattern_detector_alt(p1, p2, sub, lengths[p], lengths[p]-s-1, 0, d);
+                    for (int8_t n = idx-1; n >= 0; n--) // TODO : optimize this sub_pattern overlap loop, for now we loop 615 times total here
+                        res |= (tmp[idx] & tmp[n]);
                 }
                 j++;
             }
         }
     }
-    return (res & open_cells);
+    return (res & ~p1 & ~p2);
 }
-
-/*  TODO :
-    -> implement first iteration of evaluation function with the pattern_detector
-*/
 
 static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern, uint8_t const &s, uint8_t const &type) {
     BitBoard    res;
@@ -454,7 +451,7 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_patte
     return (res & ~p1 & ~p2);
 }
 
-/*  Cannot handle the same pattern yet (it should check different directions similarly as forbidden_detector)
+/*  TODO : Cannot handle the same pattern yet (it should check different directions similarly as forbidden_detector)
 */
 BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2) {
     return (pattern_detector(p1, p2, pattern1) & pattern_detector(p1, p2, pattern2));
@@ -471,7 +468,8 @@ bool        detect_five_aligned(BitBoard const &bitboard) {
     return (false);
 }
 
-// detect a pair and return the positions on the bitboard where it leads to capture
+/*  detect a pair and return the positions on the bitboard where it leads to capture
+*/
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2) {
     BitBoard    res;
     BitBoard    tmp;

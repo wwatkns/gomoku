@@ -42,9 +42,9 @@ void    GameEngine::update_game_state(t_action &action, Player *p1, Player *p2) 
     if ((pairs & p1->board).is_empty() == false) {
         p1->set_pairs_captured(p1->get_pairs_captured() + (pairs.set_count()-1)/2);
         p2->board &= ~pairs;
-        p2->board_forbidden = forbidden_detector(p2->board, p1->board);
     }
     p1->board_forbidden = forbidden_detector(p1->board, p2->board);
+    p2->board_forbidden = forbidden_detector(p2->board, p1->board);
     GameEngine::update_grid(*p1, *p2);
     this->_history.push_back(action);
 }
@@ -55,7 +55,7 @@ void GameEngine::update_grid_with_bitboard(BitBoard const &bitboard, int8_t cons
         row = bitboard.row(y);
         if (row) {
             for (uint8_t x = 0; x < 19; x++)
-                if ((row << x & 0x8000000000000000))
+                if (row << x & 0x8000000000000000)
                     this->grid(y, x) = state;
         }
     }
@@ -84,7 +84,8 @@ void    GameEngine::delete_last_action(Player *p1, Player *p2) {
             p2->board = last.p1_last;
             p2->set_pairs_captured(last.ppc);
         }
-        // maybe need to update board_forbidden too ?
+        p1->board_forbidden = forbidden_detector(p1->board, p2->board);
+        p2->board_forbidden = forbidden_detector(p2->board, p1->board);
         GameEngine::update_grid(*p1, *p2);
         this->_history.pop_back();
     }
