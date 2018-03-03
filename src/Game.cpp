@@ -81,6 +81,7 @@ void        Game::loop(void) {
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
             std::cout << "________________________" << std::endl;
             std::cout << this->_c_player->board << std::endl;
+            std::cout << pair_capture_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << forbidden_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x78, 6) << std::endl;   // -0000-
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xD0, 5) << std::endl;   // 00-0-
@@ -92,8 +93,8 @@ void        Game::loop(void) {
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xF8, 5) << std::endl; // OOOOO
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0xB0, 5) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, 0x70, 5) << std::endl;
-            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[7]) << std::endl;
-            std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[9]) << std::endl;
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[7]) << std::endl;
+            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[9]) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[8]) << std::endl;
             // 0xF8, 5   OOOOO
             // 0xB0, 5   O-OO-
@@ -112,7 +113,6 @@ void        Game::loop(void) {
 bool        Game::undo(void) {
     bool    last = (this->_game_engine->get_history_size() == 0);
     this->_game_engine->delete_last_action(this->_c_player, this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
-    // TODO : remove the move from last action from the bitboard
     return last;
 }
 

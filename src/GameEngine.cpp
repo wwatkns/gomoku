@@ -116,13 +116,15 @@ uint8_t GameEngine::check_end(Player const &p1, Player const &p2) {
 }
 
 void    GameEngine::update_game_state(t_action &action, Player *p1, Player *p2) {
-    this->grid(action.pos[0], action.pos[1]) = (action.pid == 1 ? state::black : state::white);
-    // player->board.write(action.pos[1], action.pos[0]); /* NEW */
-    // player->set_pairs_captured(player->get_pairs_captured() + _pair_detection(action.pos));
+    this->grid(action.pos[0], action.pos[1]) = (action.pid == 1 ? state::black : state::white); // handle it differently
 
-    // this->board
+    BitBoard pairs = pair_capture_detector(p1->board, p2->board);
     p1->board.write(action.pos[1], action.pos[0]);
-    // player->board = pairs_detector(p1, p2);
+    if ((pairs & p1->board).is_empty() == false) {
+        p1->set_pairs_captured(p1->get_pairs_captured() + (pairs.set_count()-1)/2);
+        p2->board &= ~pairs;
+    }
+
     p1->board_forbidden = forbidden_detector(p1->board, p2->board);
     this->_history.push_back(action);
 }

@@ -85,6 +85,18 @@ void    BitBoard::remove(uint8_t x, uint8_t y) {
     this->values[n / BITS] &= ~(0x8000000000000000 >> (n % BITS));
 }
 
+uint16_t    BitBoard::set_count(void) const {
+    uint64_t    tmp;
+    uint16_t    res = 0;
+
+    for (uint8_t i = 0; i < N; i++) {
+        tmp = this->values[i];
+        for (; tmp; res++)
+            tmp &= tmp - 1;
+    }
+    return (res);
+}
+
 bool    BitBoard::check_bit(uint8_t x, uint8_t y) const {
     uint16_t    n = (19 * y + x);
     return ((this->values[n / BITS] & (0x8000000000000000 >> (n % BITS))) == 0 ? false : true);
@@ -392,11 +404,8 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
 
 /*  TODO :
     -> implement first iteration of evaluation function with the pattern_detector
-    -> implement the interfacing between bitboard and GUI, try lookup tables to get lit positions
 */
 
-/*  TODO : implement optimization for symmetric patterns -OOO-, -OOOO-, OOOOO to loop through 4 directions instead of 8
-*/
 static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern, uint8_t const &s, uint8_t const &type) {
     BitBoard    res;
     BitBoard    tmp;
@@ -445,6 +454,23 @@ bool        detect_five_aligned(BitBoard const &bitboard) {
                 return (true);
     }
     return (false);
+}
+
+// detect a pair and return the positions on the bitboard where it leads to capture
+BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2) {
+    BitBoard    res;
+    BitBoard    tmp;
+    BitBoard    open_cells = (~p1 & ~p2);
+
+    for (uint8_t d = direction::north; d < 8; ++d) {
+        tmp = p1;
+        for (uint8_t n = 0; n < 3; n++) {
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp = tmp.shifted(d) & ((0xC0 << n & 0x80) == 0x80 ? p2 : open_cells);
+        }
+        res |= (tmp.shifted_inv(d, 2) | tmp.shifted_inv(d, 1) | tmp);
+    }
+    return (res);
 }
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {

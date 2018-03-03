@@ -36,6 +36,7 @@ public:
     void        zeros(void);
     void        write(uint8_t x, uint8_t y);
     void        remove(uint8_t x, uint8_t y);
+    uint16_t    set_count(void) const;
     bool        check_bit(uint8_t x, uint8_t y) const;
     bool        is_empty(void) const;
     void        broadcast_row(uint64_t line);
@@ -99,7 +100,7 @@ BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern c
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
 BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
 
-
+BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);
 
 namespace direction {
     enum direction {
@@ -351,23 +352,4 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
      | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  7 --------
      +-----------------+    +-----------------+ +-----------------+     +-----------------+
 
-
-
-     you scan the bitboard from left to right with
-     you
-     >> 1 & 0x1
-
-    void    bitboard_to_pos(BitBoard const &bitboard) {
-        BitBoard    mask = BitBoard::border_left;
-        BitBoard    scanline;
-
-        for (uint8_t y = 0; y < 19; y++) {
-            scanline = (mask.shifted(direction::south, y) & bitboard);
-            if (scanline.is_empty() == false) {
-                for (uint8_t x = 0; x < 19; x++) {
-                    p = scanline << y & 0x80;
-                }
-            }
-        }
-    }
 */
