@@ -9,7 +9,6 @@
 # include <SDL.h>
 # include <SDL_image.h>
 # include <SDL_ttf.h>
-// # include <SDL2_gfxPrimitives.h>
 # include "GameEngine.hpp"
 # include "FontHandler.hpp"
 # include "Analytics.hpp"
@@ -40,7 +39,7 @@ public:
     bool            check_mouse_on_board(void);
     void            update_events(void);
     void            update_display(void);
-    void            update_end_game(Player *player);
+    void            update_end_game(Player const &p1, Player const &p2);
 
     SDL_Texture     *load_texture(std::string path);
     Eigen::Array2i  grid_to_screen(Eigen::Array2i pos);

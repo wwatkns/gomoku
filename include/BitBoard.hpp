@@ -36,8 +36,9 @@ public:
     void        zeros(void);
     void        write(uint8_t x, uint8_t y);
     void        remove(uint8_t x, uint8_t y);
+    bool        check_bit(uint8_t x, uint8_t y) const;
+    bool        is_empty(void) const;
     void        broadcast_row(uint64_t line);
-    bool        is_empty(void);
     BitBoard    opens(void) const;
     BitBoard    neighbours(void) const;
 
@@ -369,5 +370,4 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
             }
         }
     }
-
 */

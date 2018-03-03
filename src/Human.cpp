@@ -18,7 +18,7 @@ Human	&Human::operator=(Human const &src) {
     return (*this);
 }
 
-bool    Human::play(void) {
+bool    Human::play(Player *other) {
     t_action                                action;
     // static Eigen::Array2i                   pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this);
 
@@ -30,12 +30,12 @@ bool    Human::play(void) {
         action.duration = (this->_gui->get_analytics()->get_chronometer()->get_elapsed() - this->_action_duration);
         action.pos = this->_gui->screen_to_grid(this->_gui->get_mouse_pos());
         action.id = this->_game_engine->get_history_size() + 1;
-        action.old_grid = this->_game_engine->grid;
-        // action.player = this;
+        action.p1_last = this->board;
+        action.p2_last = other->board;
         action.pid = this->_id;
         action.ppc = this->_pairs_captured;
-        if (this->_game_engine->check_action(action)) {
-            this->_game_engine->update_game_state(action, this);
+        if (this->_game_engine->check_action(action, *this, *other)) {
+            this->_game_engine->update_game_state(action, this, other);
             this->_action_duration = std::chrono::steady_clock::duration::zero();
             return true;
         }

@@ -65,7 +65,7 @@ void        Game::loop(void) {
         action_performed = false;
         this->_gui->update_events();
         if (this->_gui->check_pause() == false)
-            action_performed = this->_c_player->play();
+            action_performed = this->_c_player->play(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
         if (this->_gui->check_undo()) {
             action_undo = true;
             if (undo()) continue;
@@ -76,8 +76,8 @@ void        Game::loop(void) {
             restart();
         if (this->_gui->check_close())
             break;
-        // if (action_undo == false)
-            // this->_gui->update_end_game(this->_c_player);
+        if (action_undo == false)
+            this->_gui->update_end_game(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1);
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
             std::cout << "________________________" << std::endl;
             std::cout << this->_c_player->board << std::endl;
@@ -111,7 +111,7 @@ void        Game::loop(void) {
 
 bool        Game::undo(void) {
     bool    last = (this->_game_engine->get_history_size() == 0);
-    this->_game_engine->delete_last_action(this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
+    this->_game_engine->delete_last_action(this->_c_player, this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1);
     // TODO : remove the move from last action from the bitboard
     return last;
 }

@@ -6,12 +6,14 @@
 # include <list>
 # include <Eigen/Dense>
 # include "MinMax.hpp"
+# include "BitBoard.hpp"
 
 # define BOARD_COLS 19
 # define BOARD_ROWS 19
 # define ALIGNTOWIN 5
 
 class Player;
+// class BitBoard;
 
 typedef struct  s_action {
     Eigen::Array2i                              pos;        /* action pos on grid */
@@ -20,7 +22,9 @@ typedef struct  s_action {
     uint32_t                                    id;         /* action id number */
     std::chrono::duration<double, std::milli>   timepoint;  /* time since start */
     std::chrono::duration<double, std::milli>   duration;   /* duration of the action */
-    Eigen::ArrayXXi                             old_grid;   /* the state of the grid before the action */
+    BitBoard                                    p1_last;
+    BitBoard                                    p2_last;
+    // Eigen::ArrayXXi                             old_grid;   /* the state of the grid before the action */
 }               t_action;
 
 class GameEngine {
@@ -31,12 +35,12 @@ public:
     ~GameEngine(void);
     GameEngine	&operator=(GameEngine const &rhs);
 
-    bool                check_action(t_action &action); // check if action is valid
-    uint8_t             check_end(uint8_t player_pairs);
-    void                update_game_state(t_action &action, Player *player); // update the game state given an action
-    void                delete_last_action(Player *player);
+    bool                check_action(t_action const &action, Player const &p1, Player const &p2);
+    uint8_t             check_end(Player const &p1, Player const &p2);
+    void                update_game_state(t_action &action, Player *p1, Player *p2);
+    void                delete_last_action(Player *p1, Player *p2);
 
-    Eigen::Array22i     get_end_line(void);
+    Eigen::Array22i     get_end_line(BitBoard const &bitboard);
 
     /* Getters */
     std::list<t_action>                     *get_history(void) { return &_history; };
@@ -54,6 +58,7 @@ private:
     std::chrono::steady_clock::time_point   _initial_timepoint;
     uint32_t                                _game_turn;
 
+
     /* the possible states of the board cells */
     struct state {
         enum {
@@ -65,30 +70,30 @@ private:
             forbidden = 20
         };
     };
-
+    //
     /* Utils */
-    bool            _check_boundary(int row, int col);
-
-    /* Update game state utils */
-    uint8_t         _pair_detection(Eigen::Array2i pos);
-    int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
-    void            _double_threes_detection(void);
-    // int             _sum_free_threes(int row, int col, int max, int row_dir, int col_dir);
-    bool            _count_double_threes(Eigen::Array4i);
-    // bool            _detect_threes(int row, int col, int row_dir, int col_dir, int p);
-    bool            _detect_threes_xcoxox(int row, int col, int row_dir, int col_dir, int p);
-    bool            _detect_threes_xcxoox(int row, int col, int row_dir, int col_dir, int p);
-    bool            _detect_threes_xocxox(int row, int col, int row_dir, int col_dir, int p);
-    bool            _detect_threes_xcoox(int row, int col, int row_dir, int col_dir, int p);
-    bool            _detect_threes_xocox(int row, int col, int row_dir, int col_dir, int p);
-
-    /* Check end utils */
+    // bool            _check_boundary(int row, int col);
+    //
+    // /* Update game state utils */
+    // uint8_t         _pair_detection(Eigen::Array2i pos);
+    // int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
+    // void            _double_threes_detection(void);
+    // // int             _sum_free_threes(int row, int col, int max, int row_dir, int col_dir);
+    // bool            _count_double_threes(Eigen::Array4i);
+    // // bool            _detect_threes(int row, int col, int row_dir, int col_dir, int p);
+    // bool            _detect_threes_xcoxox(int row, int col, int row_dir, int col_dir, int p);
+    // bool            _detect_threes_xcxoox(int row, int col, int row_dir, int col_dir, int p);
+    // bool            _detect_threes_xocxox(int row, int col, int row_dir, int col_dir, int p);
+    // bool            _detect_threes_xcoox(int row, int col, int row_dir, int col_dir, int p);
+    // bool            _detect_threes_xocox(int row, int col, int row_dir, int col_dir, int p);
+    //
+    // /* Check end utils */
     bool            _check_col(size_t col, size_t row);
     bool            _check_row(size_t col, size_t row);
     bool            _check_dil(size_t col, size_t row);
     bool            _check_dir(size_t col, size_t row);
-    bool            _check_pairs_captured(uint8_t pairs);
-
+    // bool            _check_pairs_captured(uint8_t pairs);
+    //
 };
 
 #endif

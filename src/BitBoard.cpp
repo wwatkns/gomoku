@@ -85,7 +85,12 @@ void    BitBoard::remove(uint8_t x, uint8_t y) {
     this->values[n / BITS] &= ~(0x8000000000000000 >> (n % BITS));
 }
 
-bool    BitBoard::is_empty(void) {
+bool    BitBoard::check_bit(uint8_t x, uint8_t y) const {
+    uint16_t    n = (19 * y + x);
+    return ((this->values[n / BITS] & (0x8000000000000000 >> (n % BITS))) == 0 ? false : true);
+}
+
+bool    BitBoard::is_empty(void) const {
     for (uint8_t i = 0; i < N; i++)
         if (this->values[i] != 0)
             return (false);

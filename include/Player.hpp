@@ -16,7 +16,7 @@ public:
     virtual ~Player() {};
     Player	&operator=(Player const &rhs);
 
-    virtual bool    play(void) = 0;
+    virtual bool    play(Player *other) = 0;
 
     /* Getters */
     GameEngine      *get_game_engine(void) const { return _game_engine; };
@@ -27,6 +27,7 @@ public:
 
     uint8_t         type;
     BitBoard        board;
+    BitBoard        board_forbidden;
 
 protected:
     GameEngine          *_game_engine;

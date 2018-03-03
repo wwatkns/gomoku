@@ -20,7 +20,7 @@ Computer	&Computer::operator=(Computer const &src) {
     return (*this);
 }
 
-bool        Computer::play(void) {
+bool        Computer::play(Player *other) {
     t_action                                action;
     std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now();
     // Eigen::Array2i                   pos;
@@ -33,10 +33,10 @@ bool        Computer::play(void) {
     // pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this);
 
     action.id = this->_game_engine->get_history_size() + 1;
-    action.old_grid = this->_game_engine->grid;
-    // action.player = this;
+    action.p1_last = this->board;
+    action.p2_last = other->board;
     action.pid = this->_id;
     action.ppc = this->_pairs_captured;
-    this->_game_engine->update_game_state(action, this);
+    this->_game_engine->update_game_state(action, this, other);
     return true;
 }
