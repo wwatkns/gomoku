@@ -38,6 +38,8 @@ public:
     bool                check_action(t_action const &action, Player const &p1, Player const &p2);
     uint8_t             check_end(Player const &p1, Player const &p2);
     void                update_game_state(t_action &action, Player *p1, Player *p2);
+    void                update_grid(Player const &p1, Player const &p2);
+    void                update_grid_with_bitboard(BitBoard const &bitboard, int8_t const &state);
     void                delete_last_action(Player *p1, Player *p2);
 
     Eigen::Array22i     get_end_line(BitBoard const &bitboard);
@@ -70,30 +72,6 @@ private:
             forbidden = 20
         };
     };
-    //
-    /* Utils */
-    // bool            _check_boundary(int row, int col);
-    //
-    // /* Update game state utils */
-    // uint8_t         _pair_detection(Eigen::Array2i pos);
-    // int             _check_pair(Eigen::Array2i pos, int max, int row_dir, int col_dir);
-    // void            _double_threes_detection(void);
-    // // int             _sum_free_threes(int row, int col, int max, int row_dir, int col_dir);
-    // bool            _count_double_threes(Eigen::Array4i);
-    // // bool            _detect_threes(int row, int col, int row_dir, int col_dir, int p);
-    // bool            _detect_threes_xcoxox(int row, int col, int row_dir, int col_dir, int p);
-    // bool            _detect_threes_xcxoox(int row, int col, int row_dir, int col_dir, int p);
-    // bool            _detect_threes_xocxox(int row, int col, int row_dir, int col_dir, int p);
-    // bool            _detect_threes_xcoox(int row, int col, int row_dir, int col_dir, int p);
-    // bool            _detect_threes_xocox(int row, int col, int row_dir, int col_dir, int p);
-    //
-    // /* Check end utils */
-    bool            _check_col(size_t col, size_t row);
-    bool            _check_row(size_t col, size_t row);
-    bool            _check_dil(size_t col, size_t row);
-    bool            _check_dir(size_t col, size_t row);
-    // bool            _check_pairs_captured(uint8_t pairs);
-    //
 };
 
 #endif
