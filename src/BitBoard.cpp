@@ -52,6 +52,21 @@ BitBoard	&BitBoard::operator=(uint64_t const &val) {
 /*
 ** Helper functions
 */
+uint64_t    BitBoard::row(uint8_t i) const {
+    static const uint64_t masks[24] = {
+        0xFFFFE00000000000,     0x1FFFFC000000,         0x3FFFF80,              0x7F,
+        0xFFFFE00000000,           0x1FFFFC000,            0x3FFF, 0x7FFFF0000000000,
+        0xFFFFE00000,                 0x1FFFFC,               0x3,    0x7FFFF0000000,
+        0xFFFFE00,                       0x1FF,  0x3FFFF800000000,       0x7FFFF0000,
+        0xFFFF,             0x1FFFFC0000000000,     0x3FFFF800000,0xFFF0000000000000,
+        0xF800000000000000, 0xFFFF800000000000,0xFFC0000000000000, 0xE000000000000000 };
+    uint64_t    n = (i * 19) / BITS;
+    uint64_t    s = (i * 19) % BITS;
+    if (i==3||i==6||i==10||i==13||i==16)
+        return (((this->values[n] & masks[i]) << s) | ((this->values[n+1] & masks[19+n]) >> (BITS-s)) );
+    return ((this->values[n] & masks[i]) << s);
+}
+
 void    BitBoard::zeros(void) {
     for (uint8_t i = 0; i < N; i++)
         this->values[i] = 0;

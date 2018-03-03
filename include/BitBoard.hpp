@@ -33,15 +33,18 @@ public:
     BitBoard	&operator=(BitBoard const &rhs);
     BitBoard	&operator=(uint64_t const &val);
 
-    void        zeros(void);
-    void        write(uint8_t x, uint8_t y);
-    void        remove(uint8_t x, uint8_t y);
-    uint16_t    set_count(void) const;
-    bool        check_bit(uint8_t x, uint8_t y) const;
-    bool        is_empty(void) const;
-    void        broadcast_row(uint64_t line);
-    BitBoard    opens(void) const;
-    BitBoard    neighbours(void) const;
+    uint64_t    row(uint8_t i) const;               // access row at index
+    // uint64_t    col(uint8_t i) const;               // access col at index
+
+    void        zeros(void);                            // set the bitboard values to zeros
+    void        write(uint8_t x, uint8_t y);            // set a bit to 1 on the bitboard at position x, y
+    void        remove(uint8_t x, uint8_t y);           // set a bit to 0 on the bitboard at position x, y
+    uint16_t    set_count(void) const;                  // return the number of bits set to 1 in bitboard
+    bool        check_bit(uint8_t x, uint8_t y) const;  // check if the bit a position x, y is set to 1
+    bool        is_empty(void) const;                   // check if all bits in the bitboard are set to 0
+    void        broadcast_row(uint64_t line);           // copy the given row (first 19 bits) to all other rows
+    BitBoard    opens(void) const;                      // ...
+    BitBoard    neighbours(void) const;                 // returns the neighbouring cells
 
     BitBoard    shifted(uint8_t dir, uint8_t n = 1) const;
     BitBoard    shifted_inv(uint8_t dir, uint8_t n = 1) const;
@@ -139,6 +142,37 @@ namespace direction {
     18 | . . . . . . . . . . . . . . . . . . . | 18
        +---------------------------------------+
          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8
+
+    0 : 1111111111111111111000000000000000000000000000000000000000000000   : 0xFFFFE00000000000
+    1 : 0000000000000000000111111111111111111100000000000000000000000000   : 0x1FFFFC000000
+    2 : 0000000000000000000000000000000000000011111111111111111110000000   : 0x3FFFF80
+    3 : 0000000000000000000000000000000000000000000000000000000001111111 | : 0x7F
+        1111111111110000000000000000000000000000000000000000000000000000   : 0xFFF0000000000000
+
+    4 : 0000000000001111111111111111111000000000000000000000000000000000   : 0xFFFFE00000000
+    5 : 0000000000000000000000000000000111111111111111111100000000000000   : 0x1FFFFC000
+    6 : 0000000000000000000000000000000000000000000000000011111111111111 | : 0x3FFF
+        1111100000000000000000000000000000000000000000000000000000000000   : 0xF800000000000000
+
+    7 : 0000011111111111111111110000000000000000000000000000000000000000   : 0x7FFFF0000000000
+    8 : 0000000000000000000000001111111111111111111000000000000000000000   : 0xFFFFE00000
+    9 : 0000000000000000000000000000000000000000000111111111111111111100   : 0x1FFFFC
+   10 : 0000000000000000000000000000000000000000000000000000000000000011 | : 0x3
+        1111111111111111100000000000000000000000000000000000000000000000   : 0xFFFF800000000000
+
+   11 : 0000000000000000011111111111111111110000000000000000000000000000   : 0x7FFFF0000000
+   12 : 0000000000000000000000000000000000001111111111111111111000000000   : 0xFFFFE00
+   13 : 0000000000000000000000000000000000000000000000000000000111111111 | : 0x1FF
+        1111111111000000000000000000000000000000000000000000000000000000   : 0xFFC0000000000000
+
+   14 : 0000000000111111111111111111100000000000000000000000000000000000   : 0x3FFFF800000000
+   15 : 0000000000000000000000000000011111111111111111110000000000000000   : 0x7FFFF0000
+   16 : 0000000000000000000000000000000000000000000000001111111111111111 | : 0xFFFF
+        1110000000000000000000000000000000000000000000000000000000000000   : 0xE000000000000000
+
+   17 : 0001111111111111111111000000000000000000000000000000000000000000   : 0x1FFFFC0000000000
+   18 : 0000000000000000000000111111111111111111100000000000000000000000   : 0x3FFFF800000
+
 
     BitBoard without separating bits. We'll benchmark the performances of the
     algorithms once we have more stuff in place, and compare the version of the
