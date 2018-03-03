@@ -13,7 +13,6 @@
 # define ALIGNTOWIN 5
 
 class Player;
-// class BitBoard;
 
 typedef struct  s_action {
     Eigen::Array2i                              pos;        /* action pos on grid */
@@ -24,7 +23,6 @@ typedef struct  s_action {
     std::chrono::duration<double, std::milli>   duration;   /* duration of the action */
     BitBoard                                    p1_last;
     BitBoard                                    p2_last;
-    // Eigen::ArrayXXi                             old_grid;   /* the state of the grid before the action */
 }               t_action;
 
 class GameEngine {

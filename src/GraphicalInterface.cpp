@@ -223,7 +223,6 @@ void    GraphicalInterface::update_display(void) {
 }
 
 void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) {
-    // if (this->_game_engine->check_end(player->get_pairs_captured()) == 1) { // TODO : implement draw condition (check_end() == 2)
     if (this->_game_engine->check_end(p1, p2) == 1) { // TODO : implement draw condition (check_end() == 2)
         std::string type = (p1.type == 0 ? "human" : "computer");
         this->_winning_color = (p1.type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});

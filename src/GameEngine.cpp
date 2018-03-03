@@ -63,22 +63,29 @@ void GameEngine::update_grid_with_bitboard(BitBoard const &bitboard, int8_t cons
 
 void    GameEngine::update_grid(Player const &p1, Player const &p2) {
     uint8_t state = (p1.get_id() == 1 ? state::black : state::white);
-    update_grid_with_bitboard(p1.board,  state);
-    update_grid_with_bitboard(p2.board, -state);
-    update_grid_with_bitboard(p1.board_forbidden, state *  10);
-    update_grid_with_bitboard(p2.board_forbidden, state * -10);
+    this->grid = Eigen::ArrayXXi::Zero(BOARD_COLS, BOARD_ROWS);
+    GameEngine::update_grid_with_bitboard(p1.board,  state);
+    GameEngine::update_grid_with_bitboard(p2.board, -state);
+    GameEngine::update_grid_with_bitboard(p1.board_forbidden, state *  10);
+    GameEngine::update_grid_with_bitboard(p2.board_forbidden, state * -10);
 }
-
 
 void    GameEngine::delete_last_action(Player *p1, Player *p2) {
     t_action    last;
 
     if (this->_history.size() > 0) {
         last = this->_history.back();
-        p1->board = last.p1_last;
-        p2->board = last.p2_last;
-        p1->set_pairs_captured(last.ppc);
+        if (last.pid == 1) {
+            p1->board = last.p1_last;
+            p2->board = last.p2_last;
+            p1->set_pairs_captured(last.ppc);
+        } else {
+            p1->board = last.p2_last;
+            p2->board = last.p1_last;
+            p2->set_pairs_captured(last.ppc);
+        }
         // maybe need to update board_forbidden too ?
+        GameEngine::update_grid(*p1, *p2);
         this->_history.pop_back();
     }
 }
