@@ -40,7 +40,8 @@ void    GameEngine::update_game_state(t_action &action, Player *p1, Player *p2) 
     BitBoard pairs = pair_capture_detector(p1->board, p2->board);
     p1->board.write(action.pos[1], action.pos[0]);
     if ((pairs & p1->board).is_empty() == false) {
-        p1->set_pairs_captured(p1->get_pairs_captured() + (pairs.set_count()-1)/2);
+        pairs = highlight_captured_stones(p2->board, p1->board);
+        p1->set_pairs_captured(p1->get_pairs_captured() + pairs.set_count()/2);
         p2->board &= ~pairs;
     }
     p1->board_forbidden = forbidden_detector(p1->board, p2->board);

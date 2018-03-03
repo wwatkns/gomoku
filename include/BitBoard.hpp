@@ -103,6 +103,7 @@ BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
 BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
 
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);
+BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2);
 
 namespace direction {
     enum direction {

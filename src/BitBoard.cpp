@@ -481,7 +481,24 @@ BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & ((0xC0 << n & 0x80) == 0x80 ? p2 : open_cells);
         }
-        res |= (tmp.shifted_inv(d, 2) | tmp.shifted_inv(d, 1) | tmp);
+        res |= tmp;
+    }
+    return (res);
+}
+
+/*  returns the bitboard with the positions of the stones captured
+*/
+BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2) {
+    BitBoard    res;
+    BitBoard    tmp;
+
+    for (uint8_t d = direction::north; d < 8; ++d) {
+        tmp = p2;
+        for (uint8_t n = 0; n < 3; n++) {
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp = tmp.shifted(d) & ((0xC0 << n & 0x80) == 0x80 ? p1 : p2);
+        }
+        res |= (tmp.shifted_inv(d, 2) | tmp.shifted_inv(d, 1));
     }
     return (res);
 }
