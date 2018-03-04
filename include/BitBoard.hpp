@@ -98,12 +98,12 @@ bool        detect_five_aligned(BitBoard const &bitboard);
 BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
 
-BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
+BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
 
-BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);
-BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2);
+BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);      /* detect the positions leading to one or multiple captures */
+BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, BitBoard const &pairs);
 
 namespace direction {
     enum direction {
