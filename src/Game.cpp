@@ -99,10 +99,10 @@ bool        Game::undo(void) {
     New Game displays the new game menu to configure the game.
 */
 void        Game::restart(void) {
+    delete this->_gui;
+    delete this->_game_engine;
     delete this->_player_1;
     delete this->_player_2;
-    delete this->_game_engine;
-    delete this->_gui;
 
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
@@ -112,14 +112,14 @@ void        Game::restart(void) {
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
-    loop();
+    Game::loop();
 }
 
 void        Game::newgame(void) {
+    delete this->_gui;
+    delete this->_game_engine;
     delete this->_player_1;
     delete this->_player_2;
-    delete this->_game_engine;
-    delete this->_gui;
 
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
@@ -131,5 +131,5 @@ void        Game::newgame(void) {
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
-    loop();
+    Game::loop();
 }

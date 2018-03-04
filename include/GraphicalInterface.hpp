@@ -125,25 +125,30 @@ private:
     ButtonSelect    *_menu_button_player_2;
 
     /* gui colors */
-    SDL_Color       _color_board_bg = {215, 168, 84, 255};
-    SDL_Color       _color_board_grid = {0, 0, 0, 255};
-    SDL_Color       _color_bg = {15, 15, 15, 255};
-    SDL_Color       _color_win = {45, 45, 45, 255};
-    SDL_Color       _color_header = {35, 35, 35, 255};
+    SDL_Color         _color_board_bg = { 215, 168,  84, 255 };
+    SDL_Color       _color_board_grid = {   0,   0,   0, 255 };
+    SDL_Color               _color_bg = {  15,  15,  15, 255 };
+    SDL_Color              _color_win = {  45,  45,  45, 255 };
+    SDL_Color           _color_header = {  35,  35,  35, 255 };
+    SDL_Color           _color_button = {  53,  53,  53, 255 };
+    SDL_Color             _color_font = { 160, 160, 160, 255 };
+    SDL_Color           _color_font_2 = { 180, 180, 180, 255 };
+    SDL_Color          _color_onhover = { 150, 150, 150, 255 };
+    SDL_Color          _color_outline = {  70,  70,  70, 255 };
 
-    SDL_Color       _color_button = {53, 53, 53, 255};
-    SDL_Color       _color_font = {160, 160, 160, 255};
-    SDL_Color       _color_font_2 = {180, 180, 180, 255};
-    SDL_Color       _color_onhover = {150, 150, 150, 255};
-    SDL_Color       _color_outline = {70, 70, 70, 255};
-
-    SDL_Color       _color_white = {255, 255, 255, 255};
-    SDL_Color       _color_black = {0, 0, 0, 255};
-    SDL_Color       _color_gold = {228, 161, 36, 255};
+    SDL_Color            _color_white = { 255, 255, 255, 255 };
+    SDL_Color            _color_black = {   0,   0,   0, 255 };
+    SDL_Color             _color_gold = { 228, 161,  36, 255 };
+    SDL_Color             _color_ruby = { 216,  17,  89, 255 };
 
     /* misc */
     bool            _nu;
     bool            _end_game;
+
+    std::string     _stone_num_text;
+    SDL_Color       _stone_num_color;
+    FontText        *_stone_num_font_text;
+
     TTF_Font        *_default_font;
     SDL_Color       _winning_color;
     std::string     _winning_text;

@@ -92,7 +92,6 @@ void    GameEngine::delete_last_action(Player *p1, Player *p2) {
     }
 }
 
-
 Eigen::Array22i GameEngine::get_end_line(BitBoard const &bitboard) {
     BitBoard        tmp;
     Eigen::Array22i pos;

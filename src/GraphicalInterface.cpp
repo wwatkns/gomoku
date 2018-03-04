@@ -11,6 +11,8 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_analytics = new Analytics(this->_game_engine, this->_font_handler, this->_res_ratio);
     this->_default_font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(14 * this->_res_ratio));
 
+    this->_stone_num_font_text = new FontText(&this->_stone_num_text, {0, 0}, "center", "center", this->_default_font, &this->_stone_num_color, this->_renderer);
+
     this->_grid_padding = 8;
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);
     this->_pad[1] = (int32_t)(this->_main_viewport.w * (float)(this->_grid_padding / 100.));
@@ -43,6 +45,8 @@ GraphicalInterface::~GraphicalInterface(void) {
     delete this->_button_restart;
     delete this->_button_pause;
     delete this->_button_undo;
+    delete this->_stone_num_font_text;
+    delete this->_winning_font_text;
     this->_close_sdl();
 }
 
@@ -273,23 +277,20 @@ void    GraphicalInterface::_render_stones(void) {
     }
 }
 
-void    GraphicalInterface::_render_stones_number(void) { // TODO : optimize this function (it is slow as fuck)
-    SDL_Color           color;
-    std::string         text;
+void    GraphicalInterface::_render_stones_number(void) {
     Eigen::Array2i      pos;
     BitBoard            explored;
-    static FontText     *font_text = new FontText(&text, pos, "center", "center", this->_default_font, &color, this->_renderer);
     std::list<t_action> *history = this->_game_engine->get_history();
 
     SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
     for (std::list<t_action>::reverse_iterator it = history->rbegin(); it != history->rend(); it++) {
-        text = std::to_string(it->id);
+        this->_stone_num_text = std::to_string(it->id);
         pos = grid_to_screen({it->pos[1], it->pos[0]});
         if (!explored.check_bit(it->pos[1], it->pos[0]) && (this->_game_engine->grid(it->pos[0], it->pos[1]) == 1 || this->_game_engine->grid(it->pos[0], it->pos[1]) == -1)) {
-            color = (it->pid == 1 ? this->_color_white : this->_color_black);
-            color = (it == history->rbegin() ? (SDL_Color){ 216, 17, 89, 255 } : color);
-            font_text->set_pos(pos);
-            font_text->render_realtime_text();
+            this->_stone_num_color = (it->pid == 1 ? this->_color_white : this->_color_black);
+            this->_stone_num_color = (it == history->rbegin() ? this->_color_ruby : this->_stone_num_color);
+            this->_stone_num_font_text->set_pos(pos);
+            this->_stone_num_font_text->render_realtime_text();
             explored.write(it->pos[1], it->pos[0]);
         }
     }
@@ -433,7 +434,8 @@ std::string GraphicalInterface::render_choice_menu(void) {
     Button *p2 = new Button(this->_renderer, "Player 2:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40+29}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
     Button *go = new Button(this->_renderer, "Start", this->_handle_ratio((Eigen::Array2i){this->_win_w/2+108, this->_win_h/2+70}), button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
     Button *ng = new Button(this->_renderer, "New Game", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2-93}), button_padding, font, this->_color_header, this->_color_font, this->_color_white, this->_color_header);
-    ButtonSwitch *sn = new ButtonSwitch(this->_renderer, "Debug", "Debug", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
+    Button *nu = new Button(this->_renderer, "Numbers :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    ButtonSwitch *sn = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+71}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_font_2);
 
     SDL_Rect    rect;
     std::string out = "";
@@ -464,6 +466,7 @@ std::string GraphicalInterface::render_choice_menu(void) {
         this->_menu_button_player_1->render(this->_renderer, &this->_mouse_pos);
         this->_menu_button_player_2->render(this->_renderer, &this->_mouse_pos);
         sn->render(this->_renderer, &this->_mouse_pos);
+        nu->render(this->_renderer, &this->_mouse_pos);
         ng->render(this->_renderer, &this->_mouse_pos);
         go->render(this->_renderer, &this->_mouse_pos);
         p1->render(this->_renderer, &this->_mouse_pos);
