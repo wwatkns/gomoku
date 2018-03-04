@@ -20,7 +20,7 @@ Human	&Human::operator=(Human const &src) {
 
 bool    Human::play(Player *other) {
     t_action                                action;
-    // static Eigen::Array2i                   pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this);
+    // static Eigen::Array2i                   pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this, other);
 
     if (this->_action_duration == std::chrono::steady_clock::duration::zero())
         this->_action_duration = this->_gui->get_analytics()->get_chronometer()->get_elapsed();

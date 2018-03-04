@@ -16,6 +16,7 @@
 # include "ButtonSwitch.hpp"
 # include "ButtonSelect.hpp"
 # include "MinMax.hpp"
+// # include "SDL2_gfxPrimitives.h"
 
 # define COLS 19
 # define ROWS 19
@@ -51,6 +52,8 @@ public:
     Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
     bool            get_mouse_action(void) const { return _mouse_action; };
     bool            get_end_game(void) const { return _end_game; };
+    bool            get_nu(void) const { return _nu; };
+    void            set_nu(bool const &val) { _nu = val; };
 
     std::string     render_choice_menu(void);
 
@@ -63,6 +66,8 @@ private:
 
     void            _render_board(void);
     void            _render_stones(void);
+    void            _render_stones_number(void);
+    void            _render_forbidden(void);
     void            _render_select(void);
     void            _render_secondary_viewport(void);
     void            _render_buttons(void);
@@ -137,7 +142,9 @@ private:
     SDL_Color       _color_gold = {228, 161, 36, 255};
 
     /* misc */
+    bool            _nu;
     bool            _end_game;
+    TTF_Font        *_default_font;
     SDL_Color       _winning_color;
     std::string     _winning_text;
     FontText        *_winning_font_text;

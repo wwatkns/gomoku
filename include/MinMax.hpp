@@ -39,7 +39,7 @@ public:
     uint8_t         get_depth(void) const { return _depth; };
     void            set_depth(uint8_t depth) { _depth = depth; };
 
-    Eigen::Array2i  minmax(Eigen::ArrayXXi grid, Player *player);
+    Eigen::Array2i  minmax(Eigen::ArrayXXi grid, Player *p1, Player *p2);
 
 private:
     GameEngine      *_game_engine;

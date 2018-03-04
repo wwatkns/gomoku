@@ -16,7 +16,7 @@ MinMax	&MinMax::operator=(MinMax const &src) {
     return (*this);
 }
 
-Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
+Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *p1, Player *p2) {
     std::vector<Eigen::Array2i> open_moves;
     t_state                     game_state;
     uint32_t                    score;
@@ -25,12 +25,12 @@ Eigen::Array2i  MinMax::minmax(Eigen::ArrayXXi grid, Player *player) {
     Eigen::Array2i              pos;
 
     game_state.grid = grid;
-    game_state.current_player_id = player->get_id();
-    game_state.p1_pairs_captured = player->get_pairs_captured(); // TODO : do better
-    game_state.p2_pairs_captured = player->get_pairs_captured(); // TODO : do better
+    game_state.current_player_id = p1->get_id();
+    game_state.p1_pairs_captured = p1->get_pairs_captured();
+    game_state.p2_pairs_captured = p2->get_pairs_captured();
 
     // open_moves = this->_get_open_moves(game_state);
-    open_moves = this->_get_around_stone_moves(game_state);
+    open_moves = this->_get_around_stone_moves(game_state); // bitboard
     std::cout << "num moves : " << open_moves.size() << std::endl;
 
     min = std::numeric_limits<unsigned int>::max();

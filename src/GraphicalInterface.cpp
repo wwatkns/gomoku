@@ -2,12 +2,14 @@
 #include "Player.hpp"
 
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
+    this->_nu = false;
     this->_quit = false;
     this->_mouse_action = false;
     this->_init_sdl();
 
     this->_font_handler = new FontHandler(this->_renderer, this->_res_ratio);
     this->_analytics = new Analytics(this->_game_engine, this->_font_handler, this->_res_ratio);
+    this->_default_font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(14 * this->_res_ratio));
 
     this->_grid_padding = 8;
     this->_stone_size = (int32_t)(this->_res_h * 0.04375);
@@ -18,12 +20,11 @@ GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(g
     this->_load_images();
     this->_init_grid();
 
-    TTF_Font *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(14 * this->_res_ratio));
     Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
-    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(320 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(350 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_pause = new ButtonSwitch(this->_renderer, "pause", "resume", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(380 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
-    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(410 * this->_res_ratio)}, button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
+    this->_button_newgame = new Button(this->_renderer, "new game", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(320 * this->_res_ratio)}, button_padding, this->_default_font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_restart = new Button(this->_renderer, "restart", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(350 * this->_res_ratio)}, button_padding, this->_default_font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_pause = new ButtonSwitch(this->_renderer, "pause", "resume", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(380 * this->_res_ratio)}, button_padding, this->_default_font, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_outline);
+    this->_button_undo = new Button(this->_renderer, "undo", {this->_main_viewport.w + (int32_t)(10 * this->_res_ratio), (int32_t)(410 * this->_res_ratio)}, button_padding, this->_default_font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
 
     this->_winning_font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(24 * this->_res_ratio));
     this->_winning_text = "";
@@ -156,7 +157,6 @@ void    GraphicalInterface::_init_grid_points(void) {
 }
 
 void    GraphicalInterface::_init_grid_indicators(void) {
-    TTF_Font        *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(14 * this->_res_ratio));
     FontText        *font_text;
     Eigen::Array2i  pos;
     std::string     text;
@@ -165,14 +165,14 @@ void    GraphicalInterface::_init_grid_indicators(void) {
         for (uint8_t i = 0; i < ROWS; i++) {
             text = std::to_string(ROWS-i);
             pos = { (j ? this->_main_viewport.w-this->_pad[1]/2 : this->_pad[1]/2), (int32_t)(this->_pad[0]+i*this->_inc[0]) };
-            font_text = new FontText(&text, pos, "center", "center", font, &this->_color_board_grid, this->_renderer);
+            font_text = new FontText(&text, pos, "center", "center", this->_default_font, &this->_color_board_grid, this->_renderer);
             font_text->render_text();
             delete font_text;
         }
         for (uint8_t i = 0; i < COLS; i++) {
             text = std::string(1, "ABCDEFGHJKLMNOPQRST"[i]);
             pos = { (int32_t)(this->_pad[1]+i*this->_inc[1]), (j ? this->_main_viewport.h-this->_pad[0]/2 : this->_pad[0]/2) };
-            font_text = new FontText(&text, pos, "center", "center", font, &this->_color_board_grid, this->_renderer);
+            font_text = new FontText(&text, pos, "center", "center", this->_default_font, &this->_color_board_grid, this->_renderer);
             font_text->render_text();
             delete font_text;
         }
@@ -214,6 +214,9 @@ void    GraphicalInterface::update_events(void) {
 void    GraphicalInterface::update_display(void) {
     this->_render_board();
     this->_render_stones();
+    if (this->_nu)
+        this->_render_stones_number();
+    this->_render_forbidden();
     this->_render_select();
     this->_render_secondary_viewport();
     this->_render_buttons();
@@ -245,38 +248,21 @@ void    GraphicalInterface::_render_board(void) {
 }
 
 void    GraphicalInterface::_render_stones(void) {
-    Eigen::Array2i  s_pos;
-    SDL_Rect        rect;
-    Eigen::Array2i  size;
-    SDL_Texture     *stone;
+    Eigen::Array2i      s_pos;
+    SDL_Rect            rect;
+    SDL_Texture         *stone;
+    std::list<t_action> *history = this->_game_engine->get_history();
 
-    for (int j = 0; j < COLS; j++) {
-        for (int i = 0; i < ROWS; i++) {
-            /* stones */
-            if (this->_game_engine->grid(j,i) == -1 || this->_game_engine->grid(j,i) == 1) { /* TODO: more modular, change 1 and -1 */
-                s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
-                rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
-                stone = (this->_game_engine->grid(j,i) == -1 ? this->_black_stone_tex : this->_white_stone_tex);
-                SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
-            }
-            /* forbidden */
-            // if (this->_game_engine->grid(j,i) == -10 || this->_game_engine->grid(j,i) == 10) { /* show all forbiddens */
-            if (this->_game_engine->grid(j,i) == (this->_analytics->get_c_player()->get_id()==1?-1:1)*10) { /* show current player forbiddens */
-                s_pos = this->grid_to_screen((Eigen::Array2i){j,i});
-                /* rect */
-                size = { this->_forbidden_rect.w*3, this->_forbidden_rect.h*1.5 };
-                rect = { s_pos[1]-size[0]/2, s_pos[0]-size[1]/2, size[0], size[1] };
-                SDL_SetRenderDrawColor(this->_renderer, this->_color_board_bg.r, this->_color_board_bg.g, this->_color_board_bg.b, this->_color_board_bg.a);
-                SDL_RenderFillRect(this->_renderer, &rect);
-                this->_forbidden_rect.x = s_pos[1]-this->_forbidden_rect.w/2;
-                this->_forbidden_rect.y = s_pos[0]-this->_forbidden_rect.h/2;
-                /* text */
-                SDL_RenderCopy(this->_renderer, this->_forbidden_tex, NULL, &this->_forbidden_rect);
-            }
+    for (std::list<t_action>::iterator it = history->begin(); it != history->end(); it++) {
+        s_pos = this->grid_to_screen({it->pos[0], it->pos[1]});
+        if (this->_game_engine->grid(it->pos[0], it->pos[1]) == 1 || this->_game_engine->grid(it->pos[0], it->pos[1]) == -1) {
+            rect = {s_pos[1] - this->_stone_size / 2, s_pos[0] - this->_stone_size / 2, this->_stone_size, this->_stone_size};
+            stone = (it->pid == 1 ? this->_black_stone_tex : this->_white_stone_tex);
+            SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
         }
     }
     /* look for the last action and display an indicator on it */
-    if (this->_game_engine->get_history()->size() > 0 and !this->_end_game) {
+    if (!this->_nu && this->_game_engine->get_history()->size() > 0 and !this->_end_game) {
         t_action    last = this->_game_engine->get_history()->back();
         int32_t     size = (int32_t)(this->_stone_size * 0.1);
 
@@ -284,6 +270,52 @@ void    GraphicalInterface::_render_stones(void) {
         rect = { s_pos[1]-size/2, s_pos[0]-size/2, size, size };
         stone = (this->_game_engine->grid(last.pos[0],last.pos[1]) == 1 ? this->_black_stone_tex : this->_white_tex);
         SDL_RenderCopy(this->_renderer, stone, NULL, &rect);
+    }
+}
+
+void    GraphicalInterface::_render_stones_number(void) { // TODO : optimize this function (it is slow as fuck)
+    SDL_Color           color;
+    std::string         text;
+    Eigen::Array2i      pos;
+    BitBoard            explored;
+    static FontText     *font_text = new FontText(&text, pos, "center", "center", this->_default_font, &color, this->_renderer);
+    std::list<t_action> *history = this->_game_engine->get_history();
+
+    SDL_RenderSetViewport(this->_renderer, &this->_main_viewport);
+    for (std::list<t_action>::reverse_iterator it = history->rbegin(); it != history->rend(); it++) {
+        text = std::to_string(it->id);
+        pos = grid_to_screen({it->pos[1], it->pos[0]});
+        if (!explored.check_bit(it->pos[1], it->pos[0]) && (this->_game_engine->grid(it->pos[0], it->pos[1]) == 1 || this->_game_engine->grid(it->pos[0], it->pos[1]) == -1)) {
+            color = (it->pid == 1 ? this->_color_white : this->_color_black);
+            color = (it == history->rbegin() ? (SDL_Color){ 216, 17, 89, 255 } : color);
+            font_text->set_pos(pos);
+            font_text->render_realtime_text();
+            explored.write(it->pos[1], it->pos[0]);
+        }
+    }
+}
+
+void    GraphicalInterface::_render_forbidden(void) {
+    Eigen::Array2i  s_pos;
+    Eigen::Array2i  size;
+    SDL_Rect        rect;
+    uint64_t        row;
+
+    for (uint8_t y = 0; y < 19; y++) {
+        row = this->_analytics->get_c_player()->board_forbidden.row(y);
+        if (row) {
+            for (uint8_t x = 0; x < 19; x++)
+                if (row << x & 0x8000000000000000) {
+                    s_pos = this->grid_to_screen((Eigen::Array2i){y, x});
+                    size = { this->_forbidden_rect.w*3, this->_forbidden_rect.h*1.5 };
+                    rect = { s_pos[1]-size[0]/2, s_pos[0]-size[1]/2, size[0], size[1] };
+                    SDL_SetRenderDrawColor(this->_renderer, this->_color_board_bg.r, this->_color_board_bg.g, this->_color_board_bg.b, this->_color_board_bg.a);
+                    SDL_RenderFillRect(this->_renderer, &rect);
+                    this->_forbidden_rect.x = s_pos[1]-this->_forbidden_rect.w/2;
+                    this->_forbidden_rect.y = s_pos[0]-this->_forbidden_rect.h/2;
+                    SDL_RenderCopy(this->_renderer, this->_forbidden_tex, NULL, &this->_forbidden_rect);
+                }
+        }
     }
 }
 
@@ -382,6 +414,7 @@ void    GraphicalInterface::_render_winning_screen(void) {
 }
 
 std::string GraphicalInterface::render_choice_menu(void) {
+    TTF_Font    *font_small = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(12 * this->_res_ratio));
     TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(14 * this->_res_ratio));
     TTF_Font    *font_bold = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(16 * this->_res_ratio));
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
@@ -400,6 +433,7 @@ std::string GraphicalInterface::render_choice_menu(void) {
     Button *p2 = new Button(this->_renderer, "Player 2:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40+29}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
     Button *go = new Button(this->_renderer, "Start", this->_handle_ratio((Eigen::Array2i){this->_win_w/2+108, this->_win_h/2+70}), button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
     Button *ng = new Button(this->_renderer, "New Game", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2-93}), button_padding, font, this->_color_header, this->_color_font, this->_color_white, this->_color_header);
+    ButtonSwitch *sn = new ButtonSwitch(this->_renderer, "Debug", "Debug", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
 
     SDL_Rect    rect;
     std::string out = "";
@@ -425,9 +459,11 @@ std::string GraphicalInterface::render_choice_menu(void) {
         this->_menu_button_player_1->update_state(&this->_mouse_pos, this->_mouse_action);
         this->_menu_button_player_2->update_state(&this->_mouse_pos, this->_mouse_action);
         go->update_state(&this->_mouse_pos, this->_mouse_action);
+        sn->update_state(&this->_mouse_pos, this->_mouse_action);
 
         this->_menu_button_player_1->render(this->_renderer, &this->_mouse_pos);
         this->_menu_button_player_2->render(this->_renderer, &this->_mouse_pos);
+        sn->render(this->_renderer, &this->_mouse_pos);
         ng->render(this->_renderer, &this->_mouse_pos);
         go->render(this->_renderer, &this->_mouse_pos);
         p1->render(this->_renderer, &this->_mouse_pos);
@@ -436,12 +472,16 @@ std::string GraphicalInterface::render_choice_menu(void) {
         if (go->get_state() == true) {
             out += std::string( "p1=")+std::string((this->_menu_button_player_1->get_activated_button() == 0?"H":"C"));
             out += std::string(",p2=")+std::string((this->_menu_button_player_2->get_activated_button() == 0?"H":"C"));
+            out += std::string(",nu=")+std::string((sn->get_state()?"1":"0"));
             break;
         }
         SDL_RenderPresent(this->_renderer);
     }
+    TTF_CloseFont(font);
+    TTF_CloseFont(font_bold);
     delete p1;
     delete p2;
+    delete sn;
     delete ng;
     delete go;
     delete p1_human;
@@ -449,7 +489,7 @@ std::string GraphicalInterface::render_choice_menu(void) {
     delete p2_human;
     delete p2_computer;
 
-    return out;
+    return (out);
 }
 
 Eigen::Array2i  GraphicalInterface::_handle_ratio(Eigen::Array2i pos) {
@@ -481,12 +521,10 @@ void    GraphicalInterface::_close_sdl(void) {
     this->_select_stone_tex = NULL;
     this->_forbidden_tex = NULL;
     this->_board_grid_tex = NULL;
-
     SDL_DestroyWindow(this->_window);
     SDL_DestroyRenderer(this->_renderer);
     this->_window = NULL;
     this->_renderer = NULL;
-
     IMG_Quit();
     SDL_Quit();
 }
