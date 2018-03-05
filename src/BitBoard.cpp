@@ -468,6 +468,22 @@ bool        detect_five_aligned(BitBoard const &bitboard) {
     return (false);
 }
 
+BitBoard    highlight_five_aligned(BitBoard const &bitboard) {
+    BitBoard    res;
+    BitBoard    tmp;
+
+    for (uint8_t d = direction::north; d < 4; ++d) {
+        tmp = bitboard;
+        for (uint8_t n = 0; n < 4; n++) {
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp = tmp.shifted(d) & bitboard;
+        }
+        for (uint8_t i = 0; i < 5; i++)
+            res |= tmp.shifted_inv(d, i);
+    }
+    return (res);
+}
+
 /*  detect a pair and return the positions on the bitboard where it leads to capture
 */
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2) {

@@ -93,14 +93,15 @@ BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
 
-bool        detect_five_aligned(BitBoard const &bitboard);
-
 BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
 BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
 
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
+
+bool        detect_five_aligned(BitBoard const &bitboard);
+BitBoard    highlight_five_aligned(BitBoard const &bitboard);
 
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);      /* detect the positions leading to one or multiple captures */
 BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, BitBoard const &pairs);
@@ -142,37 +143,6 @@ namespace direction {
     18 | . . . . . . . . . . . . . . . . . . . | 18
        +---------------------------------------+
          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8
-
-    0 : 1111111111111111111000000000000000000000000000000000000000000000   : 0xFFFFE00000000000
-    1 : 0000000000000000000111111111111111111100000000000000000000000000   : 0x1FFFFC000000
-    2 : 0000000000000000000000000000000000000011111111111111111110000000   : 0x3FFFF80
-    3 : 0000000000000000000000000000000000000000000000000000000001111111 | : 0x7F
-        1111111111110000000000000000000000000000000000000000000000000000   : 0xFFF0000000000000
-
-    4 : 0000000000001111111111111111111000000000000000000000000000000000   : 0xFFFFE00000000
-    5 : 0000000000000000000000000000000111111111111111111100000000000000   : 0x1FFFFC000
-    6 : 0000000000000000000000000000000000000000000000000011111111111111 | : 0x3FFF
-        1111100000000000000000000000000000000000000000000000000000000000   : 0xF800000000000000
-
-    7 : 0000011111111111111111110000000000000000000000000000000000000000   : 0x7FFFF0000000000
-    8 : 0000000000000000000000001111111111111111111000000000000000000000   : 0xFFFFE00000
-    9 : 0000000000000000000000000000000000000000000111111111111111111100   : 0x1FFFFC
-   10 : 0000000000000000000000000000000000000000000000000000000000000011 | : 0x3
-        1111111111111111100000000000000000000000000000000000000000000000   : 0xFFFF800000000000
-
-   11 : 0000000000000000011111111111111111110000000000000000000000000000   : 0x7FFFF0000000
-   12 : 0000000000000000000000000000000000001111111111111111111000000000   : 0xFFFFE00
-   13 : 0000000000000000000000000000000000000000000000000000000111111111 | : 0x1FF
-        1111111111000000000000000000000000000000000000000000000000000000   : 0xFFC0000000000000
-
-   14 : 0000000000111111111111111111100000000000000000000000000000000000   : 0x3FFFF800000000
-   15 : 0000000000000000000000000000011111111111111111110000000000000000   : 0x7FFFF0000
-   16 : 0000000000000000000000000000000000000000000000001111111111111111 | : 0xFFFF
-        1110000000000000000000000000000000000000000000000000000000000000   : 0xE000000000000000
-
-   17 : 0001111111111111111111000000000000000000000000000000000000000000   : 0x1FFFFC0000000000
-   18 : 0000000000000000000000111111111111111111100000000000000000000000   : 0x3FFFF800000
-
 
     BitBoard without separating bits. We'll benchmark the performances of the
     algorithms once we have more stuff in place, and compare the version of the
@@ -275,88 +245,6 @@ namespace direction {
      (close & any) and the mirrors.
 
 
-ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
-
-    +--9x9 Board-------------------------+ : board
-    | a9  b9  c9  d9  e9  f9  g9  h9  i9 |
-    | a8  b8  c8  d8  e8  f8  g8  h8  i8 |
-    | a7  b7  c7  d7  e7  f7  g7  h7  i7 |
-    | a6  b6  c6  d6  e6  f6  g6  h6  i6 |
-    | a5  b5  c5  d5  e5  f5  g5  h5  i5 |
-    | a4  b4  c4  d4  e4  f4  g4  h4  i4 |
-    | a3  b3  c3  d3  e3  f3  g3  h3  i3 |
-    | a2  b2  c2  d2  e2  f2  g2  h2  i2 |
-    | a1  b1  c1  d1  e1  f1  g1  h1  i1 |
-    +------------------------------------+
-
-    +--9x9 Board-------------------------+ : board >> (9 * 2)
-    |  .   .   .   .   .   .   .   .   . |
-    |  .   .   .   .   .   .   .   .   . |
-    | a9  b9  c9  d9  e9  f9  g9  h9  i9 |
-    | a8  b8  c8  d8  e8  f8  g8  h8  i8 |
-    | a7  b7  c7  d7  e7  f7  g7  h7  i7 |
-    | a6  b6  c6  d6  e6  f6  g6  h6  i6 |
-    | a5  b5  c5  d5  e5  f5  g5  h5  i5 |
-    | a4  b4  c4  d4  e4  f4  g4  h4  i4 |
-    | a3  b3  c3  d3  e3  f3  g3  h3  i3 |
-    +------------------------------------+
-
-    +--9x9 Board-------------------------+ : board << (9 * (9-2))
-    | a2  b2  c2  d2  e2  f2  g2  h2  i2 |
-    | a1  b1  c1  d1  e1  f1  g1  h1  i1 |
-    |  .   .   .   .   .   .   .   .   . |
-    |  .   .   .   .   .   .   .   .   . |
-    |  .   .   .   .   .   .   .   .   . |
-    |  .   .   .   .   .   .   .   .   . |
-    |  .   .   .   .   .   .   .   .   . |
-    |  .   .   .   .   .   .   .   .   . |
-    +------------------------------------+
-
-    +--9x9 Board-------------------------+ : (board >> (9 * 2)) | (board << (9 * (9-2)))
-    | a2  b2  c2  d2  e2  f2  g2  h2  i2 |
-    | a1  b1  c1  d1  e1  f1  g1  h1  i1 |
-    | a9  b9  c9  d9  e9  f9  g9  h9  i9 |
-    | a8  b8  c8  d8  e8  f8  g8  h8  i8 |
-    | a7  b7  c7  d7  e7  f7  g7  h7  i7 |
-    | a6  b6  c6  d6  e6  f6  g6  h6  i6 |
-    | a5  b5  c5  d5  e5  f5  g5  h5  i5 |
-    | a4  b4  c4  d4  e4  f4  g4  h4  i4 |
-    | a3  b3  c3  d3  e3  f3  g3  h3  i3 |
-    +------------------------------------+
-
-    +--9x9 Board-------------------------+ : ( (board >> (9 * 2)) | (board << (9 * (9-2))) ) & mask
-    |  .   .  c2   .   .   .   .   .   . |
-    |  .   .  c1   .   .   .   .   .   . |
-    |  .   .  c9   .   .   .   .   .   . |
-    |  .   .  c8   .   .   .   .   .   . |
-    |  .   .  c7   .   .   .   .   .   . |
-    |  .   .  c6   .   .   .   .   .   . |
-    |  .   .  c5   .   .   .   .   .   . |
-    |  .   .  c4   .   .   .   .   .   . |
-    |  .   .  c3   .   .   .   .   .   . |
-    +------------------------------------+
-
-
-    We want to find the rules to get from the normal 9x9 board
-    to the 45deg rotated clockwise Board.
-
-    +--Rotated 9x9 Board 45 Clockwise----+
-    | a9 |b1  c2  d3  e4  f5  g6  h7  i8 |
-    | a8  b9 |c1  d2  e3  f4  g5  h6  i7 |
-    | a7  b8  c9 |d1  e2  f3  g4  h5  i6 |
-    | a6  b7  c8  d9 |e1  f2  g3  h4  i5 |
-    | a5  b6  c7  d8  e9 |f1  g2  h3  i4 |
-    | a4  b5  c6  d7  e8  f9 |g1  h2  i3 |
-    | a6  b4  c5  d6  e7  f8  g9 |h1  i2 |
-    | a2  b6  c4  d5  e6  f7  g8  h9 |i1 |
-    | a1  b2  c6  d4  e5  f6  g7  h8  i9 |
-    +------------------------------------+
-    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 /
-
-    We are going to scan each column with a binary mask and the
-    intersection operator.
-
-
     +-16bit position storage---------+
     |     x    |    y    |    pad    |
     +----------+---------+-----------+-------------+
@@ -372,18 +260,4 @@ ROTATION 45 CLOCKWISE OPERATIONS (not optimized) for column 2:
      $ y = pos & 0x7C0;
 
      1001001111000000 is (18, 15)
-
-     bitboard to positions :
-
-     +-----------------+    +-----------------+ +-----------------+     +-----------------+
-     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  0 --------
-     | . O . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  1 -O------
-     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  2 ------O-
-     | . . . O . . . . |    | O . . . . . . . | | . O . . . . . . | ... | . . . . . . . O |  3 ---O----
-     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  4 --------
-     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  5 --------
-     | . . O . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  6 --------
-     | . . . . . . . . |    | O . . . . . . . | | . O . . . . . . |     | . . . . . . . O |  7 --------
-     +-----------------+    +-----------------+ +-----------------+     +-----------------+
-
 */
