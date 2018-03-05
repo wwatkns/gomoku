@@ -408,13 +408,16 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
                 for (uint8_t d = direction::north; d < 4; ++d) { // iterate through directions
                     idx = (p * 12 + j * 4) + d;
                     tmp[idx] = sub_pattern_detector_alt(p1, p2, sub, lengths[p], lengths[p]-s-1, 0, d);
-                    for (int8_t n = idx-1; n >= 0; n--) // TODO : optimize this sub_pattern overlap loop, for now we loop 615 times total here
+                    for (int8_t n = idx-1; n >= 0; n--)
                         res |= (tmp[idx] & tmp[n]);
                 }
                 j++;
             }
         }
     }
+    /*  handle the case of -O-O*-O-, -O-*O-O-  */
+    for (uint8_t d = direction::north; d < 8; ++d)
+        res ^= sub_pattern_detector_alt(p1, p2, 0x52, 8, 3, 0, d);
     return (res & ~p1 & ~p2);
 }
 

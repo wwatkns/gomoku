@@ -33,8 +33,7 @@ public:
     BitBoard	&operator=(BitBoard const &rhs);
     BitBoard	&operator=(uint64_t const &val);
 
-    uint64_t    row(uint8_t i) const;               // access row at index
-    // uint64_t    col(uint8_t i) const;               // access col at index
+    uint64_t    row(uint8_t i) const;                   // access row at index
 
     void        zeros(void);                            // set the bitboard values to zeros
     void        write(uint8_t x, uint8_t y);            // set a bit to 1 on the bitboard at position x, y
