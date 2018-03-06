@@ -118,6 +118,7 @@ int32_t     MinMax::_score(t_state game_state) {
         double-four     : win
         pair captures
     */
+    
     return 1;
 }
 
