@@ -97,13 +97,22 @@ void    BitBoard::broadcast_row(uint64_t row) {
 
 void    BitBoard::write(uint8_t x, uint8_t y) {
     uint16_t    n = (19 * y + x);
-    this->values[n / BITS] |= (0x8000000000000000 >> (n % BITS));
+    this->values[n >> 6] |= (0x8000000000000000 >> (n & 0x3F));
 }
 
 void    BitBoard::remove(uint8_t x, uint8_t y) {
     uint16_t    n = (19 * y + x);
-    this->values[n / BITS] &= ~(0x8000000000000000 >> (n % BITS));
+    this->values[n >> 6] &= ~(0x8000000000000000 >> (n & 0x3F));
 }
+
+void    BitBoard::write(uint16_t i) {
+    this->values[i >> 6] |= (0x8000000000000000 >> (i & 0x3F));
+}
+
+void    BitBoard::remove(uint16_t i) {
+    this->values[i >> 6] &= ~(0x8000000000000000 >> (i & 0x3F));
+}
+
 
 /*  return the number of bits set to 1 in the bitboard using
     Brian Kernighan's method.

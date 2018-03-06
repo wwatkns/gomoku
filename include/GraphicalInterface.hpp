@@ -15,7 +15,7 @@
 # include "Button.hpp"
 # include "ButtonSwitch.hpp"
 # include "ButtonSelect.hpp"
-# include "MinMax.hpp"
+// # include "MinMax.hpp"
 // # include "SDL2_gfxPrimitives.h"
 
 # define COLS 19

@@ -6,6 +6,7 @@
 # include <vector>
 # include <Eigen/Dense>
 # include <limits>
+# include "BitBoard.hpp"
 
 /*  Optimizations ideas :
     - bitboards for players to check patterns with bitwise operations blazingly fast
@@ -18,32 +19,22 @@
     - iterative deepening IDDFS
 */
 
-class AlphaBeta {
+typedef struct  s_node {
+    BitBoard        p1;
+    BitBoard        p1_forbidden;
+    BitBoard        p2;
+    BitBoard        p2_forbidden;
+    uint8_t         current_player_id;
+    uint8_t         p1_pairs_captured;
+    uint8_t         p2_pairs_captured;
+}               t_node;
 
-public:
-    AlphaBeta(GameEngine *game_engine, uint8_t depth);
-    AlphaBeta(AlphaBeta const &src);
-    ~AlphaBeta(void);
-    AlphaBeta	&operator=(AlphaBeta const &rhs);
+Eigen::Array2i  alphabeta_pruning(t_node root, uint8_t depth);
 
-    uint8_t         get_depth(void) const { return _depth; };
-    void            set_depth(uint8_t depth) { _depth = depth; };
+uint32_t        max(t_node node, uint32_t alpha, uint32_t beta, uint8_t current_depth, uint8_t const& max_depth);
+uint32_t        min(t_node node, uint32_t alpha, uint32_t beta, uint8_t current_depth, uint8_t const& max_depth);
 
-      alphabeta_pruning(Player const& player1, Player const& player2);
-
-private:
-    GameEngine          *_game_engine;
-    uint8_t             _depth;
-    Bitboard::bitboard  p1;
-    Bitboard::bitboard  p2;
-
-    // int32_t                     _min(t_state game_state, uint8_t current_depth);
-    // int32_t                     _max(t_state game_state, uint8_t current_depth);
-    // int32_t                     _score(t_state game_state);
-    // std::vector<Eigen::Array2i> _get_around_stone_moves(t_state game_state);
-    std::vector<Eigen::Array2i> _get_open_moves(t_state game_state);
-    // std::vector<Eigen::Array2i> _get_around_stone_moves(t_state game_state);
-
-};
+uint32_t        score_function(t_node node);
+uint8_t         check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured);
 
 #endif

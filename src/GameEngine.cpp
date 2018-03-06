@@ -40,20 +40,20 @@ bool    GameEngine::check_action(t_action const &action, Player const &p1, Playe
 //     return (0);
 // }
 
-uint8_t GameEngine::check_end(Player const &p1, Player const &p2) {
-    if (p1.get_pairs_captured() >= 5)
+uint8_t GameEngine::check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
+    if (p1_pairs_captured >= 5)
         return (1);
-    if (detect_five_aligned(p1.board)) {
-        BitBoard    pairs = pair_capture_detector(p2.board, p1.board); // good
+    if (detect_five_aligned(p1)) {
+        BitBoard    pairs = pair_capture_detector(p2, p1); // good
         /* p2 wins next turn by capturing a fifth pair even though p1 has 5 aligned */
-        if (!pairs.is_empty() && p2.get_pairs_captured() == 4)
+        if (!pairs.is_empty() && p2_pairs_captured == 4)
             return (0);
         /* game continue by capturing stones forming the 5 alignment */
-        if ( detect_five_aligned(highlight_five_aligned(p1.board) ^ highlight_captured_stones(p1.board, p2.board ^ pairs, pairs)) == false )
+        if ( detect_five_aligned(highlight_five_aligned(p1) ^ highlight_captured_stones(p1, p2 ^ pairs, pairs)) == false )
             return (0);
         return (1);
     }
-    if (((p1.board | p2.board) ^ BitBoard::full).is_empty() == true)
+    if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
         return (2);
     return (0);
 }

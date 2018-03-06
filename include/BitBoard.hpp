@@ -36,6 +36,8 @@ public:
     uint64_t    row(uint8_t i) const;                   // access row at index
 
     void        zeros(void);                            // set the bitboard values to zeros
+    void        write(uint16_t i);
+    void        remove(uint16_t i);
     void        write(uint8_t x, uint8_t y);            // set a bit to 1 on the bitboard at position x, y
     void        remove(uint8_t x, uint8_t y);           // set a bit to 0 on the bitboard at position x, y
     uint16_t    set_count(void) const;                  // return the number of bits set to 1 in bitboard

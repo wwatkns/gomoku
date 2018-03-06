@@ -24,13 +24,34 @@ bool        Computer::play(Player *other) {
     t_action                                action;
     std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now();
     Eigen::Array2i                   pos;
+    t_node                           node;
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
+    /* LOL ! C'EST MOCHE */
+    if (this->_id == 1) {
+        node.p1 = this->board;
+        node.p1_forbidden = this->board_forbidden;
+        node.p2 = other->board;
+        node.p2_forbidden = other->board_forbidden;
+        node.current_player_id = this->_id;
+        node.p1_pairs_captured = this->_pairs_captured;
+        node.p2_pairs_captured = other->get_pairs_captured();
+    } else {
+        node.p2 = this->board;
+        node.p2_forbidden = this->board_forbidden;
+        node.p1 = other->board;
+        node.p1_forbidden = other->board_forbidden;
+        node.current_player_id = this->_id;
+        node.p1_pairs_captured = other->get_pairs_captured(); 
+        node.p2_pairs_captured = this->_pairs_captured;
+    }
+
+    // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     action.duration = std::chrono::steady_clock::now() - action_beg;
-    action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
+   // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
 
     // pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this, other);
+    action.pos = alphabeta_pruning(node, 4);
 
     action.id = this->_game_engine->get_history_size() + 1;
     action.p1_last = this->board;

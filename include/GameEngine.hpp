@@ -5,7 +5,8 @@
 # include <chrono>
 # include <list>
 # include <Eigen/Dense>
-# include "MinMax.hpp"
+// # include "MinMax.hpp"
+# include "AlphaBeta.hpp"
 # include "BitBoard.hpp"
 
 # define BOARD_COLS 19
@@ -34,7 +35,8 @@ public:
     GameEngine	&operator=(GameEngine const &rhs);
 
     bool                check_action(t_action const &action, Player const &p1, Player const &p2);
-    uint8_t             check_end(Player const &p1, Player const &p2);
+    // uint8_t             check_end(Player const &p1, Player const &p2);
+    uint8_t             check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured);
     void                update_game_state(t_action &action, Player *p1, Player *p2);
     void                update_grid(Player const &p1, Player const &p2);
     void                update_grid_with_bitboard(BitBoard const &bitboard, int8_t const &state);
@@ -51,7 +53,7 @@ public:
     void                                    inc_game_turn(void);
 
     Eigen::ArrayXXi                         grid;
-    MinMax                                  *minmax;
+    // MinMax                                  *minmax;
 
 private:
     std::list<t_action>                     _history;
