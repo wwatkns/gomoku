@@ -129,7 +129,7 @@ uint16_t    BitBoard::set_count(void) const {
 
 bool    BitBoard::check_bit(uint8_t x, uint8_t y) const {
     uint16_t    n = (19 * y + x);
-    return ((this->values[n / BITS] & (0x8000000000000000 >> (n % BITS))) == 0 ? false : true);
+    return ((this->values[n >> 6] & (0x8000000000000000 >> (n & 0x3F))) == 0 ? false : true);
 }
 
 bool    BitBoard::is_empty(void) const {
@@ -306,21 +306,21 @@ BitBoard    &BitBoard::operator>>=(int32_t shift) {
 /*
 ** Member access operator overload
 */
-uint64_t    &BitBoard::operator[](uint8_t i){
-    return (this->values[i]);
+uint64_t    BitBoard::operator[](uint16_t i) const {
+    return (this->values[i >> 6] & (0x8000000000000000 >> (i & 0x3F)));
 }
 
 /*
 ** Comparison operator overload
 */
-bool        BitBoard::operator==(BitBoard const &rhs) {
+bool        BitBoard::operator==(BitBoard const &rhs) const {
     for (uint8_t i = 0; i < N; i++)
         if (this->values[i] != rhs.values[i])
             return (false);
     return (true);
 }
 
-bool        BitBoard::operator!=(BitBoard const &rhs) {
+bool        BitBoard::operator!=(BitBoard const &rhs) const {
     for (uint8_t i = 0; i < N; i++)
         if (this->values[i] != rhs.values[i])
             return (true);
@@ -417,7 +417,7 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
                 for (uint8_t d = direction::north; d < 4; ++d) { // iterate through directions
                     idx = (p * 12 + j * 4) + d;
                     tmp[idx] = sub_pattern_detector_alt(p1, p2, sub, lengths[p], lengths[p]-s-1, 0, d);
-                    for (int8_t n = idx-1; n >= 0; n--)
+                    for (int8_t n = idx-1; n >= 0; n--) // (p * s * d)^2 / 2 = 36^2 / 2 = 648
                         res |= (tmp[idx] & tmp[n]);
                 }
                 j++;

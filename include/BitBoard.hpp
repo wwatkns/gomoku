@@ -70,11 +70,11 @@ public:
     BitBoard    &operator>>=(int32_t shift);
 
     /* member access operator overload */
-    uint64_t    &operator[](uint8_t i);
+    uint64_t    operator[](uint16_t i) const; // will return the i-th bit
 
     /* comparison operator overload */
-    bool        operator==(BitBoard const &rhs);
-    bool        operator!=(BitBoard const &rhs);
+    bool        operator==(BitBoard const &rhs) const;
+    bool        operator!=(BitBoard const &rhs) const;
 
     std::array<uint64_t, N>         values;
     static std::array<int16_t, D>   shifts;
