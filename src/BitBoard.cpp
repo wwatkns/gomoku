@@ -306,14 +306,14 @@ uint64_t    BitBoard::operator[](uint16_t i) const {
 /*
 ** Comparison operator overload
 */
-bool        BitBoard::operator==(BitBoard const &rhs) {
+bool        BitBoard::operator==(BitBoard const &rhs) const {
     for (uint8_t i = 0; i < N; i++)
         if (this->values[i] != rhs.values[i])
             return (false);
     return (true);
 }
 
-bool        BitBoard::operator!=(BitBoard const &rhs) {
+bool        BitBoard::operator!=(BitBoard const &rhs) const {
     for (uint8_t i = 0; i < N; i++)
         if (this->values[i] != rhs.values[i])
             return (true);
