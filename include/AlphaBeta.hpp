@@ -31,8 +31,8 @@ typedef struct  s_node {
 
 Eigen::Array2i  alphabeta_pruning(t_node root, uint8_t depth);
 
-uint32_t        max(t_node node, uint32_t alpha, uint32_t beta, uint8_t current_depth, uint8_t const& max_depth);
-uint32_t        min(t_node node, uint32_t alpha, uint32_t beta, uint8_t current_depth, uint8_t const& max_depth);
+uint32_t        max(t_node node, uint32_t alpha, uint32_t beta, uint8_t current_depth);
+uint32_t        min(t_node node, uint32_t alpha, uint32_t beta, uint8_t current_depth);
 
 uint32_t        score_function(t_node node);
 uint8_t         check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured);

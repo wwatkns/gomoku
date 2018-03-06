@@ -36,12 +36,12 @@ bool        Computer::play(Player *other) {
         node.p1_pairs_captured = this->_pairs_captured;
         node.p2_pairs_captured = other->get_pairs_captured();
     } else {
-        node.p2 = this->board;
-        node.p2_forbidden = this->board_forbidden;
         node.p1 = other->board;
         node.p1_forbidden = other->board_forbidden;
+        node.p2 = this->board;
+        node.p2_forbidden = this->board_forbidden;
         node.current_player_id = this->_id;
-        node.p1_pairs_captured = other->get_pairs_captured(); 
+        node.p1_pairs_captured = other->get_pairs_captured();
         node.p2_pairs_captured = this->_pairs_captured;
     }
 
@@ -51,7 +51,8 @@ bool        Computer::play(Player *other) {
    // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
 
     // pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this, other);
-    action.pos = alphabeta_pruning(node, 4);
+    pos = alphabeta_pruning(node, 2);
+    action.pos = { pos[1], pos[0] };
 
     action.id = this->_game_engine->get_history_size() + 1;
     action.p1_last = this->board;

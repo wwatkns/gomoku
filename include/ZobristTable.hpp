@@ -47,3 +47,49 @@ namespace ZobristTable {
 }
 
 #endif
+
+/*
+
+⎪        root node
+⎪   - - - - -△- - - - - ↑     ↑
+⎪                       ⎪ 1   ⎪
+⎪   - - -○- - - -○- - - ↓     ⎪ 2
+⎪                             ⎪
+⎪   -△- - - △-△ - - -△-       ↓
+
+
+   iterative deepening :
+       we iteratively explore the graph by calling MTD(f) at each depth and for a depth of 1,
+       computing the evalutation score on each node we visit and returning it to be the next
+       first guess for the MTD(f) algorithm.
+
+   MTD(f) :
+        we have a lower and upper bound, and we explore each node with a null window alpha-beta
+        pruning with transposition table, the score returned will be the new value for the upper
+        bound if that score is below beta otherwise for the lower bound. When lower and upper
+        bound cross, we return the last score.
+
+
+    uint16_t    iterative_deepening(BitBoard const &root) {
+        uint16_t  firstguess = 0;
+
+        for (uint8_t d = 1; d < MAX_SEARCH_DEPTH; d) {
+            firstguess = mtdf(root, firstguess, d++);
+            if times_up()
+                break;
+        }
+        return (firstguess);
+    }
+
+    uint16_t    mtdf(BitBoard const &root, uint16_t f, uint8_t const &depth) {
+        static const uint16_t bound[2] = {0, 0xFFFF}; // lower, upper
+        uint16_t    beta;
+        while (bound[0] < bound[1]) {
+            beta = f + (f == bound[0]);
+            f = alphaBetaWithMemory(root, beta - 1, beta, depth);
+            bound[f < beta] = f;
+        }
+        return (f);
+    }
+
++*/
