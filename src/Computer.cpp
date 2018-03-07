@@ -45,14 +45,12 @@ bool        Computer::play(Player *other) {
         node.p2_pairs_captured = this->_pairs_captured;
     }
 
-    // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
-    action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
-    action.duration = std::chrono::steady_clock::now() - action_beg;
-   // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
-
-    // pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this, other);
     pos = alphabeta_pruning(node, 2);
     action.pos = { pos[1], pos[0] };
+    // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
+   // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
+    action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
+    action.duration = std::chrono::steady_clock::now() - action_beg;
 
     action.id = this->_game_engine->get_history_size() + 1;
     action.p1_last = this->board;
