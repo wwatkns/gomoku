@@ -10,7 +10,7 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
             moves.write(9, 9);
     }
     explored_nodes = 0;
-    
+
     int32_t     max_v = -INF;
     int32_t     v;
     uint16_t    pos;
@@ -118,20 +118,20 @@ int32_t        score_function(t_node *node, uint8_t depth) {
 
     /* compute */
     for (uint16_t i = 0; i < 11; i++) {
-        // if (node->pid == 1)
-        //     board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
-        // else
+        /* NOTE : on depth 3 here node->pid equals 2 */
+        // if (node->pid == 2) // good for depth == 3
         //     board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
-        //
-        // score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+        // else
+        //     board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
 
         board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
-
-        // board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
-        // score -= (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+        // Bonus x100 if patterns ends on opponent_forbidden, so he cannot counter
+        score += ((board & node->opponent_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 100 : 0);
     }
-    score = (detect_five_aligned(node->player) ? 528287 * depth : score);
+    score += (detect_five_aligned(node->player) ? 10000000 * depth : 0); // 10,000,000pts for five alignement
+    score += (node->player_pairs_captured == 5 ? 5000000 * depth : 0);   //  5,000,000pts for pairs wins
+    score += node->player_pairs_captured * 25000;                        //     25,000pts/capture
     return (score);
 }
 
