@@ -1,12 +1,6 @@
 #include "AlphaBeta.hpp"
 
-uint64_t    explored_nodes = 0;
-
-/*  depth of 2 does MAX, MIN, eval in MAX
-
-    calls : alphabeta_pruning() -> min() -> max() ... score_function()
-      pid :          1          ->   2   ->   1
-*/
+uint64_t    explored_nodes = 0; // DEBUG
 
 Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
     BitBoard    moves = root->player.dilated() & (~root->player & ~root->opponent);
@@ -15,9 +9,8 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
         if (moves.set_count() == 0)
             moves.write(9, 9);
     }
-
-    explored_nodes = 0; // debug
-    // BitBoard    moves = get_player_open_adjacent_positions(root.p1, root->opponent) & ~root.p1_forbidden & (~root.p1 & ~root->opponent);
+    explored_nodes = 0;
+    
     int32_t     max_v = -INF;
     int32_t     v;
     uint16_t    pos;
@@ -27,9 +20,10 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
         if (moves.check_bit(i)) {
 
             simulate_move(root, i);
-            v = min(root, -INF, INF, depth);
-            std::cout << v << std::endl;
+            v = min(root, -INF, INF, depth-1);
             *root = tmp;
+
+            std::cout << v << std::endl;
 
             if (v > max_v) {
                 pos = i;
@@ -42,17 +36,14 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
 }
 
 int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
-    if (depth <= 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured)) {
-        return score_function(node);
+    if (depth == 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured)) {
+        return score_function(node, depth+1);
     }
+    explored_nodes++;
 
-    BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) ^ node->player_forbidden;
-    // BitBoard    moves = node->player.dilated() & (~node->player & ~node->opponent) ^ node->player_forbidden;
-    // BitBoard    moves = node->player.dilated().dilated() & (~node->player & ~node->opponent) ^ node->player_forbidden;
+    BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
     t_node      tmp = *node;
     int32_t     v = -INF;
-
-    explored_nodes++;
 
     for (uint16_t i = 0; i < 361; i++) {
         if (moves.check_bit(i)) {
@@ -70,17 +61,14 @@ int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
 }
 
 int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
-    if (depth <= 0 || check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured)) {
-        return score_function(node);
+    if (depth == 0 || check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured)) {
+        return score_function(node, depth+1);
     }
+    explored_nodes++;
 
-    BitBoard    moves = get_player_open_adjacent_positions(node->opponent, node->player) ^ node->opponent_forbidden;
-    // BitBoard    moves = node->opponent.dilated() & (~node->player & ~node->opponent) ^ node->opponent_forbidden;
-    // BitBoard    moves = node->opponent.dilated().dilated() & (~node->player & ~node->opponent) ^ node->opponent_forbidden;
+    BitBoard    moves = get_player_open_adjacent_positions(node->opponent, node->player) & ~node->opponent_forbidden;
     t_node      tmp = *node;
     int32_t     v = INF;
-
-    explored_nodes++;
 
     for (uint16_t i = 0; i < 361; i++) {
         if (moves.check_bit(i)) {
@@ -109,8 +97,6 @@ void            simulate_move(t_node *node, uint16_t i) {
             node->player_pairs_captured += pairs.set_count() / 2;
             node->opponent &= ~pairs;
         }
-        // std::cout << "-> player : " << i << " : " << score_function(node) << std::endl;
-        // std::cout << node->player << std::endl;
     } else {
         /* simulate opponent move */
         pairs = pair_capture_detector(node->opponent, node->player);
@@ -120,44 +106,32 @@ void            simulate_move(t_node *node, uint16_t i) {
             node->opponent_pairs_captured += pairs.set_count() / 2;
             node->player &= ~pairs;
         }
-        // std::cout << "-> opponent : " << i << " : " << score_function(node) << std::endl;
-        // std::cout << node->opponent << std::endl;
     }
     node->player_forbidden   = forbidden_detector(node->player, node->opponent);
     node->opponent_forbidden = forbidden_detector(node->opponent, node->player);
     node->pid = ~node->pid & 0x3;
 }
 
-/*
-    +---------+
-    | . . . . | 0
-    | . o . . | 1
-    | . . o o | 2
-    | . . . . | 3
-    +---------+
-      0 1 2 3
-
-    this function should return :
-    5, 10, 11
-*/
-
-int32_t        score_function(t_node *node) {
+int32_t        score_function(t_node *node, uint8_t depth) {
     BitBoard    board;
     int32_t     score = 0;
 
     /* compute */
     for (uint16_t i = 0; i < 11; i++) {
-        if (node->pid == 1)
-            board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
-        else
-            board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
+        // if (node->pid == 1)
+        //     board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
+        // else
+        //     board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
+        //
+        // score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
 
-        // for (uint16_t j = 0; j < 361; j++) {
-            // score += (board.check_bit(j) ? BitBoard::patterns[i].value : 0);
-        // }
-        // score += board.set_count() * BitBoard::patterns[i].value;
-        score = (board.is_empty() == false ? BitBoard::patterns[i].value : 0);
+        board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
+        score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+
+        // board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
+        // score -= (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
+    score = (detect_five_aligned(node->player) ? 528287 * depth : score);
     return (score);
 }
 

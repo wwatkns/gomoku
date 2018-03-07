@@ -9,8 +9,8 @@ BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x800
 BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
 BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
 std::array<t_pattern,11> BitBoard::patterns = {
-    (t_pattern){ 0x70, 5, 4,  1023 },  //   -OOO-  :  open three
-    (t_pattern){ 0x68, 6, 8,  1023 },  //  -OO-O-  :  open split three
+    (t_pattern){ 0x70, 5, 4,  4095 },  //   -OOO-  :  open three
+    (t_pattern){ 0x68, 6, 8,  4095 },  //  -OO-O-  :  open split three
     (t_pattern){ 0x78, 6, 4, 32767 },  //  -OOOO-  :  open four
     (t_pattern){ 0xE0, 4, 8,   255 },  //    OOO-  :  close three
     (t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
@@ -470,11 +470,8 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_patte
 }
 
 BitBoard        current_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
-    BitBoard    res;
     uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
-
-    res = sub_pattern_detector(p1, p2, pattern, pattern.size/2, type);
-    return (res & ~p1 & ~p2);
+    return (sub_pattern_detector(p1, p2, pattern, 0, type));
 }
 
 /*  TODO : Cannot handle the same pattern yet (it should check different directions similarly as forbidden_detector)
