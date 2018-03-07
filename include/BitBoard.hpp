@@ -14,10 +14,10 @@
 # define BITS 64
 
 typedef struct  s_pattern {
-    uint8_t repr;   /* the pattern encoded in big-endian (ex : 01011000 for -O-OO-) */
-    uint8_t size;   /* the size of the pattern */
-    uint8_t dirs;   /* the number of directions (symmetric pattern like -OOO- need only 4 directions computed) */
-    uint8_t value;  /* the value associated with the pattern */
+    uint8_t     repr;   /* the pattern encoded in big-endian (ex : 01011000 for -O-OO-) */
+    uint8_t     size;   /* the size of the pattern */
+    uint8_t     dirs;   /* the number of directions (symmetric pattern like -OOO- need only 4 directions computed) */
+    uint16_t    value;  /* the value associated with the pattern */
 }               t_pattern;
 
 /*  Implementation of a bitboard representation of a square board of 19*19 using
@@ -41,6 +41,7 @@ public:
     void        write(uint8_t x, uint8_t y);            // set a bit to 1 on the bitboard at position x, y
     void        remove(uint8_t x, uint8_t y);           // set a bit to 0 on the bitboard at position x, y
     uint16_t    set_count(void) const;                  // return the number of bits set to 1 in bitboard
+    bool        check_bit(uint16_t i) const;
     bool        check_bit(uint8_t x, uint8_t y) const;  // check if the bit a position x, y is set to 1
     bool        is_empty(void) const;                   // check if all bits in the bitboard are set to 0
     void        broadcast_row(uint64_t line);           // copy the given row (first 19 bits) to all other rows

@@ -79,7 +79,7 @@ void        Game::loop(void) {
         if (action_undo == false)
             this->_gui->update_end_game(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1);
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
-            std::cout << "________________________\n" << this->_c_player->board << std::endl;
+            // std::cout << "________________________\n" << this->_c_player->board << std::endl;
 
             // if (!ZobristTable::map[{ this->_player_1->board, this->_player_2->board }])
                 // ZobristTable::map[{ this->_player_1->board, this->_player_2->board }] = 10;

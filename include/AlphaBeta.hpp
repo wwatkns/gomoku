@@ -5,6 +5,8 @@
 # include <cstdlib> // cmath also ?
 # include <vector>
 # include <Eigen/Dense>
+# include <algorithm>
+# include <cmath>
 # include <limits>
 # include "BitBoard.hpp"
 
@@ -19,22 +21,31 @@
     - iterative deepening IDDFS
 */
 
+# define INF 2147483647
+
 typedef struct  s_node {
-    BitBoard        p1;
-    BitBoard        p1_forbidden;
-    BitBoard        p2;
-    BitBoard        p2_forbidden;
-    uint8_t         current_player_id;
-    uint8_t         p1_pairs_captured;
-    uint8_t         p2_pairs_captured;
+    BitBoard        player;
+    BitBoard        player_forbidden;
+    BitBoard        opponent;
+    BitBoard        opponent_forbidden;
+    uint8_t         pid;
+    uint8_t         player_pairs_captured;
+    uint8_t         opponent_pairs_captured;
 }               t_node;
 
-Eigen::Array2i  alphabeta_pruning(t_node root, uint8_t depth);
+typedef struct  s_ret {
+    Eigen::Array2i  p;
+    int32_t         v;
+}               t_ret;
 
-uint32_t        max(t_node *node, uint32_t alpha, uint32_t beta, uint8_t current_depth);
-uint32_t        min(t_node *node, uint32_t alpha, uint32_t beta, uint8_t current_depth);
+Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth);
 
-uint32_t        score_function(t_node *node);
-uint8_t         check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured);
+int32_t         max(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
+int32_t         min(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
+
+int32_t         score_function(t_node *node);
+uint8_t         check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
+
+void            simulate_move(t_node *node, uint16_t i);
 
 #endif

@@ -9,17 +9,17 @@ BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x800
 BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
 BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
 std::array<t_pattern,11> BitBoard::patterns = {
-    (t_pattern){ 0x70, 5, 4,  30 },  //   -OOO-  :  open three
-    (t_pattern){ 0x68, 6, 8,  40 },  //  -OO-O-  :  open split three
-    (t_pattern){ 0x78, 6, 4, 220 },  //  -OOOO-  :  open four
-    (t_pattern){ 0xE0, 4, 8,   5 },  //    OOO-  :  close three
-    (t_pattern){ 0xD0, 5, 8,  10 },  //   OO-O-  :  close split three #1
-    (t_pattern){ 0xB0, 5, 8,  15 },  //   O-OO-  :  close split three #2
-    (t_pattern){ 0xF0, 5, 8,  25 },  //   OOOO-  :  close four
-    (t_pattern){ 0x5C, 6, 8,   0 },  //  -O-OOO  :  split four #1
-    (t_pattern){ 0x6C, 6, 8,   0 },  //  -OO-OO  :  split four #2
-    (t_pattern){ 0x74, 6, 8,   0 },  //  -OOO-O  :  split four #3
-    (t_pattern){ 0xF8, 5, 4, 255 }   //   OOOOO  :  five
+    (t_pattern){ 0x70, 5, 4,  102 },  //   -OOO-  :  open three
+    (t_pattern){ 0x68, 6, 8,  102 },  //  -OO-O-  :  open split three
+    (t_pattern){ 0x78, 6, 4, 3276 },  //  -OOOO-  :  open four
+    (t_pattern){ 0xE0, 4, 8,   25 },  //    OOO-  :  close three
+    (t_pattern){ 0xD0, 5, 8,   12 },  //   OO-O-  :  close split three #1
+    (t_pattern){ 0xB0, 5, 8,   12 },  //   O-OO-  :  close split three #2
+    (t_pattern){ 0xF0, 5, 8,   51 },  //   OOOO-  :  close four
+    (t_pattern){ 0x5C, 6, 8,  204 },  //  -O-OOO  :  split four #1
+    (t_pattern){ 0x6C, 6, 8,  204 },  //  -OO-OO  :  split four #2
+    (t_pattern){ 0x74, 6, 8,  204 },  //  -OOO-O  :  split four #3
+    (t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
 };
 
 
@@ -127,9 +127,13 @@ uint16_t    BitBoard::set_count(void) const {
     return (res);
 }
 
+bool    BitBoard::check_bit(uint16_t i) const {
+    return (this->values[i >> 6] & (0x8000000000000000 >> (i & 0x3F)));
+}
+
 bool    BitBoard::check_bit(uint8_t x, uint8_t y) const {
     uint16_t    n = (19 * y + x);
-    return ((this->values[n >> 6] & (0x8000000000000000 >> (n & 0x3F))) == 0 ? false : true);
+    return (this->values[n >> 6] & (0x8000000000000000 >> (n & 0x3F)));
 }
 
 bool    BitBoard::is_empty(void) const {
