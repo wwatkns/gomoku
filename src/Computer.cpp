@@ -21,10 +21,10 @@ Computer	&Computer::operator=(Computer const &src) {
 }
 
 bool        Computer::play(Player *other) {
+    std::chrono::steady_clock::time_point   action_beg;
     t_action                                action;
-    std::chrono::steady_clock::time_point   action_beg = std::chrono::steady_clock::now();
-    Eigen::Array2i                   pos;
-    t_node                           node;
+    Eigen::Array2i                          pos;
+    t_node                                  node;
 
     node.player = this->board;
     node.opponent = other->board;
@@ -34,11 +34,13 @@ bool        Computer::play(Player *other) {
     node.player_pairs_captured = this->_pairs_captured;
     node.opponent_pairs_captured = other->get_pairs_captured();
 
+    action_beg = std::chrono::steady_clock::now();
+
     action.pos = alphabeta_pruning(&node, 2);
     // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
    // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
-    action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     action.duration = std::chrono::steady_clock::now() - action_beg;
+    action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
 
     action.id = this->_game_engine->get_history_size() + 1;
     action.p1_last = this->board;

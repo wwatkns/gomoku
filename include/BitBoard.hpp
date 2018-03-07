@@ -100,6 +100,7 @@ BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoar
 
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
+BitBoard    current_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
 
 bool        detect_five_aligned(BitBoard const &bitboard);

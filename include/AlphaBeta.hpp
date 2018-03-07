@@ -33,19 +33,17 @@ typedef struct  s_node {
     uint8_t         opponent_pairs_captured;
 }               t_node;
 
-typedef struct  s_ret {
-    Eigen::Array2i  p;
-    int32_t         v;
-}               t_ret;
-
 Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth);
 
 int32_t         max(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
 int32_t         min(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
 
 int32_t         score_function(t_node *node);
-uint8_t         check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
+bool            check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
 
 void            simulate_move(t_node *node, uint16_t i);
+
+int32_t         min_val(int32_t const &a, int32_t const &b);
+int32_t         max_val(int32_t const &a, int32_t const &b);
 
 #endif

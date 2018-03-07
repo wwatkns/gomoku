@@ -108,7 +108,7 @@ void    GraphicalInterface::_init_sdl(void) {
     this->_win_w = this->_win_h + secondary_viewport_width;
 
     this->_window = SDL_CreateWindow("gomoku", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, this->_win_w, this->_win_h, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
-    this->_renderer = SDL_CreateRenderer(this->_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE | SDL_RENDERER_PRESENTVSYNC);
+    this->_renderer = SDL_CreateRenderer(this->_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);// | SDL_RENDERER_PRESENTVSYNC);
 
     /* get the renderer resolution, may differ from window size for high-dpi displays */
     SDL_GetRendererOutputSize(this->_renderer, &this->_res_w, &this->_res_h);
@@ -236,6 +236,7 @@ void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) 
         this->_winning_text = std::string("Player ")+std::to_string(p1.get_id())+std::string(" (")+type+std::string(") wins");
         this->_button_pause->set_state(true);
         this->_end_game = true;
+        // exit(0); // DEBUG
     } else {
         this->_winning_text = "";
         if (this->_end_game)

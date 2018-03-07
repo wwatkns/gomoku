@@ -9,16 +9,16 @@ BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x800
 BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
 BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
 std::array<t_pattern,11> BitBoard::patterns = {
-    (t_pattern){ 0x70, 5, 4,  102 },  //   -OOO-  :  open three
-    (t_pattern){ 0x68, 6, 8,  102 },  //  -OO-O-  :  open split three
-    (t_pattern){ 0x78, 6, 4, 3276 },  //  -OOOO-  :  open four
-    (t_pattern){ 0xE0, 4, 8,   25 },  //    OOO-  :  close three
-    (t_pattern){ 0xD0, 5, 8,   12 },  //   OO-O-  :  close split three #1
-    (t_pattern){ 0xB0, 5, 8,   12 },  //   O-OO-  :  close split three #2
-    (t_pattern){ 0xF0, 5, 8,   51 },  //   OOOO-  :  close four
-    (t_pattern){ 0x5C, 6, 8,  204 },  //  -O-OOO  :  split four #1
-    (t_pattern){ 0x6C, 6, 8,  204 },  //  -OO-OO  :  split four #2
-    (t_pattern){ 0x74, 6, 8,  204 },  //  -OOO-O  :  split four #3
+    (t_pattern){ 0x70, 5, 4,  1023 },  //   -OOO-  :  open three
+    (t_pattern){ 0x68, 6, 8,  1023 },  //  -OO-O-  :  open split three
+    (t_pattern){ 0x78, 6, 4, 32767 },  //  -OOOO-  :  open four
+    (t_pattern){ 0xE0, 4, 8,   255 },  //    OOO-  :  close three
+    (t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
+    (t_pattern){ 0xB0, 5, 8,   127 },  //   O-OO-  :  close split three #2
+    (t_pattern){ 0xF0, 5, 8,   511 },  //   OOOO-  :  close four
+    (t_pattern){ 0x5C, 6, 8,  2047 },  //  -O-OOO  :  split four #1
+    (t_pattern){ 0x6C, 6, 8,  2047 },  //  -OO-OO  :  split four #2
+    (t_pattern){ 0x74, 6, 8,  2047 },  //  -OOO-O  :  split four #3
     (t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
 };
 
@@ -106,11 +106,13 @@ void    BitBoard::remove(uint8_t x, uint8_t y) {
 }
 
 void    BitBoard::write(uint16_t i) {
-    this->values[i >> 6] |= (0x8000000000000000 >> (i & 0x3F));
+    this->values[i / 64] |= (0x8000000000000000 >> (i % 64));
+    // this->values[i >> 6] |= (0x8000000000000000 >> (i & 0x3F));
 }
 
 void    BitBoard::remove(uint16_t i) {
-    this->values[i >> 6] &= ~(0x8000000000000000 >> (i & 0x3F));
+    this->values[i / 64] &= ~(0x8000000000000000 >> (i % 64));
+    // this->values[i >> 6] &= ~(0x8000000000000000 >> (i & 0x3F));
 }
 
 
@@ -128,12 +130,12 @@ uint16_t    BitBoard::set_count(void) const {
 }
 
 bool    BitBoard::check_bit(uint16_t i) const {
-    return (this->values[i >> 6] & (0x8000000000000000 >> (i & 0x3F)));
+    return ((this->values[i >> 6] & (0x8000000000000000 >> (i & 0x3F))) == 0 ? false : true);
 }
 
 bool    BitBoard::check_bit(uint8_t x, uint8_t y) const {
     uint16_t    n = (19 * y + x);
-    return (this->values[n >> 6] & (0x8000000000000000 >> (n & 0x3F)));
+    return ((this->values[n >> 6] & (0x8000000000000000 >> (n & 0x3F))) == 0 ? false : true);
 }
 
 bool    BitBoard::is_empty(void) const {
@@ -464,6 +466,14 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_patte
         if (sub.repr != pattern.repr)
             res |= sub_pattern_detector(p1, p2, sub, pattern.size-s-1, type); // TODO : move code from sub_pattern_detector here (optimization)
     }
+    return (res & ~p1 & ~p2);
+}
+
+BitBoard        current_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
+    BitBoard    res;
+    uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+
+    res = sub_pattern_detector(p1, p2, pattern, pattern.size/2, type);
     return (res & ~p1 & ~p2);
 }
 

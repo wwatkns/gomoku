@@ -6,7 +6,7 @@ EIGEN_PATH = $(HOME)/.eigen/
 NAME = gomoku
 CC = clang++
 # CFLGS = -Werror -Wextra -Wall -Ofast -std=c++11
-CFLGS = -std=c++11
+CFLGS = -std=c++11 -Ofast
 
 SDLFLGS = -framework SDL2 -framework SDL2_image -framework SDL2_ttf
 SDL_INC = $(HOME)/Library/Frameworks/SDL2.framework/Headers/
