@@ -16,13 +16,14 @@ std::array<t_pattern,11> BitBoard::patterns = {
     (t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
     (t_pattern){ 0xB0, 5, 8,   127 },  //   O-OO-  :  close split three #2
     (t_pattern){ 0xF0, 5, 8,   511 },  //   OOOO-  :  close four
-    // (t_pattern){ 0x5C, 6, 8,  2047 },  //  -O-OOO  :  split four #1
-    // (t_pattern){ 0x6C, 6, 8,  2047 },  //  -OO-OO  :  split four #2
-    // (t_pattern){ 0x74, 6, 8,  2047 },  //  -OOO-O  :  split four #3
     (t_pattern){ 0x5C, 5, 8, 16383 },  //   O-OOO  :  split four #1
     (t_pattern){ 0x6C, 5, 8, 16383 },  //   OO-OO  :  split four #2
     (t_pattern){ 0x74, 5, 8, 16383 },  //   OOO-O  :  split four #3
     (t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
+
+    // (t_pattern){ 0x5C, 6, 8,  2047 },  //  -O-OOO  :  split four #1
+    // (t_pattern){ 0x6C, 6, 8,  2047 },  //  -OO-OO  :  split four #2
+    // (t_pattern){ 0x74, 6, 8,  2047 },  //  -OOO-O  :  split four #3
 };
 
 
