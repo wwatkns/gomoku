@@ -11,18 +11,20 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int32_t alpha, int32_t beta, int
     }
     explored_nodes = 0;
 
+    // std::cout << moves << std::endl;
+
     int32_t     v;
     uint16_t    pos;
     t_node      tmp = *root;
 
-    for (uint16_t i = 0; i < 361; i++) {
+    for (uint16_t i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
 
             simulate_move(root, i);
             v = min(root, alpha, beta, depth-1);
             *root = tmp;
 
-            std::cout << v << std::endl;
+            // std::cout << v << std::endl;
 
             if (v > alpha) {
                 alpha = v;
@@ -42,7 +44,7 @@ int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
     BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
     t_node      tmp = *node;
 
-    for (uint16_t i = 0; i < 361; i++) {
+    for (uint16_t i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             simulate_move(node, i);
             alpha = max_val(alpha, min(node, alpha, beta, depth-1));
@@ -62,7 +64,7 @@ int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
     BitBoard    moves = get_player_open_adjacent_positions(node->opponent, node->player) & ~node->opponent_forbidden;
     t_node      tmp = *node;
 
-    for (uint16_t i = 0; i < 361; i++) {
+    for (uint16_t i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             simulate_move(node, i);
             beta = min_val(beta, max(node, alpha, beta, depth-1));
@@ -103,8 +105,7 @@ int32_t        score_function(t_node *node, uint8_t depth) {
     int32_t     score = 0;
 
     score += player_score(node, depth);
-    // score += opponent_score(node, depth)*3;
-    score -= node->opponent_pairs_captured * 100000;
+    score -= opponent_score(node, depth) * 2;
     return (score);
 }
 
@@ -115,12 +116,12 @@ int32_t    player_score(t_node *node, uint8_t depth) {
     for (uint16_t i = 0; i < 11; i++) {
         board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
-        // Bonus x100 if patterns ends on opponent_forbidden, so he cannot counter
-        // score += ((board & node->opponent_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 100 : 0);
+        // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
+        // score += ((board & node->opponent_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 10 : 0);
     }
-    score += (detect_five_aligned(node->player) ? 100000000 * depth : 0); // 10,000,000pts for five alignement
-    score += (node->player_pairs_captured == 5 ? 5000000 * depth : 0);   //  5,000,000pts for pairs wins
-    score += node->player_pairs_captured * 50000;                        //     25,000pts/capture
+    if (detect_five_aligned(node->opponent)) score += 10000000 * depth; // 10,000,000pts for win by alignement
+    if (node->opponent_pairs_captured == 5)  score += 5000000 * depth;  //  5,000,000pts for win by pairs captures
+    score += node->player_pairs_captured * 50000;                       //     50,000pts/captures
     return (score);
 }
 
@@ -131,12 +132,12 @@ int32_t    opponent_score(t_node *node, uint8_t depth) {
     for (uint16_t i = 0; i < 11; i++) {
         board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
-        // Bonus x100 if patterns ends on opponent_forbidden, so he cannot counter
-        // score += ((board & node->player_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 100 : 0);
+        // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
+        // score += ((board & node->player_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 10 : 0);
     }
-    score += (detect_five_aligned(node->opponent) ? 10000000 * depth : 0); // 10,000,000pts for five alignement
-    score += (node->opponent_pairs_captured == 5 ? 5000000 * depth : 0);   //  5,000,000pts for pairs wins
-    score += node->opponent_pairs_captured * 50000;                        //     25,000pts/capture
+    if (detect_five_aligned(node->opponent)) score += 10000000 * depth; // 10,000,000pts for win by alignement
+    if (node->opponent_pairs_captured == 5)  score += 5000000 * depth;  //  5,000,000pts for win by pairs captures
+    score += node->opponent_pairs_captured * 50000;                     //     50,000pts/captures
     return (score);
 }
 

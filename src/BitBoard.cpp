@@ -75,7 +75,7 @@ uint64_t    BitBoard::row(uint8_t i) const {
 }
 
 void    BitBoard::zeros(void) {
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         this->values[i] = 0;
 }
 
@@ -88,9 +88,9 @@ void    BitBoard::broadcast_row(uint64_t row) {
 
     row >>= BITS-19;
     this->zeros();
-    for (uint8_t i = 0; i < N; i++) {
+    for (int i = 0; i < N; ++i) {
         shift = 1;
-        for (uint8_t j = 0; shift > 0; j++) {
+        for (int j = 0; shift > 0; j++) {
             shift = BITS - offset - (19 * j);
             this->values[i] |= (shift > 0 ? row << shift : row >> -shift);
         }
@@ -124,9 +124,9 @@ void    BitBoard::remove(uint16_t i) {
 */
 uint16_t    BitBoard::set_count(void) const {
     uint64_t    tmp;
-    uint16_t    res = 0;
+    int         res = 0;
 
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         for (tmp = this->values[i]; tmp; res++)
             tmp &= tmp - 1;
     return (res);
@@ -142,7 +142,7 @@ bool    BitBoard::check_bit(uint8_t x, uint8_t y) const {
 }
 
 bool    BitBoard::is_empty(void) const {
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         if (this->values[i] != 0)
             return (false);
     return (true);
@@ -165,9 +165,9 @@ BitBoard    BitBoard::shifted_inv(uint8_t dir, uint8_t n) const {
 /* return the dilated board taking into account the board boundaries */
 BitBoard    BitBoard::dilated(void) const {
 	BitBoard	res = *this;
-    for (uint8_t i = direction::north_east; i < direction::south; ++i)
+    for (int i = direction::north_east; i < direction::south; ++i)
         res |= this->shifted(i) & ~BitBoard::border_left;
-    for (uint8_t i = direction::south_west; i < 8; ++i)
+    for (int i = direction::south_west; i < 8; ++i)
         res |= this->shifted(i) & ~BitBoard::border_right;
     res |= this->shifted(direction::north);
     res |= this->shifted(direction::south);
@@ -177,9 +177,9 @@ BitBoard    BitBoard::dilated(void) const {
 /* return the eroded board taking into account the board boundaries */
 BitBoard    BitBoard::eroded(void) const {
 	BitBoard	res = *this;
-    for (uint8_t i = direction::north_east; i < direction::south; ++i)
+    for (int i = direction::north_east; i < direction::south; ++i)
         res &= this->shifted(i) & ~BitBoard::border_left;
-    for (uint8_t i = direction::south_west; i < 8; ++i)
+    for (int i = direction::south_west; i < 8; ++i)
         res &= this->shifted(i) & ~BitBoard::border_right;
     res &= this->shifted(direction::north);
     res &= this->shifted(direction::south);
@@ -197,7 +197,7 @@ BitBoard    BitBoard::rotated_45(void) {
     uint64_t    v = 1;
 
     v <<= BITS - 1;
-    for (uint64_t j = 0; j < 19; j++) {
+    for (int j = 0; j < 19; j++) {
         mask.broadcast_row(v);
         res |= ((*this >> (19 * j) | *this << (19 * (19 - j)))) & mask;
         v >>= 1;
@@ -210,28 +210,28 @@ BitBoard    BitBoard::rotated_45(void) {
 */
 BitBoard	BitBoard::operator|(const BitBoard &rhs) const {
 	BitBoard	res;
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         res.values[i] = this->values[i] | rhs.values[i];
 	return (res);
 }
 
 BitBoard	BitBoard::operator&(const BitBoard &rhs) const {
 	BitBoard	res;
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         res.values[i] = this->values[i] & rhs.values[i];
 	return (res);
 }
 
 BitBoard    BitBoard::operator^(BitBoard const &rhs) const {
     BitBoard	res;
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         res.values[i] = this->values[i] ^ rhs.values[i];
     return (res);
 }
 
 BitBoard	BitBoard::operator~(void) const {
 	BitBoard	res;
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         res.values[i] = ~this->values[i];
 	return (res);
 }
@@ -241,13 +241,13 @@ BitBoard    BitBoard::operator>>(int32_t shift) const {
     if (shift <= 0)
         return (*this);
     else if (shift < BITS) {
-        for (uint8_t i = N-1; i > 0; i--)
+        for (int i = N-1; i > 0; i--)
             res.values[i] = (this->values[i] >> shift) | (this->values[i-1] << (BITS - shift));
         res.values[0] = (this->values[0] >> shift);
     } else {
         uint16_t    n = shift / BITS;
         uint16_t    a = shift % BITS;
-        for (uint8_t i = N-1; i > n; i--) {
+        for (int i = N-1; i > n; i--) {
             if (a == 0)
                 res.values[i] = (this->values[i-n] << (BITS - a));
             else
@@ -263,14 +263,14 @@ BitBoard    BitBoard::operator<<(int32_t shift) const {
     if (shift <= 0)
         return (*this);
     else if (shift < BITS) {
-        for (uint8_t i = 0; i < N; i++)
+        for (int i = 0; i < N; ++i)
             res.values[i] = (this->values[i] << shift) | (this->values[i+1] >> (BITS - shift));
         res.values[N-1] = (this->values[N-1] << shift);
     } else {
         uint16_t    n = shift / BITS;
         uint16_t    a = shift % BITS;
         uint16_t    p = N - (n + 1);
-        for (uint8_t i = 0; i < p; i++) {
+        for (int i = 0; i < p; ++i) {
             if (a == 0)
                 res.values[i] = (this->values[i+n] >> (BITS - a));
             else
@@ -285,19 +285,19 @@ BitBoard    BitBoard::operator<<(int32_t shift) const {
 ** Assignation operator overload
 */
 BitBoard    &BitBoard::operator|=(BitBoard const &rhs) {
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         this->values[i] = (this->values[i] | rhs.values[i]);
     return (*this);
 }
 
 BitBoard    &BitBoard::operator&=(BitBoard const &rhs) {
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         this->values[i] = (this->values[i] & rhs.values[i]);
     return (*this);
 }
 
 BitBoard    &BitBoard::operator^=(BitBoard const &rhs) {
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         this->values[i] = (this->values[i] ^ rhs.values[i]);
     return (*this);
 }
@@ -323,14 +323,14 @@ uint64_t    BitBoard::operator[](uint16_t i) const {
 ** Comparison operator overload
 */
 bool        BitBoard::operator==(BitBoard const &rhs) const {
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         if (this->values[i] != rhs.values[i])
             return (false);
     return (true);
 }
 
 bool        BitBoard::operator!=(BitBoard const &rhs) const {
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         if (this->values[i] != rhs.values[i])
             return (true);
     return (false);
@@ -366,38 +366,65 @@ BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2) {
    | 1 . 1 . 1 |
    +-----------+
 */
-BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2) {
-    BitBoard res = p1.dilated();
-    for (uint8_t i = direction::north_east; i < direction::south; ++i)
-        res |= (p1.shifted(i) & p2).shifted(i) ^ p1.shifted(i, 2) & ~BitBoard::border_left;
-    for (uint8_t i = direction::south_west; i < 8; ++i)
-        res |= (p1.shifted(i) & p2).shifted(i) ^ p1.shifted(i, 2) & ~BitBoard::border_right;
-    res |= (p1.shifted(direction::north) & p2).shifted(direction::north) ^ p1.shifted(direction::north, 2);
-    res |= (p1.shifted(direction::south) & p2).shifted(direction::south) ^ p1.shifted(direction::south, 2);
-    return ((res | pair_capture_detector(p1, p2)) & ~p1 & ~p2);
+
+static BitBoard super_custom_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
+    uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+    BitBoard    res;
+    BitBoard    tmp;
+    BitBoard    open_cells = (~p1 & ~p2);
+
+    for (int d = direction::north; d < pattern.dirs; ++d) {
+        tmp = (type == 0x80 ? p2 : BitBoard::full);
+        for (int n = 0; n < pattern.size; n++) {
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp = tmp.shifted(d) & ((pattern.repr << n & 0x80) == 0x80 ? p1 : open_cells);
+        }
+        for (int n = 0; n < pattern.size; n++) // will light all open cells on the pattern
+            tmp |= tmp.shifted_inv(d) & open_cells;
+        res |= tmp;
+    }
+    return (res & open_cells);
 }
 
-/* will return the bitboard of all the open positions for open pair captures for p1,
-   I dont't even know how I made this algorithm, but it works alright ! could be
-   adapted to the patterns matching to get all the positions of future open-threes, ...
-*/
-BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2) {
-    BitBoard res;
-    for (uint8_t i = direction::north_east; i < direction::south; ++i)
-        res |= ((p1.shifted(i) & p2).shifted(i) & p2).shifted(i) & p1.shifted(i, 3) & ~BitBoard::border_left;
-    for (uint8_t i = direction::south_west; i < 8; ++i)
-        res |= ((p1.shifted(i) & p2).shifted(i) & p2).shifted(i) & p1.shifted(i, 3) & ~BitBoard::border_right;
-    res |= ((p1.shifted(direction::north) & p2).shifted(direction::north) & p2).shifted(direction::north) & p1.shifted(direction::north, 3);
-    res |= ((p1.shifted(direction::south) & p2).shifted(direction::south) & p2).shifted(direction::south) & p1.shifted(direction::south, 3);
+BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2) {
+    BitBoard    res = p1.dilated() & ~p2;
+    // for (int d = direction::north; d < 8; ++d) {
+    //     res = (d > 0 && d < 4 ? res & ~BitBoard::border_right : (d > 4 && d < 8 ? res & ~BitBoard::border_left : res));
+    //     res |= (p1.shifted(d) & p2).shifted(d) ^ p1.shifted(d, 2);
+    // }
+    /* add cells to explore for pairs capture */
+    res |= pair_capture_detector(p1, p2);
+    /* add positions cells to explore for blocking */
+    res |= super_custom_pattern_detector(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
+    res |= super_custom_pattern_detector(p2, p1, { 0x68, 5, 8, 0 }); // -OO-O-
+    res |= super_custom_pattern_detector(p2, p1, { 0xF0, 5, 8, 0 }); // |OOOO-
+    res |= super_custom_pattern_detector(p2, p1, { 0x5C, 5, 8, 0 }); // O-OOO
+    res |= super_custom_pattern_detector(p2, p1, { 0x6C, 5, 8, 0 }); // OO-OO
     return (res & ~p1 & ~p2);
 }
+/*
+(t_pattern){ 0x70, 5, 4,  8192 },  //   -OOO-  :  open three
+(t_pattern){ 0x68, 6, 8,  8192 },  //  -OO-O-  :  open split three
+(t_pattern){ 0x78, 6, 4, 32767 },  //  -OOOO-  :  open four
+(t_pattern){ 0xE0, 4, 8,   255 },  //    OOO-  :  close three
+(t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
+(t_pattern){ 0xB0, 5, 8,   127 },  //   O-OO-  :  close split three #2
+(t_pattern){ 0xF0, 5, 8,   511 },  //   OOOO-  :  close four
+// (t_pattern){ 0x5C, 6, 8,  2047 },  //  -O-OOO  :  split four #1
+// (t_pattern){ 0x6C, 6, 8,  2047 },  //  -OO-OO  :  split four #2
+// (t_pattern){ 0x74, 6, 8,  2047 },  //  -OOO-O  :  split four #3
+(t_pattern){ 0x5C, 5, 8, 16383 },  //   O-OOO  :  split four #1
+(t_pattern){ 0x6C, 5, 8, 16383 },  //   OO-OO  :  split four #2
+(t_pattern){ 0x74, 5, 8, 16383 },  //   OOO-O  :  split four #3
+(t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
+*/
 
 static BitBoard sub_pattern_detector_alt(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type, uint8_t const &dir) {
     BitBoard    res;
     BitBoard    open_cells = (~p1 & ~p2);
 
     res = (type == 0x80 ? p2 : BitBoard::full);
-    for (uint8_t n = 0; n < length; n++) {
+    for (int n = 0; n < length; n++) {
         res = (dir > 0 && dir < 4 ? res & ~BitBoard::border_right : (dir > 4 && dir < 8 ? res & ~BitBoard::border_left : res));
         res = res.shifted(dir) & ((pattern << n & 0x80) == 0x80 ? p1 : open_cells);
     }
@@ -418,15 +445,15 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
     uint8_t     patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
     uint8_t      lengths[3] = {    6,    6,    5 };
 
-    for (uint8_t p = 0; p < 3; p++) { // iterate through patterns
+    for (int p = 0; p < 3; p++) { // iterate through patterns
         j = 0;
-        for (uint8_t s = 0; s < lengths[p]; s++) { // iterate through sub patterns
+        for (int s = 0; s < lengths[p]; s++) { // iterate through sub patterns
             sub = patterns[p] & ~(0x80 >> s);
             if (sub != patterns[p]) {
-                for (uint8_t d = direction::north; d < 4; ++d) { // iterate through directions
+                for (int d = direction::north; d < 4; ++d) { // iterate through directions
                     idx = (p * 12 + j * 4) + d;
                     tmp[idx] = sub_pattern_detector_alt(p1, p2, sub, lengths[p], lengths[p]-s-1, 0, d);
-                    for (int8_t n = idx-1; n >= 0; n--) // (p * s * d)^2 / 2 = 36^2 / 2 = 648
+                    for (int n = idx-1; n >= 0; n--) // (p * s * d)^2 / 2 = 36^2 / 2 = 648
                         res |= (tmp[idx] & tmp[n]);
                 }
                 j++;
@@ -434,7 +461,7 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
         }
     }
     /*  handle the case of -O-O*-O-, -O-*O-O-  */
-    for (uint8_t d = direction::north; d < 8; ++d)
+    for (int d = direction::north; d < 8; ++d)
         res ^= sub_pattern_detector_alt(p1, p2, 0x52, 8, 3, 0, d);
     return (res & ~p1 & ~p2);
 }
@@ -444,9 +471,9 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_p
     BitBoard    tmp;
     BitBoard    open_cells = (~p1 & ~p2);
 
-    for (uint8_t d = direction::north; d < pattern.dirs; ++d) {
+    for (int d = direction::north; d < pattern.dirs; ++d) {
         tmp = (type == 0x80 ? p2 : BitBoard::full);
-        for (uint8_t n = 0; n < pattern.size; n++) {
+        for (int n = 0; n < pattern.size; n++) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & ((pattern.repr << n & 0x80) == 0x80 ? p1 : open_cells);
         }
@@ -464,7 +491,7 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_patte
     t_pattern   sub = pattern;
     uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
 
-    for (uint8_t s = 0; s < pattern.size; s++) {
+    for (int s = 0; s < pattern.size; s++) {
         sub.repr = pattern.repr & ~(0x80 >> s);
         if (sub.repr != pattern.repr)
             res |= sub_pattern_detector(p1, p2, sub, pattern.size-s-1, type); // TODO : move code from sub_pattern_detector here (optimization)
@@ -485,9 +512,9 @@ BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pa
 
 bool        detect_five_aligned(BitBoard const &bitboard) {
     BitBoard    tmp;
-    for (uint8_t i = 0; i < D; i++) {
+    for (int i = 0; i < D; ++i) {
         tmp = bitboard;
-        for(uint8_t n = 1; (tmp &= tmp.shifted(i)).is_empty() == false; ++n)
+        for(int n = 1; (tmp &= tmp.shifted(i)).is_empty() == false; ++n)
             if (n >= 4)
                 return (true);
     }
@@ -498,13 +525,13 @@ BitBoard    highlight_five_aligned(BitBoard const &bitboard) {
     BitBoard    res;
     BitBoard    tmp;
 
-    for (uint8_t d = direction::north; d < 4; ++d) {
+    for (int d = direction::north; d < 4; ++d) {
         tmp = bitboard;
-        for (uint8_t n = 0; n < 4; n++) {
+        for (int n = 0; n < 4; n++) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & bitboard;
         }
-        for (uint8_t i = 0; i < 5; i++)
+        for (int i = 0; i < 5; ++i)
             res |= tmp.shifted_inv(d, i);
     }
     return (res);
@@ -517,9 +544,9 @@ BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2) {
     BitBoard    tmp;
     BitBoard    open_cells = (~p1 & ~p2);
 
-    for (uint8_t d = direction::north; d < 8; ++d) {
+    for (int d = direction::north; d < 8; ++d) {
         tmp = p1;
-        for (uint8_t n = 0; n < 3; n++) {
+        for (int n = 0; n < 3; n++) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & ((0xC0 << n & 0x80) == 0x80 ? p2 : open_cells);
         }
@@ -534,9 +561,9 @@ BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, Bi
     BitBoard    res;
     BitBoard    tmp;
 
-    for (uint8_t d = direction::north; d < 8; ++d) {
+    for (int d = direction::north; d < 8; ++d) {
         tmp = p2 & pairs;
-        for (uint8_t n = 0; n < 3; n++) {
+        for (int n = 0; n < 3; n++) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & ((0xC0 << n & 0x80) == 0x80 ? p1 : p2);
         }
@@ -550,12 +577,12 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard) {
     std::string         sub = "";
     std::stringstream   ss;
 
-    for (uint8_t i = 0; i < N; i++)
+    for (int i = 0; i < N; ++i)
         tmp += std::bitset<64>(bitboard.values[i]).to_string();
 
-    for (uint32_t i = 0; i < 19; i++) {
+    for (int i = 0; i < 19; ++i) {
         sub = tmp.substr(i*19, 19);
-        for (uint32_t j = 0; j < 19; j++)
+        for (int j = 0; j < 19; j++)
             ss << (((i*19)+j)%BITS!=0?" ":"/") << (sub[j]=='0'?"◦":"◉");
         ss << std::endl;
     }
