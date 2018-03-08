@@ -39,6 +39,8 @@ int32_t         max(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
 int32_t         min(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
 
 int32_t         score_function(t_node *node, uint8_t depth);
+int32_t         player_score(t_node *node, uint8_t depth);
+int32_t         opponent_score(t_node *node, uint8_t depth);
 bool            check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
 
 void            simulate_move(t_node *node, uint16_t i);
