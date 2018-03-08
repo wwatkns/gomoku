@@ -2,7 +2,7 @@
 
 uint64_t    explored_nodes = 0; // DEBUG
 
-Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
+Eigen::Array2i  alphabeta_pruning(t_node *root, int32_t alpha, int32_t beta, int8_t depth) {
     BitBoard    moves = root->player.dilated() & (~root->player & ~root->opponent);
     if (moves.set_count() == 0) {
         moves = root->opponent.dilated() & (~root->player & ~root->opponent);
@@ -11,7 +11,6 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
     }
     explored_nodes = 0;
 
-    int32_t     max_v = -INF;
     int32_t     v;
     uint16_t    pos;
     t_node      tmp = *root;
@@ -20,14 +19,14 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
         if (moves.check_bit(i)) {
 
             simulate_move(root, i);
-            v = min(root, -INF, INF, depth-1);
+            v = min(root, alpha, beta, depth-1);
             *root = tmp;
 
             std::cout << v << std::endl;
 
-            if (v > max_v) {
+            if (v > alpha) {
+                alpha = v;
                 pos = i;
-                max_v = v;
             }
         }
     }
@@ -36,53 +35,43 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth) {
 }
 
 int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
-    if (depth == 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured)) {
+    if (depth == 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured))
         return score_function(node, depth+1);
-    }
     explored_nodes++;
 
     BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
     t_node      tmp = *node;
-    int32_t     v = -INF;
 
     for (uint16_t i = 0; i < 361; i++) {
         if (moves.check_bit(i)) {
-
             simulate_move(node, i);
-            v = max_val(v, min(node, alpha, beta, depth-1));
+            alpha = max_val(alpha, min(node, alpha, beta, depth-1));
             *node = tmp;
-
-            alpha = max_val(alpha, v);
             if (beta <= alpha)
-                break;
+                return (beta);
         }
     }
-    return (v);
+    return (alpha);
 }
 
 int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
-    if (depth == 0 || check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured)) {
+    if (depth == 0 || check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured))
         return score_function(node, depth+1);
-    }
     explored_nodes++;
 
     BitBoard    moves = get_player_open_adjacent_positions(node->opponent, node->player) & ~node->opponent_forbidden;
     t_node      tmp = *node;
-    int32_t     v = INF;
 
     for (uint16_t i = 0; i < 361; i++) {
         if (moves.check_bit(i)) {
-
             simulate_move(node, i);
-            v = min_val(v, max(node, alpha, beta, depth-1));
+            beta = min_val(beta, max(node, alpha, beta, depth-1));
             *node = tmp;
-
-            beta = min_val(beta, v);
             if (beta <= alpha)
-                break;
+                return (alpha);
         }
     }
-    return (v);
+    return (beta);
 }
 
 void            simulate_move(t_node *node, uint16_t i) {

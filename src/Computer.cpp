@@ -36,7 +36,8 @@ bool        Computer::play(Player *other) {
 
     action_beg = std::chrono::steady_clock::now();
 
-    action.pos = alphabeta_pruning(&node, 3);
+    // action.pos = alphabeta_pruning(&node, 5);
+    action.pos = alphabeta_pruning(&node, -INF, INF, 5);
     // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
    // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
     action.duration = std::chrono::steady_clock::now() - action_beg;

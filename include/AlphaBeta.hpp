@@ -33,7 +33,7 @@ typedef struct  s_node {
     uint8_t         opponent_pairs_captured;
 }               t_node;
 
-Eigen::Array2i  alphabeta_pruning(t_node *root, int8_t depth);
+Eigen::Array2i  alphabeta_pruning(t_node *root, int32_t alpha, int32_t beta, int8_t depth);
 
 int32_t         max(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
 int32_t         min(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
