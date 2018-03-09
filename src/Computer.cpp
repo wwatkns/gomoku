@@ -37,10 +37,11 @@ bool        Computer::play(Player *other) {
     action_beg = std::chrono::steady_clock::now();
 
     // action.pos = alphabeta_pruning(&node, -INF, INF, 3);
-    action.pos = iterative_deepening(&node, 7);
+    // action.pos = iterative_deepening(&node, 7);
+    action.pos = negamaxplay(&node, 3);
     // action.pos = mtdf(&node, 0, 3).second;
     // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
-   // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
+    // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
     action.duration = std::chrono::steady_clock::now() - action_beg;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
 
