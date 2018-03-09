@@ -36,19 +36,19 @@ public:
     uint64_t    row(uint8_t i) const;                   // access row at index
 
     void        zeros(void);                            // set the bitboard values to zeros
-    void        write(uint16_t i);
-    void        remove(uint16_t i);
-    void        write(uint8_t x, uint8_t y);            // set a bit to 1 on the bitboard at position x, y
-    void        remove(uint8_t x, uint8_t y);           // set a bit to 0 on the bitboard at position x, y
-    uint16_t    set_count(void) const;                  // return the number of bits set to 1 in bitboard
-    bool        check_bit(uint16_t i) const;
-    bool        check_bit(uint8_t x, uint8_t y) const;  // check if the bit a position x, y is set to 1
+    void        write(const int i);
+    void        remove(const int i);
+    void        write(const int x, const int y);            // set a bit to 1 on the bitboard at position x, y
+    void        remove(const int x, const int y);           // set a bit to 0 on the bitboard at position x, y
+    int         set_count(void) const;                  // return the number of bits set to 1 in bitboard
+    bool        check_bit(const int i) const;
+    bool        check_bit(const int x, const int y) const;  // check if the bit a position x, y is set to 1
     bool        is_empty(void) const;                   // check if all bits in the bitboard are set to 0
     void        broadcast_row(uint64_t line);           // copy the given row (first 19 bits) to all other rows
     BitBoard    neighbours(void) const;                 // returns the neighbouring cells
 
-    BitBoard    shifted(uint8_t dir, uint8_t n = 1) const;
-    BitBoard    shifted_inv(uint8_t dir, uint8_t n = 1) const;
+    BitBoard    shifted(const uint8_t dir, const uint8_t n = 1) const;
+    BitBoard    shifted_inv(const uint8_t dir, const uint8_t n = 1) const;
     BitBoard    dilated(void) const;
     BitBoard    eroded(void) const;
 
@@ -60,32 +60,32 @@ public:
     BitBoard    operator&(BitBoard const &rhs) const; // bitwise intersection
     BitBoard    operator^(BitBoard const &rhs) const; // bitwise exclusive or
     BitBoard    operator~(void) const;                // bitwise complement
-    BitBoard    operator>>(int32_t shift) const;      // bitwise right shift
-    BitBoard    operator<<(int32_t shift) const;      // bitwise left shift
+    BitBoard    operator>>(const int32_t shift) const;      // bitwise right shift
+    BitBoard    operator<<(const int32_t shift) const;      // bitwise left shift
 
     /* assignment operator overload */
     BitBoard    &operator|=(BitBoard const &rhs);
     BitBoard    &operator&=(BitBoard const &rhs);
     BitBoard    &operator^=(BitBoard const &rhs);
-    BitBoard    &operator<<=(int32_t shift);
-    BitBoard    &operator>>=(int32_t shift);
+    BitBoard    &operator<<=(const int32_t shift);
+    BitBoard    &operator>>=(const int32_t shift);
 
     /* member access operator overload */
-    uint64_t    operator[](uint16_t i) const; // will return the i-th bit
+    uint64_t    operator[](const int i) const; // will return the i-th bit
 
     /* comparison operator overload */
     bool        operator==(BitBoard const &rhs) const;
     bool        operator!=(BitBoard const &rhs) const;
 
-    std::array<uint64_t, N>         values;
-    static std::array<int16_t, D>   shifts;
-    static std::array<t_pattern,11> patterns;
-    static BitBoard                 full;
-    static BitBoard                 empty;
-    static BitBoard                 border_right;
-    static BitBoard                 border_left;
-    static BitBoard                 border_top;
-    static BitBoard                 border_bottom;
+    std::array<uint64_t, N>                 values;
+    static const std::array<int16_t, D>     shifts;
+    static const std::array<t_pattern,11>   patterns;
+    static const BitBoard                   full;
+    static const BitBoard                   empty;
+    static const BitBoard                   border_right;
+    static const BitBoard                   border_left;
+    static const BitBoard                   border_top;
+    static const BitBoard                   border_bottom;
 
 };
 

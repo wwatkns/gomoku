@@ -72,29 +72,34 @@ int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
 }
 
 void            simulate_move(t_node *node, uint16_t i) {
-    BitBoard pairs;
     explored_nodes++;
 
-    if (node->pid == 1) { /* simulate player move */
-        pairs = pair_capture_detector(node->player, node->opponent);
+    /* simulate player move */
+    if (node->pid == 1) {
+        BitBoard pairs = pair_capture_detector(node->player, node->opponent);
         node->player.write(i);
         if ((pairs & node->player).is_empty() == false) {
             pairs = highlight_captured_stones(node->opponent, node->player, pairs);
             node->player_pairs_captured += pairs.set_count() / 2;
             node->opponent &= ~pairs;
+            node->opponent_forbidden = forbidden_detector(node->opponent, node->player);
         }
-    } else { /* simulate opponent move */
-        pairs = pair_capture_detector(node->opponent, node->player);
+        node->player_forbidden = forbidden_detector(node->player, node->opponent);
+        node->pid = 2;
+    }/* simulate opponent move */
+    else {
+        BitBoard pairs = pair_capture_detector(node->opponent, node->player);
         node->opponent.write(i);
         if ((pairs & node->opponent).is_empty() == false) {
             pairs = highlight_captured_stones(node->player, node->opponent, pairs);
             node->opponent_pairs_captured += pairs.set_count() / 2;
             node->player &= ~pairs;
+            node->player_forbidden = forbidden_detector(node->player, node->opponent);
         }
+        node->opponent_forbidden = forbidden_detector(node->opponent, node->player);
+        node->pid = 1;
     }
-    node->player_forbidden   = forbidden_detector(node->player, node->opponent);
-    node->opponent_forbidden = forbidden_detector(node->opponent, node->player);
-    node->pid = ~node->pid & 0x3;
+
 }
 
 int32_t        score_function(t_node *node, uint8_t depth) {
@@ -109,7 +114,7 @@ int32_t    player_score(t_node *node, uint8_t depth) {
     BitBoard    board;
     int32_t     score = 0;
 
-    for (uint16_t i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; ++i) {
         board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
         // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
@@ -125,7 +130,7 @@ int32_t    opponent_score(t_node *node, uint8_t depth) {
     BitBoard    board;
     int32_t     score = 0;
 
-    for (uint16_t i = 0; i < 10; i++) {
+    for (int i = 0; i < 10; ++i) {
         board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
         if (0 <= i && i <= 1)
             score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 2 : 0);
