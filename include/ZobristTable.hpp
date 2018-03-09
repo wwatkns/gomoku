@@ -6,12 +6,24 @@
 # include <thread>
 # include <array>
 # include <unordered_map>
-#include "BitBoard.hpp"
+# include "BitBoard.hpp"
 
 # define SIZE 361   // the number of cells on the board (19*19)
 # define S 3        // the number of states
 
+typedef struct  s_stored {
+    int32_t     score;
+    int8_t      depth;
+    uint8_t     flag;
+}               t_stored;
+
 namespace ZobristTable {
+    enum flag {
+        exact,
+        lowerbound,
+        upperbound
+    };
+
     /* initialization of Zobrist Hashing */
     std::array<std::array<uint64_t, S>, SIZE>   _init_zobrist_table(void) {
         std::array<std::array<uint64_t, S>, SIZE> table;
@@ -25,8 +37,8 @@ namespace ZobristTable {
     const std::array<std::array<uint64_t, S>, SIZE> _table = _init_zobrist_table();
     /* the key the hashing function will use */
     struct Key {
-        BitBoard p1;
-        BitBoard p2;
+        BitBoard    p1;
+        BitBoard    p2;
 
         bool operator==(const Key &other) const {
             return (p1 == other.p1 && p2 == other.p2);
@@ -43,7 +55,7 @@ namespace ZobristTable {
             return (hash);
         }
     };
-    std::unordered_map<Key, int32_t, KeyHash>  map;
+    std::unordered_map<Key, t_stored, KeyHash>  map;
 }
 
 #endif
@@ -68,28 +80,5 @@ namespace ZobristTable {
         pruning with transposition table, the score returned will be the new value for the upper
         bound if that score is below beta otherwise for the lower bound. When lower and upper
         bound cross, we return the last score.
-
-
-    uint16_t    iterative_deepening(BitBoard const &root) {
-        uint16_t  firstguess = 0;
-
-        for (uint8_t d = 1; d < MAX_SEARCH_DEPTH; d) {
-            firstguess = mtdf(root, firstguess, d++);
-            if times_up()
-                break;
-        }
-        return (firstguess);
-    }
-
-    uint16_t    mtdf(BitBoard const &root, uint16_t f, uint8_t const &depth) {
-        static const uint16_t bound[2] = {0, 0xFFFF}; // lower, upper
-        uint16_t    beta;
-        while (bound[0] < bound[1]) {
-            beta = f + (f == bound[0]);
-            f = alphaBetaWithMemory(root, beta - 1, beta, depth);
-            bound[f < beta] = f;
-        }
-        return (f);
-    }
 
 +*/

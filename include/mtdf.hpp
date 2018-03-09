@@ -23,11 +23,16 @@ typedef struct  s_node {
     uint8_t         opponent_pairs_captured;
 }               t_node;
 
+typedef struct  s_ret {
+    int32_t     score;
+    uint16_t    p;
+}               t_ret;
+
 bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit);
 
-Eigen::Array2i                      iterative_deepening(t_node *root, int8_t max_depth);
-std::pair<int32_t, Eigen::Array2i>  mtdf(t_node *root, int32_t firstguess, int8_t depth);
-std::pair<int32_t, Eigen::Array2i>  alphaBetaWithMemory(t_node root, int32_t alpha, int32_t beta, int8_t depth);
+Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth);
+t_ret           mtdf(t_node *root, int32_t firstguess, int8_t depth);
+t_ret           alphaBetaWithMemory(t_node root, int32_t alpha, int32_t beta, int8_t depth);
 
 int32_t         max(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
 int32_t         min(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
@@ -41,5 +46,8 @@ void            simulate_move(t_node *node, uint16_t i);
 
 int32_t         min_val(int32_t const &a, int32_t const &b);
 int32_t         max_val(int32_t const &a, int32_t const &b);
+
+void            TT_store(t_node *node, int32_t best, int32_t alpha, int32_t beta, int8_t depth);
+int32_t         TT_lookup(t_node *node, int32_t alpha, int32_t beta, int8_t depth);
 
 #endif

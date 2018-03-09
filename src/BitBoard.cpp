@@ -77,7 +77,8 @@ uint64_t    BitBoard::row(uint8_t i) const {
 
 void    BitBoard::zeros(void) {
     for (int i = 0; i < N; ++i)
-        this->values[i] = 0;
+        // this->values[i] = 0;
+        this->values[i] &= ~this->values[i];
 }
 
 /*  will broadcast the given row (only the first 19 bits) to all rows,
@@ -369,10 +370,10 @@ BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2) {
 */
 
 static BitBoard super_custom_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
-    uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
-    BitBoard    res;
-    BitBoard    tmp;
-    BitBoard    open_cells = (~p1 & ~p2);
+    const uint8_t   type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+    const BitBoard  open_cells = (~p1 & ~p2);
+    BitBoard        res;
+    BitBoard        tmp;
 
     for (int d = direction::north; d < pattern.dirs; ++d) {
         tmp = (type == 0x80 ? p2 : BitBoard::full);
@@ -421,8 +422,8 @@ BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard cons
 */
 
 static BitBoard sub_pattern_detector_alt(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type, uint8_t const &dir) {
-    BitBoard    res;
-    BitBoard    open_cells = (~p1 & ~p2);
+    const BitBoard  open_cells = (~p1 & ~p2);
+    BitBoard        res;
 
     res = (type == 0x80 ? p2 : BitBoard::full);
     for (int n = 0; n < length; n++) {
@@ -438,13 +439,13 @@ static BitBoard sub_pattern_detector_alt(BitBoard const &p1, BitBoard const &p2,
     it in the future, but it is robust.
 */
 BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
-    BitBoard    res;
-    BitBoard    tmp[36]; // 36 is patterns * sub_patterns * directions
-    uint8_t     j;
-    uint8_t     sub;
-    uint16_t    idx;
-    uint8_t     patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
-    uint8_t      lengths[3] = {    6,    6,    5 };
+    const uint8_t   patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
+    const uint8_t    lengths[3] = {    6,    6,    5 };
+    BitBoard        res;
+    BitBoard        tmp[36]; // 36 is patterns * sub_patterns * directions
+    uint8_t         j;
+    uint8_t         sub;
+    uint16_t        idx;
 
     for (int p = 0; p < 3; p++) { // iterate through patterns
         j = 0;
@@ -468,9 +469,9 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
 }
 
 static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern, uint8_t const &s, uint8_t const &type) {
-    BitBoard    res;
-    BitBoard    tmp;
-    BitBoard    open_cells = (~p1 & ~p2);
+    const BitBoard  open_cells = (~p1 & ~p2);
+    BitBoard        res;
+    BitBoard        tmp;
 
     for (int d = direction::north; d < pattern.dirs; ++d) {
         tmp = (type == 0x80 ? p2 : BitBoard::full);
@@ -487,10 +488,10 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_p
     the patterns must be encoded in big-endian and have a length defined (-OO-O- is 01101000
     so 0x68 with length 6) see the Patterns table in BitBoard.hpp for all the patterns.
 */
-BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
-    BitBoard    res;
-    t_pattern   sub = pattern;
-    uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) { // TODO : patterns are detected also on top/bottom borders ????
+    const uint8_t   type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+    BitBoard        res;
+    t_pattern       sub = pattern;
 
     for (int s = 0; s < pattern.size; s++) {
         sub.repr = pattern.repr & ~(0x80 >> s);
@@ -501,7 +502,7 @@ BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_patte
 }
 
 BitBoard        current_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
-    uint8_t     type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+    const uint8_t   type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
     return (sub_pattern_detector(p1, p2, pattern, 0, type));
 }
 
@@ -541,9 +542,9 @@ BitBoard    highlight_five_aligned(BitBoard const &bitboard) {
 /*  detect a pair and return the positions on the bitboard where it leads to capture
 */
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2) {
-    BitBoard    res;
-    BitBoard    tmp;
-    BitBoard    open_cells = (~p1 & ~p2);
+    const BitBoard  open_cells = (~p1 & ~p2);
+    BitBoard        res;
+    BitBoard        tmp;
 
     for (int d = direction::north; d < 8; ++d) {
         tmp = p1;

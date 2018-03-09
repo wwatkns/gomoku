@@ -7,125 +7,160 @@ bool            times_up(std::chrono::steady_clock::time_point start, uint32_t l
 
 Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth) { // THIS FUNCTION WORKS
     std::chrono::steady_clock::time_point   start = std::chrono::steady_clock::now();
-    std::pair<int32_t, Eigen::Array2i>      ret(0, {0, 0});
+    t_ret                                   ret = { 0, 0 };
 
+    std::cout << std::endl;
     for (int depth = 1; depth < max_depth; depth++) {
-        ret = mtdf(root, ret.first, depth);
+        // ret = mtdf(root, ret.score, depth);
+        ret = alphaBetaWithMemory(*root, -INF, INF, depth);
+        std::cout << ret.score << std::endl;
         if (times_up(start, 500)) {
             std::cout << "TIMES UP, reached depth : " << depth << std::endl;
             break;
         }
     }
-    return (ret.second);
+    std::cout << "score: " << ret.score << ", pos: (" << ret.p / 19 << ", " << ret.p % 19 << ")\n";
+    return ((Eigen::Array2i){ ret.p / 19, ret.p % 19 });
 }
 
-std::pair<int32_t, Eigen::Array2i>  mtdf(t_node *root, int32_t firstguess, int8_t depth) { // THIS FUNCTION WORKS
-    int32_t                             bound[2] = {-INF, INF};
-    int32_t                             beta;
-    std::pair<int32_t, Eigen::Array2i>  ret(firstguess, {0, 0});
+t_ret   mtdf(t_node *root, int32_t firstguess, int8_t depth) { // THIS FUNCTION WORKS?
+    int32_t bound[2] = { -INF, INF };
+    int32_t beta;
+    t_ret   ret = { firstguess, 0 };
 
     do {
-        beta = ret.first + (ret.first == bound[0]);
+        beta = ret.score + (ret.score == bound[0]);
         ret = alphaBetaWithMemory(*root, beta-1, beta, depth);
-        bound[ret.first < beta] = ret.first;
+        std::cout << "score: " << ret.score << ", pos: (" << ret.p / 19 << ", " << ret.p % 19 << ")\n";
+        bound[(ret.score < beta)] = ret.score;
     } while (bound[0] >= bound[1]);
     return (ret);
 }
 
-std::pair<int32_t, Eigen::Array2i>  alphaBetaWithMemory(t_node root, int32_t alpha, int32_t beta, int8_t depth) {
+t_ret   alphaBetaWithMemory(t_node root, int32_t alpha, int32_t beta, int8_t depth) {
     BitBoard    moves = get_player_open_adjacent_positions(root.player, root.opponent) & ~root.player_forbidden;
     if (moves.set_count() == 0) {
         moves = get_player_open_adjacent_positions(root.opponent, root.player) & ~root.opponent_forbidden;
         if (moves.set_count() == 0)
             moves.write(9, 9);
     }
-    std::cout << "alpha : " << alpha << ", beta : " << beta << std::endl;
-    int32_t                             v;
-    uint16_t                            pos;
-    t_node                              tmp = root;
-    std::pair<int32_t, Eigen::Array2i>  ret;
+
+    int32_t     v;
+    uint16_t    pos;
+    t_node      tmp = root;
 
     for (uint16_t i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             simulate_move(&root, i);
             v = min(&root, alpha, beta, depth-1);
             root = tmp;
-            std::cout << v << std::endl;
             if (v > alpha) {
                 alpha = v;
                 pos = i;
             }
         }
     }
-    ret.first = v;
-    ret.second = (Eigen::Array2i){ pos / 19, pos % 19 };
-    return (ret);
-}
-
-int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
-    // if (ZobristTable::map.count({node->player, node->opponent})) {
-    //     return (ZobristTable::map[{node->player, node->opponent}]);
-    // }
-    if (depth == 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured)) {
-        int32_t score = score_function(node, depth+1);
-        // if (ZobristTable::map.find({node->player, node->opponent}) == ZobristTable::map.end())
-            // ZobristTable::map[{node->player, node->opponent}] = score;
-        // std::cout << "depth reached : " << std::to_string(depth) << std::endl;
-        return (score);
-    }
-
-    BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
-    t_node      tmp = *node;
-
-    for (uint16_t i = 0; i < 361; ++i) {
-        if (moves.check_bit(i)) {
-            simulate_move(node, i);
-            alpha = max_val(alpha, min(node, alpha, beta, depth-1));
-            *node = tmp;
-            if (beta <= alpha) {
-                // ZobristTable::map[{node->player, node->opponent}] = alpha;
-                // std::cout << "cutoff : " << ZobristTable::map[{node->player, node->opponent}] << std::endl;
-                return (beta);
-            }
-        }
-    }
-    return (alpha);
+    return ((t_ret){ alpha, pos });
 }
 
 int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
-    // if (ZobristTable::map.count({node->player, node->opponent})) {
-    //     return (ZobristTable::map[{node->player, node->opponent}]);
-    // }
+//     int32_t lookup = TT_lookup(node, alpha, beta, depth);
+//     if (lookup != -INF)
+//         return (lookup);
+
     if (depth == 0 || check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured)) {
         int32_t score = score_function(node, depth+1);
-        // if (ZobristTable::map.find({node->player, node->opponent}) == ZobristTable::map.end())
-            // ZobristTable::map[{node->player, node->opponent}] = score;
-        // std::cout << "depth reached : " << std::to_string(depth) << std::endl;
+        // TT_store(node, score, alpha, beta, depth);
         return (score);
     }
 
     BitBoard    moves = get_player_open_adjacent_positions(node->opponent, node->player) & ~node->opponent_forbidden;
     t_node      tmp = *node;
+    // int32_t     b = beta; /* backup original */
 
     for (uint16_t i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             simulate_move(node, i);
             beta = min_val(beta, max(node, alpha, beta, depth-1));
             *node = tmp;
-            if (beta <= alpha) {
-                // ZobristTable::map[{node->player, node->opponent}] = beta;
-                // std::cout << "cutoff : " << ZobristTable::map[{node->player, node->opponent}] << std::endl;
-                return (alpha);
-            }
+            if (beta <= alpha)
+                break;
         }
     }
+    // TT_store(node, beta, alpha, b, depth);
     return (beta);
+}
+
+int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
+    // int32_t lookup = TT_lookup(node, alpha, beta, depth);
+    // if (lookup != -INF)
+    //     return (lookup);
+
+    if (depth == 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured)) {
+        int32_t score = score_function(node, depth+1);
+        // TT_store(node, score, alpha, beta, depth);
+        return (score);
+    }
+
+    BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
+    t_node      tmp = *node;
+    // int32_t     a = alpha; /* backup original */
+
+    for (uint16_t i = 0; i < 361; ++i) {
+        if (moves.check_bit(i)) {
+            simulate_move(node, i);
+            alpha = max_val(alpha, min(node, alpha, beta, depth-1));
+            *node = tmp;
+            if (beta <= alpha)
+                break;
+        }
+    }
+    // TT_store(node, alpha, a, beta, depth);
+    return (alpha);
+}
+
+
+void        TT_store(t_node *node, int32_t best, int32_t alpha, int32_t beta, int8_t depth) {
+    t_stored    entry;
+
+    entry.depth = depth;
+    entry.score = best;
+    if (best <= alpha)
+        entry.flag = ZobristTable::flag::upperbound;
+    else if (best >= beta)
+        entry.flag = ZobristTable::flag::lowerbound;
+    else
+        entry.flag = ZobristTable::flag::exact;
+    ZobristTable::map[{node->player, node->opponent}] = entry;
+    // std::cout << "TT storing : " << entry.score << " " << std::to_string(entry.flag) << " " << std::to_string(entry.depth) << std::endl;
+}
+
+int32_t        TT_lookup(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
+    t_stored    entry;
+
+    if (ZobristTable::map.count({node->player, node->opponent})) {
+        entry = ZobristTable::map[{node->player, node->opponent}];
+        // std::cout << "TT lookup : " << entry.score << " " << std::to_string(entry.flag) << " " << std::to_string(entry.depth) << std::endl;
+        // std::cout << "TT lookup at " << std::to_string(depth) << std::endl;
+        if (entry.depth >= depth) {
+            if (entry.flag == ZobristTable::flag::exact)
+                return (entry.score);
+            else if (entry.flag == ZobristTable::flag::lowerbound && entry.score > alpha)
+                alpha = entry.score;
+            else if (entry.flag == ZobristTable::flag::upperbound && entry.score < beta)
+                beta = entry.score;
+            if (alpha >= beta)
+                return (entry.score);
+        }
+    }
+    return (-INF);
 }
 
 void            simulate_move(t_node *node, uint16_t i) {
     BitBoard pairs;
 
-    if (node->pid == 1) { /* simulate player move */
+    /* simulate player move */
+    if (node->pid == 1) {
         pairs = pair_capture_detector(node->player, node->opponent);
         node->player.write(i);
         if ((pairs & node->player).is_empty() == false) {
@@ -133,7 +168,9 @@ void            simulate_move(t_node *node, uint16_t i) {
             node->player_pairs_captured += pairs.set_count() / 2;
             node->opponent &= ~pairs;
         }
-    } else { /* simulate opponent move */
+        node->pid = 2;
+    }/* simulate opponent move */
+    else {
         pairs = pair_capture_detector(node->opponent, node->player);
         node->opponent.write(i);
         if ((pairs & node->opponent).is_empty() == false) {
@@ -141,10 +178,10 @@ void            simulate_move(t_node *node, uint16_t i) {
             node->opponent_pairs_captured += pairs.set_count() / 2;
             node->player &= ~pairs;
         }
+        node->pid = 1;
     }
     node->player_forbidden   = forbidden_detector(node->player, node->opponent);
     node->opponent_forbidden = forbidden_detector(node->opponent, node->player);
-    node->pid = ~node->pid & 0x3;
 }
 
 int32_t        score_function(t_node *node, uint8_t depth) {
