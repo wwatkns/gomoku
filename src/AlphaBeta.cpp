@@ -1,6 +1,6 @@
 #include "AlphaBeta.hpp"
 
-uint64_t    explored_nodes = 0; // DEBUG
+uint64_t    explored_nodes; // DEBUG
 
 Eigen::Array2i  alphabeta_pruning(t_node *root, int32_t alpha, int32_t beta, int8_t depth) {
     BitBoard    moves = get_player_open_adjacent_positions(root->player, root->opponent) & ~root->player_forbidden;
@@ -36,7 +36,6 @@ Eigen::Array2i  alphabeta_pruning(t_node *root, int32_t alpha, int32_t beta, int
 int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
     if (depth == 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured))
         return score_function(node, depth+1);
-    explored_nodes++;
 
     BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
     t_node      tmp = *node;
@@ -47,7 +46,7 @@ int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
             alpha = max_val(alpha, min(node, alpha, beta, depth-1));
             *node = tmp;
             if (beta <= alpha)
-                return (beta);
+                break;
         }
     }
     return (alpha);
@@ -56,7 +55,6 @@ int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
 int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
     if (depth == 0 || check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured))
         return score_function(node, depth+1);
-    explored_nodes++;
 
     BitBoard    moves = get_player_open_adjacent_positions(node->opponent, node->player) & ~node->opponent_forbidden;
     t_node      tmp = *node;
@@ -67,7 +65,7 @@ int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
             beta = min_val(beta, max(node, alpha, beta, depth-1));
             *node = tmp;
             if (beta <= alpha)
-                return (alpha);
+                break;
         }
     }
     return (beta);
@@ -75,6 +73,7 @@ int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
 
 void            simulate_move(t_node *node, uint16_t i) {
     BitBoard pairs;
+    explored_nodes++;
 
     if (node->pid == 1) { /* simulate player move */
         pairs = pair_capture_detector(node->player, node->opponent);
