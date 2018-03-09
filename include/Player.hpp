@@ -5,7 +5,8 @@
 # include "GraphicalInterface.hpp"
 # include "BitBoard.hpp"
 // # include "AlphaBeta.hpp"
-# include "mtdf.hpp"
+// # include "mtdf.hpp"
+# include "NegaMax.hpp"
 
 class           GameEngine;
 typedef struct  s_action t_action;
