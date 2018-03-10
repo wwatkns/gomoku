@@ -240,8 +240,6 @@ BitBoard    BitBoard::operator>>(const int32_t shift) const {
             res.values[i] = (this->values[i] >> shift) | (this->values[i-1] << (BITS - shift));
         res.values[0] = (this->values[0] >> shift);
     } else {
-        // uint16_t    n = shift / BITS;
-        // uint16_t    a = shift % BITS;
         const uint16_t    n = shift >> 6;
         const uint16_t    a = shift & 0x3F;
         for (int i = N-1; i > n; i--) {
@@ -264,8 +262,6 @@ BitBoard    BitBoard::operator<<(const int32_t shift) const {
             res.values[i] = (this->values[i] << shift) | (this->values[i+1] >> (BITS - shift));
         res.values[N-1] = (this->values[N-1] << shift);
     } else {
-        // uint16_t    n = shift / BITS;
-        // uint16_t    a = shift % BITS;
         const uint16_t    n = shift >> 6;
         const uint16_t    a = shift & 0x3F;
         const uint16_t    p = N - (n + 1);
@@ -419,14 +415,14 @@ static BitBoard sub_pattern_detector_alt(BitBoard const &p1, BitBoard const &p2,
     moves leading to those. It's not the most efficient algorithm, we must improve
     it in the future, but it is robust.
 */
-BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) { // TODO : optimize this 
+BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) { // TODO : optimize this
     const uint8_t   patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
     const uint8_t    lengths[3] = {    6,    6,    5 };
     BitBoard        res;
     BitBoard        tmp[36]; // 36 is patterns * sub_patterns * directions
-    uint8_t         j;
     uint8_t         sub;
-    uint16_t        idx;
+    int             j;
+    int             idx;
 
     for (int p = 0; p < 3; ++p) { // iterate through patterns
         j = 0;
@@ -436,7 +432,7 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) { // 
                 for (int d = direction::north; d < 4; ++d) { // iterate through directions
                     idx = (p * 12 + j * 4) + d;
                     tmp[idx] = sub_pattern_detector_alt(p1, p2, sub, lengths[p], lengths[p]-s-1, 0, d);
-                    for (int n = idx-1; n >= 0; --n) // (p * s * d)^2 / 2 = 36^2 / 2 = 648
+                    for (int n = idx-1; n >= 0; --n) // O(n(n+1)/2) so here (36*37)/2 = 666, this is a major performance hit
                         res |= (tmp[idx] & tmp[n]);
                 }
                 j++;
@@ -444,10 +440,16 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) { // 
         }
     }
     /*  handle the case of -O-O*-O-, -O-*O-O-  */
-    for (int d = direction::north; d < 8; ++d)
+    for (int d = direction::north; d < 8 && !res.is_empty(); ++d)
         res ^= sub_pattern_detector_alt(p1, p2, 0x52, 8, 3, 0, d);
     return (res & ~p1 & ~p2);
 }
+
+/*  128 64 32 16  8  4  2  1
+    |__|__|__|__|__|__|__|__|
+      0  0  0  0  0  1  1  1 -> 7
+      0  1  0  1  0  1  0  0
+*/
 
 static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern, uint8_t const &s, uint8_t const &type) {
     const BitBoard  open_cells = (~p1 & ~p2);
@@ -469,18 +471,43 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_p
     the patterns must be encoded in big-endian and have a length defined (-OO-O- is 01101000
     so 0x68 with length 6) see the Patterns table in BitBoard.hpp for all the patterns.
 */
-BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) { // TODO : patterns are detected also on top/bottom borders ????
+// BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) { // TODO : patterns are detected also on top/bottom borders ????
+//     const uint8_t   type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+//     BitBoard        res;
+//     t_pattern       sub = pattern;
+//
+//     for (int s = 0; s < pattern.size; ++s) {
+//         sub.repr = pattern.repr & ~(0x80 >> s);
+//         if (sub.repr != pattern.repr)
+//             res |= sub_pattern_detector(p1, p2, sub, pattern.size-s-1, type); // TODO : move code from sub_pattern_detector here (optimization)
+//     }
+//     return (res & ~p1 & ~p2);
+// }
+
+BitBoard        pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) { // opti ??
     const uint8_t   type = (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr);
+    const BitBoard  open_cells = (~p1 & ~p2);
     BitBoard        res;
+    BitBoard        tmp;
     t_pattern       sub = pattern;
 
     for (int s = 0; s < pattern.size; ++s) {
         sub.repr = pattern.repr & ~(0x80 >> s);
-        if (sub.repr != pattern.repr)
-            res |= sub_pattern_detector(p1, p2, sub, pattern.size-s-1, type); // TODO : move code from sub_pattern_detector here (optimization)
+        if (sub.repr != pattern.repr) {
+            /* detect sub-pattern */
+            for (int d = direction::north; d < pattern.dirs; ++d) {
+                tmp = (type == 0x80 ? p2 : BitBoard::full);
+                for (int n = 0; n < pattern.size && !tmp.is_empty(); ++n) {
+                    tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+                    tmp = tmp.shifted(d) & ((pattern.repr << n & 0x80) == 0x80 ? p1 : open_cells);
+                }
+                res |= tmp.shifted_inv(d, pattern.size-s-1);
+            }
+        }
     }
-    return (res & ~p1 & ~p2);
+    return (res & open_cells);
 }
+
 
 BitBoard        current_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern) {
     return (sub_pattern_detector(p1, p2, pattern, 0, (pattern.repr & 0x80) | (0x1 << (8-pattern.size) & pattern.repr)));
@@ -513,7 +540,7 @@ BitBoard    highlight_five_aligned(BitBoard const &bitboard) {
             tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
             tmp = tmp.shifted(d) & bitboard;
         }
-        for (int i = 0; i < 5; ++i)
+        for (int i = 0; i < 5 && !tmp.is_empty(); ++i)
             res |= tmp.shifted_inv(d, i);
     }
     return (res);

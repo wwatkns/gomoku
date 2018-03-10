@@ -2,7 +2,6 @@
 # define BITBOARD_HPP
 
 # include <iostream>
-# include <cstdlib>
 # include <array>
 /* includes for debug purposes */
 # include <bitset>
@@ -52,7 +51,6 @@ public:
     BitBoard    dilated(void) const;
     BitBoard    eroded(void) const;
 
-    BitBoard    rotated_315(void);
     BitBoard    rotated_45(void);
 
     /* arithmetic (bitwise) operator overload */
@@ -60,8 +58,8 @@ public:
     BitBoard    operator&(BitBoard const &rhs) const; // bitwise intersection
     BitBoard    operator^(BitBoard const &rhs) const; // bitwise exclusive or
     BitBoard    operator~(void) const;                // bitwise complement
-    BitBoard    operator>>(const int32_t shift) const;      // bitwise right shift
-    BitBoard    operator<<(const int32_t shift) const;      // bitwise left shift
+    BitBoard    operator>>(const int32_t shift) const;// bitwise right shift
+    BitBoard    operator<<(const int32_t shift) const;// bitwise left shift
 
     /* assignment operator overload */
     BitBoard    &operator|=(BitBoard const &rhs);

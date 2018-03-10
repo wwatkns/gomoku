@@ -2,14 +2,8 @@
 # define MTDF_HPP
 
 # include <iostream>
-# include <cstdlib> // cmath also ?
-# include <vector>
 # include <Eigen/Dense>
-# include <algorithm>
-# include <cmath>
-# include <utility>
 # include "BitBoard.hpp"
-// # include "ZobristTable.hpp"
 
 # define INF 2147483647
 
