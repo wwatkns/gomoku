@@ -27,15 +27,25 @@ Eigen::Array2i  negamaxplay(t_node *node, int8_t depth) {
     int32_t     v           = -INF;
     int32_t     bestscore   = -INF;
     int32_t     bestmove    = 0;
+    int         max;
+    int         alpha       = -INF;
+    int         beta        = INF;
 
     std::cout << moves << std::endl;
     for (int i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             simulate_move(node, i);
-            v = negamax(node, depth - 1, color);
+            v = negamax_alphabeta(node, depth - 1, color, -INF, INF);
             if (v > bestscore) {
                 bestscore = v;
                 bestmove  = i;
+                if (bestscore > alpha) {
+                    alpha = bestscore;
+                    if (alpha >= beta) {
+                        std::cout << "depth: " << std::to_string(depth) << std::endl;                        
+                        break ;
+                    }
+                }
             }
             *node = tmp;
         }
@@ -43,11 +53,54 @@ Eigen::Array2i  negamaxplay(t_node *node, int8_t depth) {
     return ((Eigen::Array2i){ bestmove / 19, bestmove % 19 });
 }
 
+int32_t         negamax_alphabeta(t_node *node, int8_t depth, int8_t color, int alpha, int beta) {
+    if (depth == 0 || (color == -1 && check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured))
+                   || (color ==  1 && check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured))) {
+        int32_t score = color * negamax_score_function(node, depth, 1);
+        // std::cout << "color: " << std::to_string(color) << " score: " << score << std::endl;
+        return (score);
+    }
+
+    // std::pair<int32_t, Eigen::Array2i>  node(0, {0, 0});
+    // Not sure...
+    BitBoard    moves;
+    if (color == 1)
+        moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
+    else
+        moves = get_player_open_adjacent_positions(node->opponent, node->player) & ~node->opponent_forbidden;
+
+    t_node      tmp         = *node;
+    int         bestscore   = -INF;
+    int         v;
+
+    for (int i = 0; i < 361; ++i) {
+        if (moves.check_bit(i)) {
+            simulate_move(node, i);
+            v = -negamax_alphabeta(node, depth - 1, -color, -alpha, -beta);
+            // bestscore = max_val(v, bestscore);
+            if (v > bestscore) {
+                bestscore = v;
+                if (bestscore > alpha) {
+                    alpha = bestscore;
+                    if (alpha >= beta) {
+                        std::cout << "depth: " << std::to_string(depth) << std::endl;
+                        return (bestscore);
+                    }
+                }
+            }
+            *node = tmp;
+        }
+    }
+    std::cout << "depth: " << std::to_string(depth) << std::endl;    
+    return (bestscore);
+
+}
+
 int32_t         negamax(t_node *node, int8_t depth, int8_t color) {
     if (depth == 0 || (color == -1 && check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured))
                    || (color ==  1 && check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured))) {
         int32_t score = color * negamax_score_function(node, depth, 1);
-        std::cout << "color: " << std::to_string(color) << " score: " << score << std::endl;
+        // std::cout << "color: " << std::to_string(color) << " score: " << score << std::endl;
         return (score);
     }
 
