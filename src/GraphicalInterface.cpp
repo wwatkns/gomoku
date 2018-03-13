@@ -236,11 +236,11 @@ void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) 
         this->_winning_text = std::string("Player ")+std::to_string(p1.get_id())+std::string(" (")+type+std::string(") wins");
         this->_button_pause->set_state(true);
         this->_end_game = true;
-        exit(1); // DEBUG
+        // exit(1); // DEBUG
     } else {
         this->_winning_text = "";
-        if (this->_end_game)
-            this->_button_pause->set_state(false);
+        // if (this->_end_game)
+            // this->_button_pause->set_state(false);
         this->_end_game = false;
     }
 }

@@ -35,16 +35,19 @@ public:
     uint64_t    row(uint8_t i) const;                   // access row at index
 
     void        zeros(void);                            // set the bitboard values to zeros
-    void        write(const int i);
-    void        remove(const int i);
-    void        write(const int x, const int y);            // set a bit to 1 on the bitboard at position x, y
-    void        remove(const int x, const int y);           // set a bit to 0 on the bitboard at position x, y
+    void        write(const uint64_t i);
+    void        remove(const uint64_t i);
+    void        write(const uint64_t x, const uint64_t y);            // set a bit to 1 on the bitboard at position x, y
+    void        remove(const uint64_t x, const uint64_t y);           // set a bit to 0 on the bitboard at position x, y
     int         set_count(void) const;                  // return the number of bits set to 1 in bitboard
-    bool        check_bit(const int i) const;
-    bool        check_bit(const int x, const int y) const;  // check if the bit a position x, y is set to 1
+    bool        check_bit(const uint64_t i) const;
+    bool        check_bit(const uint64_t x, const uint64_t y) const;  // check if the bit a position x, y is set to 1
     bool        is_empty(void) const;                   // check if all bits in the bitboard are set to 0
     void        broadcast_row(uint64_t line);           // copy the given row (first 19 bits) to all other rows
     BitBoard    neighbours(void) const;                 // returns the neighbouring cells
+
+    int         leftmost_bit(void) const;
+    int         rightmost_bit(void) const;
 
     BitBoard    shifted(const uint8_t dir, const uint8_t n = 1) const;
     BitBoard    shifted_inv(const uint8_t dir, const uint8_t n = 1) const;
@@ -89,23 +92,21 @@ public:
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
-BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2);
-BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2);
-BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
-
-BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
-BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
+BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured);
+BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
+BitBoard    get_moves_to_explore(BitBoard const &p1, BitBoard const &p2);
 
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
+BitBoard    future_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
-BitBoard    current_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
-BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
+BitBoard    pattern_detector_highlight_open(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
+// BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
 
 bool        detect_five_aligned(BitBoard const &bitboard);
 BitBoard    highlight_five_aligned(BitBoard const &bitboard);
 
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);      /* detect the positions leading to one or multiple captures */
-BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, BitBoard const &pairs);
+BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, int move);  /* return the board showing the stones captured */
 
 namespace direction {
     enum direction {

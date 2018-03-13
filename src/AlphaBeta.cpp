@@ -3,9 +3,9 @@
 uint64_t    explored_nodes; // DEBUG
 
 Eigen::Array2i  alphabeta_pruning(t_node *root, int32_t alpha, int32_t beta, int8_t depth) {
-    BitBoard    moves = get_player_open_adjacent_positions(root->player, root->opponent) & ~root->player_forbidden;
+    BitBoard    moves = get_moves_to_explore(root->player, root->opponent) & ~root->player_forbidden;
     if (moves.set_count() == 0) {
-        moves = get_player_open_adjacent_positions(root->opponent, root->player) & ~root->opponent_forbidden;
+        moves = get_moves_to_explore(root->opponent, root->player) & ~root->opponent_forbidden;
         if (moves.set_count() == 0)
             moves.write(9, 9);
     }
@@ -37,7 +37,7 @@ int32_t        max(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
     if (depth == 0 || check_end(node->opponent, node->player, node->opponent_pairs_captured, node->player_pairs_captured))
         return score_function(node, depth+1);
 
-    BitBoard    moves = get_player_open_adjacent_positions(node->player, node->opponent) & ~node->player_forbidden;
+    BitBoard    moves = get_moves_to_explore(node->player, node->opponent) & ~node->player_forbidden;
     t_node      tmp = *node;
 
     for (uint16_t i = 0; i < 361; ++i) {
@@ -56,7 +56,7 @@ int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
     if (depth == 0 || check_end(node->player, node->opponent, node->player_pairs_captured, node->opponent_pairs_captured))
         return score_function(node, depth+1);
 
-    BitBoard    moves = get_player_open_adjacent_positions(node->opponent, node->player) & ~node->opponent_forbidden;
+    BitBoard    moves = get_moves_to_explore(node->opponent, node->player) & ~node->opponent_forbidden;
     t_node      tmp = *node;
 
     for (uint16_t i = 0; i < 361; ++i) {
@@ -71,7 +71,7 @@ int32_t        min(t_node *node, int32_t alpha, int32_t beta, int8_t depth) {
     return (beta);
 }
 
-void            simulate_move(t_node *node, uint16_t i) {
+void            simulate_move(t_node *node, int i) {
     explored_nodes++;
 
     /* simulate player move */
@@ -115,7 +115,7 @@ int32_t    player_score(t_node *node, uint8_t depth) {
     int32_t     score = 0;
 
     for (int i = 0; i < 10; ++i) {
-        board = current_pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
+        board = pattern_detector(node->player, node->opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
         // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
         // score += ((board & node->opponent_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 10 : 0);
@@ -131,7 +131,7 @@ int32_t    opponent_score(t_node *node, uint8_t depth) {
     int32_t     score = 0;
 
     for (int i = 0; i < 10; ++i) {
-        board = current_pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
+        board = pattern_detector(node->opponent, node->player, BitBoard::patterns[i]);
         if (0 <= i && i <= 1)
             score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 2 : 0);
         else

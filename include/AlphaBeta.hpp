@@ -43,7 +43,7 @@
 // int32_t         opponent_score(t_node *node, uint8_t depth);
 // bool            check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
 //
-// void            simulate_move(t_node *node, uint16_t i);
+// void            simulate_move(t_node *node, int i);
 //
 // int32_t         min_val(int32_t const &a, int32_t const &b);
 // int32_t         max_val(int32_t const &a, int32_t const &b);

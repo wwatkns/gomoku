@@ -58,12 +58,11 @@ uint8_t GameEngine::check_end(BitBoard const& p1, BitBoard const& p2, uint8_t co
 // }
 
 void    GameEngine::update_game_state(t_action &action, Player *p1, Player *p2) {
-    BitBoard pairs = pair_capture_detector(p1->board, p2->board);
     p1->board.write(action.pos[1], action.pos[0]);
-    if ((pairs & p1->board).is_empty() == false) {
-        pairs = highlight_captured_stones(p2->board, p1->board, pairs);
-        p1->set_pairs_captured(p1->get_pairs_captured() + pairs.set_count()/2);
-        p2->board &= ~pairs;
+    BitBoard captured = highlight_captured_stones(p1->board, p2->board, (action.pos[0] * 19 + action.pos[1]) );
+    if (!captured.is_empty()) {
+        p1->set_pairs_captured(p1->get_pairs_captured() + captured.set_count() / 2);
+        p2->board &= ~captured;
     }
     p1->board_forbidden = forbidden_detector(p1->board, p2->board);
     p2->board_forbidden = forbidden_detector(p2->board, p1->board);

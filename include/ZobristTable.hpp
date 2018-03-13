@@ -20,8 +20,10 @@ typedef struct  s_stored {
 namespace ZobristTable {
     enum flag {
         exact,
-        lowerbound,
-        upperbound
+        // lowerbound,
+        // upperbound
+        beta,
+        alpha
     };
 
     /* initialization of Zobrist Hashing */
