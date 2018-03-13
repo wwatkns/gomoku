@@ -12,24 +12,30 @@ int             min(int const& a, t_ret const& b)   { return (a < b.score ? a : 
 int             max(int const& a, int const& b)     { return (a > b ? a : b); }
 int             min(int const& a, int const& b)     { return (a < b ? a : b); }
 
-
-BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, BitBoard const& opponent_forbidden, int player_pairs_captured, int opponent_pairs_captured) {
+BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured) {
     BitBoard    moves;
     BitBoard    tmp;
     bool        player_empty = player.is_empty();
     bool        opponent_empty = opponent.is_empty();
 
+    if (!player_empty) {
+        moves = get_winning_moves(player, opponent, player_pairs_captured);
+        if (!moves.is_empty())
+            return (moves);
+    }
     if (!player_empty && !opponent_empty)
         moves |= pair_capture_detector(player, opponent);
     if (!opponent_empty)
         moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
+
     if (!player_empty) { /* if player has stones, check the winning positions first */
         moves |= get_winning_moves(player, opponent, player_pairs_captured);
         if (moves.is_empty()) /* if no threats or winning moves, dilate around stones */
             moves |= get_moves_to_explore(player, opponent) & ~player_forbidden;
-    } else { /* if player has no stones */
+    }
+    else { /* if player has no stones */
         if (!opponent_empty && moves.is_empty()) /* if opponent has stones and we found no threats */
-            moves |= get_moves_to_explore(opponent, player) & ~opponent_forbidden;
+            moves |= get_moves_to_explore(opponent, player);
         else
             moves.write(9, 9);
     }
@@ -46,18 +52,16 @@ t_ret   alphaBetaMin(t_node node, int alpha, int beta, int depth) {
 
     if (depth == 0 || check_end(node))
         return ((t_ret){ score_function(node, depth+1), 0 });
-    BitBoard    moves; /* NOTE : declaration and assignation must be separated to work... */
-    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.player_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
+
+    BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
     for (int i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             ret = alphaBetaMax(simulate_move(node, i), alpha, beta, depth-1);
             if (ret.score < best.score) {
                 best = { ret.score, i };
-                if (best.score < beta) {
-                    beta = best.score;
-                    if (alpha >= beta) /* beta cut-off */
-                        break;
-                }
+                beta = min(beta, best.score);
+                if (alpha >= beta) /* beta cut-off */
+                    break;
             }
         }
     }
@@ -70,22 +74,19 @@ t_ret   alphaBetaMax(t_node node, int alpha, int beta, int depth) {
 
     if (depth == 0 || check_end(node))
         return ((t_ret){ score_function(node, depth+1), 0 });
-    BitBoard    moves; /* NOTE : declaration and assignation must be separated to work... */
-    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.opponent_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+
+    BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
     for (int i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             ret = alphaBetaMin(simulate_move(node, i), alpha, beta, depth-1);
             if (ret.score > best.score) {
                 best = { ret.score, i };
-                if (best.score > alpha) {
-                    alpha = best.score;
-                    if (alpha >= beta) /* alpha cut-off */
-                        break;
-                }
+                alpha = max(alpha, best.score);
+                if (alpha >= beta) /* alpha cut-off */
+                    break;
             }
         }
     }
-    // if (depth == 4) std::cout << "playing (" << ret.p / 19 << ", " << ret.p % 19 << ") : " << ret.p << "\n" << moves << std::endl;
     return (best);
 }
 
@@ -368,10 +369,8 @@ int32_t    player_score(t_node const &node, uint8_t depth) {
     for (int i = 0; i < 10; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
-        // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
-        // score += ((board & node->opponent_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 10 : 0);
     }
-    score += node.player_pairs_captured * 50000;                     //     50,000pts/captures
+    score += node.player_pairs_captured * node.opponent_pairs_captured * 50000;
     // if (detect_five_aligned(node.player)) score += 10000000 * depth; // 10,000,000pts for win by alignement
     // if (node.player_pairs_captured == 5)  score +=  5000000 * depth; //  5,000,000pts for win by pairs captures
     return (score);
@@ -387,16 +386,15 @@ int32_t    opponent_score(t_node const &node, uint8_t depth) {
         return (214748364 * depth);
     for (int i = 0; i < 10; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
-        if (0 <= i && i <= 1)
-            score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 2 : 0);
-        else
+        // if (0 <= i && i <= 1)
+            // score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 2 : 0);
+        // else
             score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
-        // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
-        // score += ((board & node.player_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 10 : 0);
     }
     // if (detect_five_aligned(node.opponent)) score += 10000000 * depth; // 10,000,000pts for win by alignement
     // if (node.opponent_pairs_captured == 5)  score +=  5000000 * depth; //  5,000,000pts for win by pairs captures
-    score += node.opponent_pairs_captured * 50000;                     //     50,000pts/captures
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 50000;
+    // 50,000 : 100,000 : 200,000 : 400,000 : 800,000
     return (score);
 }
 

@@ -45,7 +45,7 @@ bool        Computer::play(Player *other) {
     // AlphaBeta   alphabeta(4, false, 500);
     // int16_t p = alphabeta(node, -INF, INF, 5).p;
 
-    int16_t p = alphaBetaWithMemory(node, -INF, INF, 5).p;
+    int16_t p = alphaBetaWithMemory(node, -INF, INF, 4).p;
     action.pos = { p / 19, p % 19 };
     // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
    // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP

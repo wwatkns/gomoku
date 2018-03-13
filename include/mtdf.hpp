@@ -27,7 +27,7 @@ t_ret           min(t_ret const& a, t_ret const& b);
 int             max(int const& a, t_ret const& b);
 int             min(int const& a, t_ret const& b);
 bool            check_end(t_node const& node);
-BitBoard        moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, BitBoard const& opponent_forbidden, int player_pairs_captured, int opponent_pairs_captured);
+BitBoard        moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured);
 t_ret           alphaBetaWithMemory(t_node node, int alpha, int beta, int depth);
 t_ret           alphaBetaMin(t_node node, int alpha, int beta, int depth);
 t_ret           alphaBetaMax(t_node node, int alpha, int beta, int depth);
