@@ -31,6 +31,8 @@ BitBoard        moves_to_explore(BitBoard const& player, BitBoard const& opponen
 t_ret           alphaBetaWithMemory(t_node node, int alpha, int beta, int depth);
 t_ret           alphaBetaMin(t_node node, int alpha, int beta, int depth);
 t_ret           alphaBetaMax(t_node node, int alpha, int beta, int depth);
+// t_ret           alphaBetaMin(t_node node, int alpha, int beta, int depth, int lastpos);
+// t_ret           alphaBetaMax(t_node node, int alpha, int beta, int depth, int lastpos);
 
 bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit);
 
@@ -51,7 +53,7 @@ t_node          simulate_move(t_node const &node, int i);
 int32_t         min_val(int32_t const &a, int32_t const &b);
 int32_t         max_val(int32_t const &a, int32_t const &b);
 
-void            TT_store(t_node const &node, int32_t best, int32_t alpha, int32_t beta, int8_t depth, int flag);
+void            TT_store(t_node const &node, int32_t best, int32_t alpha, int32_t beta, int8_t depth, int pos);
 int32_t         TT_lookup(t_node const &node, int32_t alpha, int32_t beta, int8_t depth);
 
 

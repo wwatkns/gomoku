@@ -12,6 +12,9 @@
 # define S 3        // the number of states
 
 typedef struct  s_stored {
+    int         pos;
+    int32_t     upperbound;
+    int32_t     lowerbound;
     int32_t     score;
     int8_t      depth;
     uint8_t     flag;
