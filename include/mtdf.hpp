@@ -28,6 +28,8 @@ int             max(int const& a, t_ret const& b);
 int             min(int const& a, t_ret const& b);
 bool            check_end(t_node const& node);
 BitBoard        moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured);
+
+t_ret           ft_alphaBetaWithMemory(t_node node, int alpha, int beta, int depth, int player);
 t_ret           alphaBetaWithMemory(t_node node, int alpha, int beta, int depth);
 t_ret           alphaBetaMin(t_node node, int alpha, int beta, int depth);
 t_ret           alphaBetaMax(t_node node, int alpha, int beta, int depth);
@@ -37,7 +39,9 @@ t_ret           alphaBetaMax(t_node node, int alpha, int beta, int depth);
 bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit);
 
 Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth);
-t_ret           mtdf(t_node *root, int32_t firstguess, int8_t depth);
+// t_ret           mtdf(t_node *root, int32_t firstguess, int8_t depth);
+t_ret           mtdf(t_node *root, t_ret g, int8_t depth);
+
 // t_ret           alphaBetaWithMemory(t_node root, int32_t alpha, int32_t beta, int8_t depth);
 
 // int32_t         max(t_node node, int32_t alpha, int32_t beta, int8_t depth);
@@ -53,7 +57,8 @@ t_node          simulate_move(t_node const &node, int i);
 int32_t         min_val(int32_t const &a, int32_t const &b);
 int32_t         max_val(int32_t const &a, int32_t const &b);
 
-void            TT_store(t_node const &node, int32_t best, int32_t alpha, int32_t beta, int8_t depth, int pos);
+// void            TT_store(t_node const &node, int32_t best, int32_t alpha, int32_t beta, int8_t depth, int pos);
+void            TT_store(t_node const &node, int32_t g, int32_t alpha, int32_t beta);
 int32_t         TT_lookup(t_node const &node, int32_t alpha, int32_t beta, int8_t depth);
 
 

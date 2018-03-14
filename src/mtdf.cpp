@@ -1,6 +1,8 @@
 #include "mtdf.hpp"
 #include "ZobristTable.hpp"
 
+#include <stdio.h> // debug
+
 // TODO faire deux TT 
 //  - lower
 //  - upper
@@ -53,25 +55,78 @@ t_ret   alphaBetaWithMemory(t_node node, int alpha, int beta, int depth) {
     // return (alphaBetaMax(node, alpha, beta, depth, 0));
 }
 
+t_ret   ft_alphaBetaWithMemory(t_node node, int alpha, int beta, int depth, int player) {
+    // t_ret       ret;
+    int         value;
+    t_ret       best;
+    t_stored    entry;
+
+    if (ZobristTable::map.count({node.player, node.opponent})) {
+        entry = ZobristTable::map[{node.player, node.opponent}];
+        std::cout << "---\t lowerbound: " << entry.lowerbound << std::endl;
+        std::cout << "---\t upperbound: " << entry.upperbound << std::endl;
+        if (entry.lowerbound >= beta)
+            return ((t_ret){ entry.lowerbound, -INF });
+        else if (entry.upperbound <= alpha)
+            return ((t_ret){ entry.upperbound, -INF });
+        alpha = max(alpha, entry.lowerbound);
+        beta  = max(beta,  entry.upperbound);
+    }
+
+    if (depth == 0 || check_end(node))
+        return ((t_ret){ score_function(node, depth+1), -INF });
+    // MAX PLAYER
+    else if (player) {
+        best = { alpha, -INF };
+        BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                value = ft_alphaBetaWithMemory(simulate_move(node, i), best.score, beta, depth-1, 0).score;
+                if (value > best.score)
+                    best = { value, i };
+                if (value > beta)
+                    break;
+            }
+        }
+    }
+    // MIN PLAYER
+    else {
+        best = { beta, -INF };
+        BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                value = ft_alphaBetaWithMemory(simulate_move(node, i), alpha, best.score, depth-1, 1).score;
+                if (value < best.score)
+                    best = { value, i };
+                if (alpha > value)
+                    break;
+            }
+        }
+    }
+    TT_store(node, best.score, alpha, beta);
+    std::cout << "MinMax: best.score: " << best.score << " best.p: " << best.p << std::endl;
+    return (best);
+}
+
+
+
 // t_ret   alphaBetaMin(t_node node, int alpha, int beta, int depth, int lastpos) {
 t_ret   alphaBetaMin(t_node node, int alpha, int beta, int depth) {
     t_ret       ret;
     t_ret       best = { INF, 0 };
     t_stored    entry;
 
-    // int32_t lookup = TT_lookup(node, alpha, beta, depth);
-    // if (lookup != -INF)
-        // return ((t_ret){ lookup, 0 });
-
     if (ZobristTable::map.count({node.player, node.opponent})) {
         entry = ZobristTable::map[{node.player, node.opponent}];
         if (entry.lowerbound >= beta)
-            return ((t_ret){ entry.lowerbound, entry.pos });
+            return ((t_ret){ entry.lowerbound, -INF });
         else if (entry.upperbound <= alpha)
-            return ((t_ret){ entry.upperbound, entry.pos });
+            return ((t_ret){ entry.upperbound, -INF });
         alpha = max(alpha, entry.lowerbound);
         beta  = max(beta,  entry.upperbound);
     }
+
+    int         cp_beta = beta;
 
     if (depth == 0 || check_end(node))
         return ((t_ret){ score_function(node, depth+1), -INF });
@@ -81,16 +136,17 @@ t_ret   alphaBetaMin(t_node node, int alpha, int beta, int depth) {
     for (int i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             // ret = alphaBetaMax(simulate_move(node, i), alpha, beta, depth-1, i);
-            ret = alphaBetaMax(simulate_move(node, i), alpha, beta, depth-1);
+            ret.score = alphaBetaMax(simulate_move(node, i), alpha, beta, depth-1).score;
             if (ret.score < best.score) {
                 best = { ret.score, i };
                 beta = min(beta, best.score);
-                if (alpha >= beta) /* beta cut-off */
+                // if (alpha >= beta) /* beta cut-off */
+                if (ret.score > beta) /* beta cut-off */
                     break;
             }
         }
     }
-    TT_store(node, best.score, alpha, beta, depth, best.p);
+    // TT_store(node, best.score, alpha, cp_beta, depth, best.p);
     return (best);
 }
 
@@ -99,20 +155,18 @@ t_ret   alphaBetaMax(t_node node, int alpha, int beta, int depth) {
     t_ret       ret;
     t_ret       best = { -INF, 0 };
     t_stored    entry;
-    
-    // int32_t lookup = TT_lookup(node, alpha, beta, depth);
-    // if (lookup != -INF)
-    //     return ((t_ret){lookup, 0});
 
     if (ZobristTable::map.count({node.player, node.opponent})) {
         entry = ZobristTable::map[{node.player, node.opponent}];
         if (entry.lowerbound >= beta)
-            return ((t_ret){ entry.lowerbound, entry.pos });
+            return ((t_ret){ entry.lowerbound, -INF });
         else if (entry.upperbound <= alpha)
-            return ((t_ret){ entry.upperbound, entry.pos });
+            return ((t_ret){ entry.upperbound, -INF });
         alpha = max(alpha, entry.lowerbound);
         beta  = max(beta,  entry.upperbound);
     }
+
+    int         cp_alpha = alpha;
 
     if (depth == 0 || check_end(node))
         return ((t_ret){ score_function(node, depth+1), -INF });
@@ -122,30 +176,22 @@ t_ret   alphaBetaMax(t_node node, int alpha, int beta, int depth) {
     for (int i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             // ret = alphaBetaMin(simulate_move(node, i), alpha, beta, depth-1, i);
-            ret = alphaBetaMin(simulate_move(node, i), alpha, beta, depth-1);
+            ret.score = alphaBetaMin(simulate_move(node, i), alpha, beta, depth-1).score;
             if (ret.score > best.score) {
                 best = { ret.score, i };
                 alpha = max(alpha, best.score);
-                if (alpha >= beta) /* alpha cut-off */
+                // if (alpha >= beta) /* alpha cut-off */
+                if (alpha > ret.score) /* alpha cut-off */
                     break;
             }
         }
     }
-    TT_store(node, best.score, alpha, beta, depth, best.p);
+    // TT_store(node, best.score, cp_alpha, beta, depth, best.p);
     return (best);
 }
 
-
-//      /* Traditional transposition table storing of bounds */ 
-//      /* Fail low result implies an upper bound */ 
-// if g <= alpha then n.upperbound := g; store n.upperbound;
-//      /* Found an accurate minimax value - will not occur if called with zero window */ 
-// if g >  alpha and g < beta then
-// n.lowerbound := g; n.upperbound := g; store n.lowerbound, n.upperbound;
-//      /* Fail high result implies a lower bound */ 
-// if g >= beta then n.lowerbound := g; store n.lowerbound;
-
-void            TT_store(t_node const &node, int32_t g, int32_t alpha, int32_t beta, int8_t depth, int pos) {
+// void            TT_store(t_node const &node, int32_t g, int32_t alpha, int32_t beta, int8_t depth, int pos) {
+void            TT_store(t_node const &node, int32_t g, int32_t alpha, int32_t beta) {
     t_stored    entry;
 
     if (g <= alpha) {
@@ -155,20 +201,26 @@ void            TT_store(t_node const &node, int32_t g, int32_t alpha, int32_t b
         entry.lowerbound = g;
         entry.upperbound = g;
     }
-    else { // (g >= beta)
+    else if (g >= beta) { // (g >= beta)
         entry.lowerbound = g;
     }
-    entry.depth = depth;
-    entry.score = g;
-    entry.pos  = pos;
+    // entry.depth = depth;
+    // entry.score = g;
+    // entry.pos  = pos;
     ZobristTable::map[{node.player, node.opponent}] = entry;
+    
+    // Get an iterator pointing to begining of map
+    // ZobristTable::iterator it = myMap.begin();
+    // Iterate over the map using iterator
+    // while(it != myMap.end())
+    // {
+    //     std::cout << "--- TT_store" << std::endl;
+    //     std::cout << "---\t lowerbound: " << it.lowerbound << std::endl;
+    //     std::cout << "---\t upperbound: " << it.upperbound << std::endl;
+    //     // std::cout<< it. << " :: "<< it->second <<std::endl;
+    //     it++;
+    // }
 }
-
-// if retrieve(n) == OK then /* Transposition table lookup */
-// if n.lowerbound >= beta then return n.lowerbound;
-// if n.upperbound <= alpha then return n.upperbound;
-// alpha := max(alpha, n.lowerbound);
-// beta := min(beta, n.upperbound);
 
 int32_t         TT_lookup(t_node const &node, int32_t alpha, int32_t beta, int8_t depth) {
     t_stored    entry;
@@ -208,17 +260,17 @@ bool check_end(t_node const& node) {
 
 Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth) { // THIS FUNCTION WORKS
     std::chrono::steady_clock::time_point   start       = std::chrono::steady_clock::now();
+    // t_ret                                   ret         = { 0, 0 };
     t_ret                                   ret         = { 0, 0 };
     // int                                     firstguess  = 0;
 
-    for (int depth = 1; depth < max_depth; depth++) {
-        ret = mtdf(root, ret.score, depth);
+    for (int depth = 1; depth <= max_depth; depth++) {
+        ret = mtdf(root, ret, depth);
         // ret = mtdf(root, firstguess, depth); 
-        // firstguess = (depth % 2 ? ret.score : firstguess); // Why test only even?
-        
+        // firstguess = (depth % 2 ? ret.score : firstguess);
+
         // ret = alphaBetaWithMemory(*root, -INF, INF, depth);
-        
-        // std::cout << ret.score << std::endl;
+
         if (times_up(start, 500)) {
             std::cout << "TIMES UP, reached depth : " << depth << std::endl;
             break;
@@ -228,24 +280,30 @@ Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth) { // THIS FU
     return ((Eigen::Array2i){ ret.p / 19, ret.p % 19 });
 }
 
-t_ret   mtdf(t_node *root, int32_t firstguess, int8_t depth) { // THIS FUNCTION WORKS?
+// t_ret   mtdf(t_node *root, int32_t firstguess, int8_t depth) { // THIS FUNCTION WORKS?
+t_ret   mtdf(t_node *root, t_ret g, int8_t depth) { // THIS FUNCTION WORKS?
     int32_t bound[2]    = { -INF, INF };
     int32_t beta;
-    t_ret   ret         = { firstguess, 0 };
-    t_ret   best        = { 0, -INF };
+    // t_ret   ret         = { firstguess, 0 };
+    t_ret   best        = g;
 
-    do {
-        beta = ret.score + (ret.score == bound[0]);
-        // std::cout << "beta: " << beta << std::endl;
-        ret = alphaBetaWithMemory(*root, beta-1, beta, depth);
+    while (bound[0] < bound[1]) {
+        beta = g.score + (g.score == bound[0]);
+        // beta = ret.score + (ret.score == bound[0]);
+        // ret = alphaBetaWithMemory(*root, beta-1, beta, depth);
+
+        // g = alphaBetaWithMemory(*root, beta-1, beta, depth);
+        g = ft_alphaBetaWithMemory(*root, beta-1, beta, depth, 1);
+
         // std::cout << "lowerbound: " << bound[0] << " upperbound: " << bound[1] << std::endl;
         // std::cout << "score: " << ret.score << ", pos: (" << ret.p / 19 << ", " << ret.p % 19 << ")\n";
-        if (ret.p != -INF) {
-            best = ret;
-        }
-        bound[(ret.score < beta)] = ret.score;
-        std::cout << "score: " << best.score << ", pos: (" << best.p / 19 << ", " << best.p % 19 << ")" << " depth: " << std::to_string(depth) << std::endl;
-    } while (bound[0] < bound[1]);
+        // if (ret.p != -INF) {
+        if (g.p != -INF)
+            best = g;
+        // bound[(ret.score < beta)] = ret.score;
+        bound[(g.score < beta)] = g.score;
+        std::cout << "best\tscore: " << best.score << ", pos: (" << best.p / 19 << ", " << best.p % 19 << ")" << " depth: " << std::to_string(depth) << std::endl;
+    }
     return (best);
 }
 
