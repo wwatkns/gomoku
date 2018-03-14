@@ -16,9 +16,9 @@ const std::array<t_pattern,11> BitBoard::patterns = {
     (t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
     (t_pattern){ 0xB0, 5, 8,   127 },  //   O-OO-  :  close split three #2
     (t_pattern){ 0xF0, 5, 8,  1023 },  //   OOOO-  :  close four
-    (t_pattern){ 0x5C, 5, 8, 16383 },  //   O-OOO  :  split four #1
-    (t_pattern){ 0x6C, 5, 8, 16383 },  //   OO-OO  :  split four #2
-    (t_pattern){ 0x74, 5, 8, 16383 },  //   OOO-O  :  split four #3
+    (t_pattern){ 0xB8, 5, 8, 16383 },  //   O-OOO  :  split four #1
+    (t_pattern){ 0xD8, 5, 8, 16383 },  //   OO-OO  :  split four #2
+    (t_pattern){ 0xE8, 5, 8, 16383 },  //   OOO-O  :  split four #3
     (t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
 
     // (t_pattern){ 0x5C, 6, 8,  2047 },  //  -O-OOO  :  split four #1
@@ -385,14 +385,7 @@ BitBoard    get_moves_to_explore(BitBoard const &p1, BitBoard const &p2) {
     //     res = (d > 0 && d < 4 ? res & ~BitBoard::border_right : (d > 4 && d < 8 ? res & ~BitBoard::border_left : res));
     //     res |= (p1.shifted(d) & p2).shifted(d) ^ p1.shifted(d, 2);
     // }
-    /* add cells to explore for pairs capture */
     res |= pair_capture_detector(p1, p2);
-    /* add positions cells to explore for blocking */
-    // res |= pattern_detector_highlight_open(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
-    // res |= pattern_detector_highlight_open(p2, p1, { 0x68, 5, 8, 0 }); // -OO-O-
-    // res |= pattern_detector_highlight_open(p2, p1, { 0xF0, 5, 8, 0 }); // |OOOO-
-    // res |= pattern_detector_highlight_open(p2, p1, { 0x5C, 5, 8, 0 }); // O-OOO
-    // res |= pattern_detector_highlight_open(p2, p1, { 0x6C, 5, 8, 0 }); // OO-OO
     return (res & ~p1 & ~p2);
 }
 
@@ -401,10 +394,10 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
     if (p2_pairs_captured == 4) /* NOTE : should do something more intelligent for the case of multiple captures in one move. */
         res |= pair_capture_detector(p2, p1);
     res |= pattern_detector_highlight_open(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
-    res |= pattern_detector_highlight_open(p2, p1, { 0x68, 5, 8, 0 }); // -OO-O-
+    res |= pattern_detector_highlight_open(p2, p1, { 0x68, 6, 8, 0 }); // -OO-O-
     res |= pattern_detector_highlight_open(p2, p1, { 0xF0, 5, 8, 0 }); // |OOOO-
-    res |= pattern_detector_highlight_open(p2, p1, { 0x5C, 5, 8, 0 }); // O-OOO
-    res |= pattern_detector_highlight_open(p2, p1, { 0x6C, 5, 8, 0 }); // OO-OO
+    res |= pattern_detector_highlight_open(p2, p1, { 0xB8, 5, 8, 0 }); // O-OOO
+    res |= pattern_detector_highlight_open(p2, p1, { 0xD8, 5, 4, 0 }); // OO-OO
     return (res & ~p1 & ~p2);
 }
 
@@ -414,8 +407,8 @@ BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pai
         res |= pair_capture_detector(p1, p2);
     res |= pattern_detector_highlight_open(p1, p2, { 0x78, 6, 4, 0 }); // -OOOO-
     res |= pattern_detector_highlight_open(p1, p2, { 0xF0, 5, 8, 0 }); // |OOOO-
-    res |= pattern_detector_highlight_open(p1, p2, { 0x5C, 5, 8, 0 }); // O-OOO
-    res |= pattern_detector_highlight_open(p1, p2, { 0x6C, 5, 8, 0 }); // OO-OO
+    res |= pattern_detector_highlight_open(p1, p2, { 0xB8, 5, 8, 0 }); // O-OOO
+    res |= pattern_detector_highlight_open(p1, p2, { 0xD8, 5, 4, 0 }); // OO-OO
     return (res & ~p1 & ~p2);
 }
 
@@ -513,12 +506,12 @@ BitBoard    pattern_detector_highlight_open(BitBoard const &p1, BitBoard const &
             tmp = tmp.shifted(d) & ((pattern.repr << n & 0x80) == 0x80 ? p1 : open_cells);
         }
         if (!tmp.is_empty()) {
-            for (int n = 0; n < pattern.size; ++n)
-                tmp |= tmp.shifted_inv(d) & open_cells;
-            res |= tmp;
+            for (int n = 0; n < pattern.size-1; ++n)
+                tmp |= tmp.shifted_inv(d);
+            res |= tmp & open_cells;
         }
     }
-    return (res & open_cells);
+    return (res);
 }
 
 /*  TODO : Cannot handle the same pattern yet (it should check different directions similarly as forbidden_detector)
@@ -579,6 +572,7 @@ BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, in
     BitBoard        tmp;
 
     for (int d = direction::north; d < 8; ++d) {
+        tmp.zeros();
         tmp.write(move);
         tmp &= p1;
         for (int n = 0; n < 3 && !tmp.is_empty(); ++n) {
