@@ -391,8 +391,9 @@ BitBoard    get_moves_to_explore(BitBoard const &p1, BitBoard const &p2) {
 
 BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured) {
     BitBoard    res;
-    if (p2_pairs_captured == 4) /* NOTE : should do something more intelligent for the case of multiple captures in one move. */
-        res |= pair_capture_detector(p2, p1);
+    // if (p2_pairs_captured == 4) /* NOTE : should do something more intelligent for the case of multiple captures in one move. */
+        // res |= pair_capture_detector(p2, p1);
+    res |= highlight_win_capture_moves(p2, p1, p2_pairs_captured);
     res |= pattern_detector_highlight_open(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
     res |= pattern_detector_highlight_open(p2, p1, { 0x68, 6, 8, 0 }); // -OO-O-
     res |= pattern_detector_highlight_open(p2, p1, { 0xF0, 5, 8, 0 }); // |OOOO-
@@ -403,8 +404,9 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
 
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) {
     BitBoard    res;
-    if (p1_pairs_captured == 4) /* NOTE : should do something more intelligent for the case of multiple captures in one move. */
-        res |= pair_capture_detector(p1, p2);
+    // if (p1_pairs_captured == 4) /* NOTE : should do something more intelligent for the case of multiple captures in one move. */
+        // res |= pair_capture_detector(p1, p2);
+    res |= highlight_win_capture_moves(p1, p2, p1_pairs_captured);
     res |= pattern_detector_highlight_open(p1, p2, { 0x78, 6, 4, 0 }); // -OOOO-
     res |= pattern_detector_highlight_open(p1, p2, { 0xF0, 5, 8, 0 }); // |OOOO-
     res |= pattern_detector_highlight_open(p1, p2, { 0xB8, 5, 8, 0 }); // O-OOO
@@ -561,6 +563,56 @@ BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2) {
             tmp = tmp.shifted(d) & ((0xC0 << n & 0x80) == 0x80 ? p2 : open_cells);
         }
         res |= tmp;
+    }
+    return (res);
+}
+
+BitBoard    pair_capture_detector_highlight(BitBoard const &p1, BitBoard const &p2) {
+    const BitBoard  open_cells = (~p1 & ~p2);
+    BitBoard        res;
+    BitBoard        tmp;
+
+    for (int d = direction::north; d < 8; ++d) {
+        tmp = p1;
+        for (int n = 0; n < 3 && !tmp.is_empty(); ++n) {
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp = tmp.shifted(d) & ((0xC0 << n & 0x80) == 0x80 ? p2 : open_cells);
+        }
+        if (!tmp.is_empty())
+            res |= (tmp.shifted_inv(d, 2) | tmp.shifted_inv(d, 1));
+    }
+    return (res);
+}
+
+BitBoard    pair_capture_breaking_five_detector(BitBoard const &p1, BitBoard const &p2) {
+    BitBoard        res;
+    BitBoard        tmp;
+    BitBoard        alignment = highlight_five_aligned(p2);
+
+    for (int d = direction::north; d < 8; ++d) {
+        tmp = single_direction_pattern_detector(p2, p1, 0xC0, 3, 0, 0x80, d); // |OO- check if you can capture
+        if (((tmp.shifted_inv(d) | tmp.shifted_inv(d,2)) & alignment).is_empty() == false)
+            res |= tmp;
+    }
+    return (res);
+}
+
+BitBoard    highlight_win_capture_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) { // TODO : optimization
+    BitBoard    captures = pair_capture_detector(p1, p2);
+    BitBoard    res;
+    if (!captures.is_empty()) {
+        for (int i = 0; i < 361; ++i) {
+            if (captures.check_bit(i)) {
+                BitBoard tmp = p1;
+                tmp.write(i);
+                tmp = highlight_captured_stones(tmp, p2, i);
+                if (p1_pairs_captured + (tmp.set_count() / 2) >= 5) {
+                    tmp.zeros();
+                    tmp.write(i);
+                    res |= tmp;
+                }
+            }
+        }
     }
     return (res);
 }

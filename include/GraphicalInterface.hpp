@@ -56,6 +56,7 @@ public:
     void            set_nu(bool const &val) { _nu = val; };
 
     std::string     render_choice_menu(void);
+    BitBoard        explored_moves_tmp;
 
 private:
     void            _init_sdl(void);
@@ -69,6 +70,7 @@ private:
     void            _render_stones_number(void);
     void            _render_forbidden(void);
     void            _render_select(void);
+    void            _render_explored(void);
     void            _render_secondary_viewport(void);
     void            _render_buttons(void);
     void            _render_pause(void);
@@ -106,6 +108,7 @@ private:
     SDL_Texture     *_white_stone_tex;
     SDL_Texture     *_black_stone_tex;
     SDL_Texture     *_select_stone_tex;
+    SDL_Texture     *_explored_move_tex;
     SDL_Texture     *_forbidden_tex;
     SDL_Rect        _forbidden_rect;
     /* Computed textures */

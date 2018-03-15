@@ -20,7 +20,6 @@ Human	&Human::operator=(Human const &src) {
 
 bool    Human::play(Player *other) {
     t_action                                action;
-    // static Eigen::Array2i                   pos = this->_game_engine->minmax->minmax(this->_game_engine->grid, this, other);
 
     if (this->_action_duration == std::chrono::steady_clock::duration::zero())
         this->_action_duration = this->_gui->get_analytics()->get_chronometer()->get_elapsed();
@@ -32,9 +31,13 @@ bool    Human::play(Player *other) {
         action.id = this->_game_engine->get_history_size() + 1;
         action.p1_last = this->board;
         action.p2_last = other->board;
+
         action.pid = this->_id;
         action.ppc = this->_pairs_captured;
         if (this->_game_engine->check_action(action, *this, *other)) {
+            // t_ret ret = alphaBetaWithMemory(create_node(*this, *other), -INF, INF, 6);
+            // this->_gui->explored_moves_tmp = ret.moves; // DEBUG
+
             this->_game_engine->update_game_state(action, this, other);
             this->_action_duration = std::chrono::steady_clock::duration::zero();
             return true;

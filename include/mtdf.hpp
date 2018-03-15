@@ -7,6 +7,8 @@
 
 # define INF 2147483647
 
+class Player;
+
 typedef struct  s_node {
     BitBoard        player;
     BitBoard        player_forbidden;
@@ -18,15 +20,20 @@ typedef struct  s_node {
 }               t_node;
 
 typedef struct  s_ret {
-    int score;
-    int p;
+    int         score;
+    int         p;
 }               t_ret;
+
+t_node          create_node(Player const& player, Player const& opponent);
 
 t_ret           max(t_ret const& a, t_ret const& b);
 t_ret           min(t_ret const& a, t_ret const& b);
 int             max(int const& a, t_ret const& b);
 int             min(int const& a, t_ret const& b);
+
 bool            check_end(t_node const& node);
+// bool            check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
+
 BitBoard        moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured);
 t_ret           alphaBetaWithMemory(t_node node, int alpha, int beta, int depth);
 t_ret           alphaBetaMin(t_node node, int alpha, int beta, int depth);

@@ -1,8 +1,22 @@
 #include "mtdf.hpp"
 #include "ZobristTable.hpp"
+#include "Player.hpp"
 
 bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit) { // THIS FUNCTION WORKS
     return (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() > limit);
+}
+
+t_node          create_node(Player const& player, Player const& opponent) {
+    t_node  node;
+
+    node.player = player.board;
+    node.opponent = opponent.board;
+    node.player_forbidden = player.board_forbidden;
+    node.opponent_forbidden = opponent.board_forbidden;
+    node.pid = 1;
+    node.player_pairs_captured = player.get_pairs_captured();
+    node.opponent_pairs_captured = opponent.get_pairs_captured();
+    return (node);
 }
 
 t_ret           max(t_ret const& a, t_ret const& b) { return (a.score > b.score ? a : b); }
@@ -12,32 +26,58 @@ int             min(int const& a, t_ret const& b)   { return (a < b.score ? a : 
 int             max(int const& a, int const& b)     { return (a > b ? a : b); }
 int             min(int const& a, int const& b)     { return (a < b ? a : b); }
 
+# define THRESHOLD 3
+
+/*
+    if neither the player or the opponent has stones, we place in the center position,
+    else if the player has no stones but the opponent has stones, we explore the positions around him.
+
+    if we find a winning move, we also explore the threatened pairs and the captures we can make
+*/
 BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured) {
     BitBoard    moves;
     BitBoard    tmp;
+    bool        win_instant = false;
     bool        player_empty = player.is_empty();
     bool        opponent_empty = opponent.is_empty();
 
-    if (!player_empty) {
-        moves = get_winning_moves(player, opponent, player_pairs_captured);
-        if (!moves.is_empty())
-            return (moves);
-    }
-    if (!player_empty && !opponent_empty)
-        moves |= pair_capture_detector(player, opponent);
-    if (!opponent_empty)
-        moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
-
-    if (!player_empty) { /* if player has stones, check the winning positions first */
-        moves |= get_winning_moves(player, opponent, player_pairs_captured);
-        if (moves.is_empty()) /* if no threats or winning moves, dilate around stones */
-            moves |= get_moves_to_explore(player, opponent) & ~player_forbidden;
-    }
-    else { /* if player has no stones */
-        if (!opponent_empty && moves.is_empty()) /* if opponent has stones and we found no threats */
+    if (player_empty) { /* if player has no stones */
+        if (!opponent_empty) /* if opponent has stones */
             moves |= get_moves_to_explore(opponent, player);
         else
             moves.write(9, 9);
+    }
+
+    /* if five aligned, we want to play the counter move */
+    if (detect_five_aligned(opponent)) {
+        moves = pair_capture_breaking_five_detector(player, opponent);
+        if (moves.is_empty())
+            moves = highlight_win_capture_moves(player, opponent, player_pairs_captured);
+        if (!moves.is_empty()) // protection
+            return (moves & ~player & ~opponent);
+    }
+
+    if (!player_empty) { /* if player has stones, check the winning positions first */
+        moves |= get_winning_moves(player, opponent, player_pairs_captured);
+        if (!moves.is_empty()) win_instant = true;
+        moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
+        moves |= pair_capture_detector(player, opponent);
+        moves |= pair_capture_detector(opponent, player);
+        moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
+        // if (moves.is_empty()) {
+            // moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
+            if (moves.set_count() <= THRESHOLD && !win_instant) {
+                moves |= future_pattern_detector(player, opponent, { 0x78, 6, 4, 0 }); // -OOOO-
+                if (moves.set_count() <= THRESHOLD) {
+                    moves |= future_pattern_detector(player, opponent, { 0x70, 5, 4, 0 }); // -OOO-
+                    moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0 }); // -OO-O-
+                    moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0 }); // |OOOO- // ??
+                    // NOTE: if all moves to explore are threatened by capture, maybe explore other moves (it happens yeah)
+                    if (moves.is_empty())
+                        moves |= get_moves_to_explore(player, opponent) & ~player_forbidden;
+                }
+            }
+        // }
     }
     return (moves & ~player & ~opponent);
 }
@@ -87,6 +127,7 @@ t_ret   alphaBetaMax(t_node node, int alpha, int beta, int depth) {
             }
         }
     }
+    // if (depth == 7) std::cout << moves << std::endl;
     return (best);
 }
 
@@ -116,20 +157,18 @@ int32_t        TT_lookup(t_node const &node, int32_t alpha, int32_t beta, int8_t
     return (-INF);
 }
 
-bool check_end(t_node const& node) {
-    if (node.pid == 2) {
-        if (node.player_pairs_captured >= 5 || detect_five_aligned(node.player))
-            return (true);
-    } else {
-        if (node.opponent_pairs_captured >= 5 || detect_five_aligned(node.opponent))
-            return (true);
-    }
-    if (((node.player | node.opponent) ^ BitBoard::full).is_empty() == true)
-        return (true);
-    return (false);
-}
-
-
+// bool check_end(t_node const& node) {
+//     if (node.pid == 2) {
+//         if (node.player_pairs_captured >= 5 || detect_five_aligned(node.player))
+//             return (true);
+//     } else {
+//         if (node.opponent_pairs_captured >= 5 || detect_five_aligned(node.opponent))
+//             return (true);
+//     }
+//     if (((node.player | node.opponent) ^ BitBoard::full).is_empty() == true)
+//         return (true);
+//     return (false);
+// }
 
 Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth) { // THIS FUNCTION WORKS
     std::chrono::steady_clock::time_point   start = std::chrono::steady_clock::now();
@@ -348,13 +387,8 @@ t_node  simulate_move(t_node const &node, int i) { // this is the biggest perfor
 int32_t        score_function(t_node const &node, uint8_t depth) {
     int32_t     score = 0;
 
-    // if (node.pid == 2) {
-        score += player_score(node, depth);
-        score -= opponent_score(node, depth) * 2;
-    // } else {
-        // score += opponent_score(node, depth);
-        // score -= player_score(node, depth) * 2;
-    // }
+    score += player_score(node, depth);
+    score -= opponent_score(node, depth) * 2;
     return (score);
 }
 
@@ -364,15 +398,14 @@ int32_t    player_score(t_node const &node, uint8_t depth) {
 
     if (detect_five_aligned(node.player))
         return (214748364 * depth);
-    if (node.player_pairs_captured == 5)
+    if (node.player_pairs_captured >= 5)
         return (214748364 * depth);
     for (int i = 0; i < 10; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
-    score += node.player_pairs_captured * node.opponent_pairs_captured * 50000;
-    // if (detect_five_aligned(node.player)) score += 10000000 * depth; // 10,000,000pts for win by alignement
-    // if (node.player_pairs_captured == 5)  score +=  5000000 * depth; //  5,000,000pts for win by pairs captures
+    score += pair_capture_detector(node.player, node.opponent).set_count() * 6000;// pairs capture threatening is good
+    score += node.player_pairs_captured * node.opponent_pairs_captured * 20000;
     return (score);
 }
 
@@ -382,40 +415,68 @@ int32_t    opponent_score(t_node const &node, uint8_t depth) {
 
     if (detect_five_aligned(node.opponent))
         return (214748364 * depth);
-    if (node.opponent_pairs_captured == 5)
+    if (node.opponent_pairs_captured >= 5)
         return (214748364 * depth);
     for (int i = 0; i < 10; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
-        // if (0 <= i && i <= 1)
-            // score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 2 : 0);
-        // else
-            score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+        score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
-    // if (detect_five_aligned(node.opponent)) score += 10000000 * depth; // 10,000,000pts for win by alignement
-    // if (node.opponent_pairs_captured == 5)  score +=  5000000 * depth; //  5,000,000pts for win by pairs captures
-    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 50000;
-    // 50,000 : 100,000 : 200,000 : 400,000 : 800,000
+    score += pair_capture_detector(node.opponent, node.player).set_count() * 6000;// pairs capture threatening is good
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 20000; // 20,000pts 40,000pts 80,000pts 160,000pts 320,000pts
     return (score);
 }
 
-
-// Does not handle the case where we continue to play without having done the capture of the pairs that breaks the five !
-// uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
+// static bool check_end_2(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
+//     static bool delta = false;
 //     if (p1_pairs_captured >= 5)
-//         return (1);
+//         return (true);
 //     if (detect_five_aligned(p1)) {
-//         BitBoard    pairs = pair_capture_detector(p2, p1); // good
 //         /* p2 wins next turn by capturing a fifth pair even though p1 has 5 aligned */
-//         if (!pairs.is_empty() && p2_pairs_captured == 4)
-//             return (0);
-//         /* game continue by capturing stones forming the 5 alignment */
-//         if ( detect_five_aligned(highlight_five_aligned(p1) ^ highlight_captured_stones(p1, p2 ^ pairs, pairs)) == false )
-//             return (0);
-//         return (1);
+//         if (highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty() == false && delta == false) {
+//             delta = true;
+//             return (false);
+//         }
+//         /* game continue by capturing stones that will break the 5 alignment */
+//         if (detect_five_aligned(highlight_five_aligned(p1) & ~pair_capture_detector_highlight(p2, p1)) == false && delta == false) {
+//             delta = true;
+//             return (false);
+//         }
+//         if (delta == true) delta = false;
+//         return (true);
 //     }
 //     if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
-//         return (2);
-//     return (0);
+//         return (true);
+//     return (false);
+// }
+
+bool check_end(t_node const& node) {
+    if (node.pid == 1)
+        return (check_end(node.player, node.opponent, node.player_pairs_captured, node.opponent_pairs_captured, 1));
+    return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, 2));
+}
+
+// Does not handle the case where we continue to play without having done the capture of the pairs that breaks the five !
+// bool check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
+//     static bool delta = false;
+//     if (p1_pairs_captured >= 5)
+//         return (true);
+//     if (detect_five_aligned(p1)) {
+//         /* p2 wins next turn by capturing a fifth pair even though p1 has 5 aligned */
+//         if (highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty() == false && delta == false) {
+//             delta = true;
+//             return (false);
+//         }
+//         /* game continue by capturing stones that will break the 5 alignment */
+//         if (detect_five_aligned(highlight_five_aligned(p1) & ~pair_capture_detector_highlight(p2, p1)) == false && delta == false) {
+//             delta = true;
+//             return (false);
+//         }
+//         if (delta == true) delta = false;
+//         return (true);
+//     }
+//     if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
+//         return (true);
+//     return (false);
 // }
 
 /* old version but simpler so we use it for now */

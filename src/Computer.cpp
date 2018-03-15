@@ -2,7 +2,8 @@
 #include <cstdlib> // TMP
 #include <thread> // TMP
 
-Computer::Computer(GameEngine *game_engine, uint8_t id) : Player(game_engine, NULL, id) {
+// Computer::Computer(GameEngine *game_engine, uint8_t id) : Player(game_engine, NULL, id) {
+Computer::Computer(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id) {
     std::srand(std::time(nullptr));
     this->type = 1;
 }
@@ -24,15 +25,7 @@ bool        Computer::play(Player *other) {
     std::chrono::steady_clock::time_point   action_beg;
     t_action                                action;
     Eigen::Array2i                          pos;
-    t_node                                  node;
-
-    node.player = this->board;
-    node.opponent = other->board;
-    node.player_forbidden = this->board_forbidden;
-    node.opponent_forbidden = other->board_forbidden;
-    node.pid = 1;//this->_id;
-    node.player_pairs_captured = this->_pairs_captured;
-    node.opponent_pairs_captured = other->get_pairs_captured();
+    t_node                                  root = create_node(*this, *other);
 
     action_beg = std::chrono::steady_clock::now();
 
@@ -45,8 +38,10 @@ bool        Computer::play(Player *other) {
     // AlphaBeta   alphabeta(4, false, 500);
     // int16_t p = alphabeta(node, -INF, INF, 5).p;
 
-    int16_t p = alphaBetaWithMemory(node, -INF, INF, 4).p;
-    action.pos = { p / 19, p % 19 };
+    t_ret ret = alphaBetaWithMemory(root, -INF, INF, 4);
+    action.pos = { ret.p / 19, ret.p % 19 };
+    this->_gui->explored_moves_tmp = moves_to_explore(root.player, root.opponent, root.player_forbidden, root.player_pairs_captured, root.opponent_pairs_captured);
+
     // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
    // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
     action.duration = std::chrono::steady_clock::now() - action_beg;

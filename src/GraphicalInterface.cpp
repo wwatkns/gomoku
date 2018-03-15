@@ -4,6 +4,7 @@
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_nu = false;
     this->_quit = false;
+    this->_end_game = false;
     this->_mouse_action = false;
     this->_init_sdl();
 
@@ -92,6 +93,8 @@ void    GraphicalInterface::_load_images(void) {
     this->_white_stone_tex = this->load_texture("./resources/circle_white_outlined.png");
     this->_black_stone_tex = this->load_texture("./resources/circle_black.png");
     this->_select_stone_tex = this->load_texture("./resources/circle_select.png");
+    // this->_explored_move_tex = this->load_texture("./resources/diamond.png");
+    this->_explored_move_tex = this->load_texture("./resources/open_circle.png");
 }
 
 void    GraphicalInterface::_init_sdl(void) {
@@ -222,6 +225,7 @@ void    GraphicalInterface::update_display(void) {
         this->_render_stones_number();
     this->_render_forbidden();
     this->_render_select();
+    this->_render_explored();
     this->_render_secondary_viewport();
     this->_render_buttons();
     this->_render_pause();
@@ -230,7 +234,7 @@ void    GraphicalInterface::update_display(void) {
 }
 
 void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) {
-    if (this->_game_engine->check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured()) == 1) { // TODO : implement draw condition (check_end() == 2)
+    if (check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured(), p1.get_id()) == 1) { // TODO : implement draw condition (check_end() == 2)
         std::string type = (p1.type == 0 ? "human" : "computer");
         this->_winning_color = (p1.type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
         this->_winning_text = std::string("Player ")+std::to_string(p1.get_id())+std::string(" (")+type+std::string(") wins");
@@ -337,6 +341,22 @@ void    GraphicalInterface::_render_select(void) {
     }
 }
 
+void    GraphicalInterface::_render_explored(void) {
+    Eigen::Array2i  s_pos;
+    Eigen::Array2i  g_pos;
+    SDL_Rect        rect;
+
+    for (int i = 0; i < 361; ++i) {
+        if (this->explored_moves_tmp.check_bit(i)) {
+            g_pos = { i / 19, i % 19 };
+            s_pos = this->grid_to_screen(g_pos);
+            rect = {s_pos[1] - (this->_stone_size-10) / 2, s_pos[0] - (this->_stone_size-10) / 2, this->_stone_size-10, this->_stone_size-10};
+            // if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
+            SDL_RenderCopy(this->_renderer, this->_explored_move_tex, NULL, &rect);
+        }
+    }
+}
+
 void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_secondary_viewport);
     /* draw background */
@@ -376,7 +396,7 @@ void    GraphicalInterface::_render_pause(void) {
     if (this->check_pause()) {
         if (this->_analytics->get_chronometer()->is_running() == true)
             this->_analytics->get_chronometer()->stop();
-        SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 150);
+        SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 90);
         SDL_RenderFillRect(this->_renderer, &this->_main_viewport);
     }
     if (!this->check_pause() and this->_analytics->get_chronometer()->is_running() == false)

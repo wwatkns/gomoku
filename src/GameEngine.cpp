@@ -29,15 +29,42 @@ bool    GameEngine::check_action(t_action const &action, Player const &p1, Playe
 }
 
 /* DEBUG */
-uint8_t GameEngine::check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
+// uint8_t GameEngine::check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
+//     if (p1_pairs_captured >= 5)
+//         return (1);
+//     if (detect_five_aligned(p1))
+//         return (1);
+//     if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
+//         return (2);
+//     return (0);
+// }
+
+uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint8_t const& pid) {
+    static bool dp[2] = {false, false};
+    bool *d = (pid == 1 ? &dp[0] : &dp[1]);
+
     if (p1_pairs_captured >= 5)
         return (1);
-    if (detect_five_aligned(p1))
+    if (detect_five_aligned(p1)) {
+        /* p2 wins next turn if he can play a move allowing him to capture for a total of 5 or more stones */
+        if (highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty() == false && *d == false) {
+            *d = true;
+            return (0);
+        }
+        /* game continue by capturing stones that will break the 5 alignment */
+        if (pair_capture_breaking_five_detector(p2, p1).is_empty() == false) {
+            *d = true;
+            return (0);
+        }
         return (1);
+    }
+    else
+        *d = (*d ? false : *d);
     if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
         return (2);
     return (0);
 }
+
 
 // uint8_t GameEngine::check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
 //     if (p1_pairs_captured >= 5)

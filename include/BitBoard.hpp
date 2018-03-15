@@ -107,6 +107,9 @@ BitBoard    highlight_five_aligned(BitBoard const &bitboard);
 
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);      /* detect the positions leading to one or multiple captures */
 BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, int move);  /* return the board showing the stones captured */
+BitBoard    pair_capture_detector_highlight(BitBoard const &p1, BitBoard const &p2); /* detect the positions leading to one or multiple captures but highlights the stones that will be captured */
+BitBoard    pair_capture_breaking_five_detector(BitBoard const &p1, BitBoard const &p2);
+BitBoard    highlight_win_capture_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
 
 namespace direction {
     enum direction {
