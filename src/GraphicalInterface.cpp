@@ -3,6 +3,7 @@
 
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_nu = false;
+    this->_db = false;
     this->_quit = false;
     this->_end_game = false;
     this->_mouse_action = false;
@@ -221,11 +222,10 @@ void    GraphicalInterface::update_events(void) {
 void    GraphicalInterface::update_display(void) {
     this->_render_board();
     this->_render_stones();
-    if (this->_nu)
-        this->_render_stones_number();
+    if (this->_nu) this->_render_stones_number();
     this->_render_forbidden();
     this->_render_select();
-    this->_render_explored();
+    if (this->_db) this->_render_explored();
     this->_render_secondary_viewport();
     this->_render_buttons();
     this->_render_pause();
@@ -455,8 +455,12 @@ std::string GraphicalInterface::render_choice_menu(void) {
     Button *p2 = new Button(this->_renderer, "Player 2:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40+29}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
     Button *go = new Button(this->_renderer, "Start", this->_handle_ratio((Eigen::Array2i){this->_win_w/2+108, this->_win_h/2+70}), button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
     Button *ng = new Button(this->_renderer, "New Game", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2-93}), button_padding, font, this->_color_header, this->_color_font, this->_color_white, this->_color_header);
+    /* debug switch */
+    Button *db = new Button(this->_renderer, "  Debug :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-145, this->_win_h/2+47}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    ButtonSwitch *sd = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+48}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
+    /* numbers switch */
     Button *nu = new Button(this->_renderer, "Numbers :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
-    ButtonSwitch *sn = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+71}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_font_2);
+    ButtonSwitch *sn = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+71}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
 
     SDL_Rect    rect;
     std::string out = "";
@@ -483,9 +487,12 @@ std::string GraphicalInterface::render_choice_menu(void) {
         this->_menu_button_player_2->update_state(&this->_mouse_pos, this->_mouse_action);
         go->update_state(&this->_mouse_pos, this->_mouse_action);
         sn->update_state(&this->_mouse_pos, this->_mouse_action);
+        sd->update_state(&this->_mouse_pos, this->_mouse_action);
 
         this->_menu_button_player_1->render(this->_renderer, &this->_mouse_pos);
         this->_menu_button_player_2->render(this->_renderer, &this->_mouse_pos);
+        sd->render(this->_renderer, &this->_mouse_pos);
+        db->render(this->_renderer, &this->_mouse_pos);
         sn->render(this->_renderer, &this->_mouse_pos);
         nu->render(this->_renderer, &this->_mouse_pos);
         ng->render(this->_renderer, &this->_mouse_pos);
@@ -497,6 +504,7 @@ std::string GraphicalInterface::render_choice_menu(void) {
             out += std::string( "p1=")+std::string((this->_menu_button_player_1->get_activated_button() == 0?"H":"C"));
             out += std::string(",p2=")+std::string((this->_menu_button_player_2->get_activated_button() == 0?"H":"C"));
             out += std::string(",nu=")+std::string((sn->get_state()?"1":"0"));
+            out += std::string(",db=")+std::string((sd->get_state()?"1":"0"));
             break;
         }
         SDL_RenderPresent(this->_renderer);
@@ -505,6 +513,9 @@ std::string GraphicalInterface::render_choice_menu(void) {
     TTF_CloseFont(font_bold);
     delete p1;
     delete p2;
+    delete sd;
+    delete db;
+    delete nu;
     delete sn;
     delete ng;
     delete go;

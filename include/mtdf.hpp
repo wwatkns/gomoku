@@ -6,6 +6,7 @@
 # include "BitBoard.hpp"
 
 # define INF 2147483647
+# define EXPLORATION_THRESHOLD 3
 
 class Player;
 
@@ -30,9 +31,10 @@ t_ret           max(t_ret const& a, t_ret const& b);
 t_ret           min(t_ret const& a, t_ret const& b);
 int             max(int const& a, t_ret const& b);
 int             min(int const& a, t_ret const& b);
+int             max(int const& a, int const& b);
+int             min(int const& a, int const& b);
 
 bool            check_end(t_node const& node);
-// bool            check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
 
 BitBoard        moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured);
 t_ret           alphaBetaWithMemory(t_node node, int alpha, int beta, int depth);
@@ -92,8 +94,3 @@ private:
 };
 
 #endif
-
-/*
-    AlphaBeta   alphabeta(3, 500);
-    alphabeta(node, -INF, INF);
-*/

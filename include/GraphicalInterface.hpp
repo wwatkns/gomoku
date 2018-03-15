@@ -52,8 +52,11 @@ public:
     Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
     bool            get_mouse_action(void) const { return _mouse_action; };
     bool            get_end_game(void) const { return _end_game; };
+    
     bool            get_nu(void) const { return _nu; };
+    bool            get_db(void) const { return _db; };
     void            set_nu(bool const &val) { _nu = val; };
+    void            set_db(bool const &val) { _db = val; };
 
     std::string     render_choice_menu(void);
     BitBoard        explored_moves_tmp;
@@ -146,6 +149,7 @@ private:
 
     /* misc */
     bool            _nu;
+    bool            _db;
     bool            _end_game;
 
     std::string     _stone_num_text;

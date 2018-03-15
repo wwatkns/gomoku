@@ -10,7 +10,7 @@ const BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 
 const BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
 const std::array<t_pattern,11> BitBoard::patterns = {
     (t_pattern){ 0x70, 5, 4,  8192 },  //   -OOO-  :  open three
-    (t_pattern){ 0x68, 6, 8,  6000 },  //  -OO-O-  :  open split three
+    (t_pattern){ 0x68, 6, 8,  7000 },  //  -OO-O-  :  open split three
     (t_pattern){ 0x78, 6, 4, 65535 },  //  -OOOO-  :  open four
     (t_pattern){ 0xE0, 4, 8,   255 },  //    OOO-  :  close three
     (t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
@@ -396,6 +396,7 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
     res |= highlight_win_capture_moves(p2, p1, p2_pairs_captured);
     res |= pattern_detector_highlight_open(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
     res |= pattern_detector_highlight_open(p2, p1, { 0x68, 6, 8, 0 }); // -OO-O-
+    res |= pattern_detector_highlight_open(p2, p1, { 0x78, 6, 4, 0 }); // -OOOO-
     res |= pattern_detector_highlight_open(p2, p1, { 0xF0, 5, 8, 0 }); // |OOOO-
     res |= pattern_detector_highlight_open(p2, p1, { 0xB8, 5, 8, 0 }); // O-OOO
     res |= pattern_detector_highlight_open(p2, p1, { 0xD8, 5, 4, 0 }); // OO-OO

@@ -19,21 +19,6 @@ t_node          create_node(Player const& player, Player const& opponent) {
     return (node);
 }
 
-t_ret           max(t_ret const& a, t_ret const& b) { return (a.score > b.score ? a : b); }
-t_ret           min(t_ret const& a, t_ret const& b) { return (a.score < b.score ? a : b); }
-int             max(int const& a, t_ret const& b)   { return (a > b.score ? a : b.score); }
-int             min(int const& a, t_ret const& b)   { return (a < b.score ? a : b.score); }
-int             max(int const& a, int const& b)     { return (a > b ? a : b); }
-int             min(int const& a, int const& b)     { return (a < b ? a : b); }
-
-# define THRESHOLD 3
-
-/*
-    if neither the player or the opponent has stones, we place in the center position,
-    else if the player has no stones but the opponent has stones, we explore the positions around him.
-
-    if we find a winning move, we also explore the threatened pairs and the captures we can make
-*/
 BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured) {
     BitBoard    moves;
     BitBoard    tmp;
@@ -44,10 +29,10 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
     if (player_empty) { /* if player has no stones */
         if (!opponent_empty) /* if opponent has stones */
             moves |= get_moves_to_explore(opponent, player);
-        else
+        else /* if the board is totally empty */
             moves.write(9, 9);
+        return (moves);
     }
-
     /* if five aligned, we want to play the counter move */
     if (detect_five_aligned(opponent)) {
         moves = pair_capture_breaking_five_detector(player, opponent);
@@ -57,29 +42,27 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
             return (moves & ~player & ~opponent);
     }
 
-    if (!player_empty) { /* if player has stones, check the winning positions first */
-        moves |= get_winning_moves(player, opponent, player_pairs_captured);
-        if (!moves.is_empty()) win_instant = true;
-        moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
+    moves |= get_winning_moves(player, opponent, player_pairs_captured);
+    if (!moves.is_empty()) win_instant = true;
+    moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
+    // moves |= pair_capture_detector(player, opponent);
+    moves |= pair_capture_detector(opponent, player);
+    moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
+    if (!win_instant)
         moves |= pair_capture_detector(player, opponent);
-        moves |= pair_capture_detector(opponent, player);
-        moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
-        // if (moves.is_empty()) {
-            // moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
-            if (moves.set_count() <= THRESHOLD && !win_instant) {
-                moves |= future_pattern_detector(player, opponent, { 0x78, 6, 4, 0 }); // -OOOO-
-                if (moves.set_count() <= THRESHOLD) {
-                    moves |= future_pattern_detector(player, opponent, { 0x70, 5, 4, 0 }); // -OOO-
-                    moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0 }); // -OO-O-
-                    moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0 }); // |OOOO- // ??
-                    // NOTE: if all moves to explore are threatened by capture, maybe explore other moves (it happens yeah)
-                    if (moves.is_empty())
-                        moves |= get_moves_to_explore(player, opponent) & ~player_forbidden;
-                }
-            }
-        // }
+
+    if (moves.set_count() <= EXPLORATION_THRESHOLD && !win_instant) {
+        moves |= future_pattern_detector(player, opponent, { 0x78, 6, 4, 0 }); // -OOOO-
+        if (moves.set_count() <= EXPLORATION_THRESHOLD) {
+            moves |= future_pattern_detector(player, opponent, { 0x70, 5, 4, 0 }); // -OOO-
+            moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0 }); // -OO-O-
+            moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0 }); // |OOOO- // ??
+            // NOTE: if all moves to explore are threatened by capture, maybe explore other moves (it happens yeah)
+            if (moves.is_empty())
+                moves |= get_moves_to_explore(player, opponent) & ~player_forbidden;
+        }
     }
-    return (moves & ~player & ~opponent);
+    return (moves & ~player & ~opponent & ~player_forbidden);
 }
 
 t_ret   alphaBetaWithMemory(t_node node, int alpha, int beta, int depth) {
@@ -127,7 +110,6 @@ t_ret   alphaBetaMax(t_node node, int alpha, int beta, int depth) {
             }
         }
     }
-    // if (depth == 7) std::cout << moves << std::endl;
     return (best);
 }
 
@@ -156,19 +138,6 @@ int32_t        TT_lookup(t_node const &node, int32_t alpha, int32_t beta, int8_t
     }
     return (-INF);
 }
-
-// bool check_end(t_node const& node) {
-//     if (node.pid == 2) {
-//         if (node.player_pairs_captured >= 5 || detect_five_aligned(node.player))
-//             return (true);
-//     } else {
-//         if (node.opponent_pairs_captured >= 5 || detect_five_aligned(node.opponent))
-//             return (true);
-//     }
-//     if (((node.player | node.opponent) ^ BitBoard::full).is_empty() == true)
-//         return (true);
-//     return (false);
-// }
 
 Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth) { // THIS FUNCTION WORKS
     std::chrono::steady_clock::time_point   start = std::chrono::steady_clock::now();
@@ -203,122 +172,6 @@ t_ret   mtdf(t_node *root, int32_t firstguess, int8_t depth) { // THIS FUNCTION 
     } while (bound[0] >= bound[1]);
     return (ret);
 }
-
-// t_ret   alphaBetaWithMemory(t_node root, int32_t alpha, int32_t beta, int8_t depth) {
-//     // int32_t lookup = TT_lookup(root, alpha, beta, depth);
-//     // if (lookup != -INF)
-//     //     return ((t_ret){lookup, 171});
-//
-//     BitBoard    moves = get_moves_to_explore(root.player, root.opponent) & ~root.player_forbidden;
-//     if (moves.set_count() == 0) {
-//         moves = get_moves_to_explore(root.opponent, root.player) & ~root.opponent_forbidden;
-//         if (moves.set_count() == 0)
-//             moves.write(9, 9);
-//     }
-//
-//     uint16_t        pos;
-//     int             g = -INF;
-//     int             a = alpha;
-//
-//     for (int i = 0; i < 361 && g < beta; ++i) {
-//         if (moves.check_bit(i)) {
-//             // v = min(simulate_move(root, i), alpha, beta, depth-1);
-//             g = min(simulate_move(root, i), a, beta, depth-1);
-//             if (g > a) { // max_val
-//                 a = g;
-//                 pos = i;
-//             }
-//         }
-//     }
-//     TT_store(root, g, alpha, beta, depth);
-//     return ((t_ret){ a, pos });
-// }
-//
-// int32_t        min(t_node node, int32_t alpha, int32_t beta, int8_t depth) {
-//     // int32_t lookup = TT_lookup(node, alpha, beta, depth);
-//     // if (lookup != -INF)
-//     //     return (lookup);
-//     t_stored    entry;
-//
-//     if (ZobristTable::map.count({node.player, node.opponent})) {
-//         entry = ZobristTable::map[{node.player, node.opponent}];
-//         // if (entry.depth >= depth) {
-//             if (entry.flag == ZobristTable::flag::exact)
-//                 return (entry.score);
-//             else if (entry.flag == ZobristTable::flag::lowerbound && entry.score >= beta)
-//                 alpha = entry.score;
-//             else if (entry.flag == ZobristTable::flag::upperbound && entry.score <= alpha)
-//                 beta = entry.score;
-//         // }
-//     }
-//
-//     if (depth == 0 || check_end(node.player, node.opponent, node.player_pairs_captured, node.opponent_pairs_captured)) {
-//         int32_t score = score_function(node, depth+1);
-//         TT_store(node, score, alpha, beta, depth);
-//         return (score);
-//     }
-//
-//     BitBoard    moves = get_moves_to_explore(node.opponent, node.player) & ~node.opponent_forbidden;
-//     int32_t     b = beta; /* backup original */
-//     int         g = INF;
-//
-//     for (int i = 0; i < 361 && g > alpha; ++i) {
-//         if (moves.check_bit(i)) {
-//             g = min_val(g, max(simulate_move(node, i), alpha, b, depth-1));
-//             b = min_val(b, g);
-//             // beta = min_val(beta, max(simulate_move(node, i), alpha, beta, depth-1));
-//             // if (beta <= alpha)
-//                 // break;
-//         }
-//     }
-//     TT_store(node, g, alpha, beta, depth);
-//     return (beta);
-// }
-//
-// int32_t        max(t_node node, int32_t alpha, int32_t beta, int8_t depth) {
-//     // int32_t lookup = TT_lookup(node, alpha, beta, depth);
-//     // if (lookup != -INF)
-//     //     return (lookup);
-//     t_stored    entry;
-//
-//     if (ZobristTable::map.count({node.player, node.opponent})) {
-//         entry = ZobristTable::map[{node.player, node.opponent}];
-//         // if (entry.depth >= depth) {
-//             if (entry.flag == ZobristTable::flag::exact)
-//                 return (entry.score);
-//             else if (entry.flag == ZobristTable::flag::lowerbound && entry.score >= beta)
-//                 alpha = entry.score;
-//             else if (entry.flag == ZobristTable::flag::upperbound && entry.score <= alpha)
-//                 beta = entry.score;
-//         // }
-//     }
-//
-//
-//     if (depth == 0 || check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured)) {
-//         int32_t score = score_function(node, depth+1);
-//         TT_store(node, score, alpha, beta, depth);
-//         return (score);
-//     }
-//
-//     BitBoard    moves = get_moves_to_explore(node.player, node.opponent) & ~node.player_forbidden;
-//     int32_t     a = alpha; /* backup original */
-//     int         g = -INF;
-//
-//     for (int i = 0; i < 361 && g < beta; ++i) {
-//         if (moves.check_bit(i)) {
-//             g = min(simulate_move(node, i), a, beta, depth-1);
-//             a = max_val(a, g);
-//             // alpha = max_val(alpha, min(simulate_move(node, i), a, beta, depth-1));
-//             // alpha = max_val(alpha, min(simulate_move(node, i), alpha, beta, depth-1));
-//             // if (beta <= alpha)
-//             //     break;
-//         }
-//     }
-//     // TT_store(node, alpha, a, beta, depth);
-//     TT_store(node, g, alpha, beta, depth);
-//     return (alpha);
-// }
-
 
 // void        TT_store(t_node const &node, int32_t best, int32_t alpha, int32_t beta, int8_t depth) {
 //     t_stored    entry;
@@ -404,8 +257,8 @@ int32_t    player_score(t_node const &node, uint8_t depth) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
-    score += pair_capture_detector(node.player, node.opponent).set_count() * 6000;// pairs capture threatening is good
-    score += node.player_pairs_captured * node.opponent_pairs_captured * 20000;
+    score += pair_capture_detector(node.player, node.opponent).set_count() * 5000;// pairs capture threatening is good
+    score += node.player_pairs_captured * node.opponent_pairs_captured * 10000;
     return (score);
 }
 
@@ -419,35 +272,15 @@ int32_t    opponent_score(t_node const &node, uint8_t depth) {
         return (214748364 * depth);
     for (int i = 0; i < 10; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
-        score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+        if (0 <= i && i <= 1)
+            score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 5 : 0);
+        else
+            score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
-    score += pair_capture_detector(node.opponent, node.player).set_count() * 6000;// pairs capture threatening is good
-    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 20000; // 20,000pts 40,000pts 80,000pts 160,000pts 320,000pts
+    score += pair_capture_detector(node.opponent, node.player).set_count() * 5000;// pairs capture threatening is good
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 10000; // 10,000pts 20,000pts 40,000pts 80,000pts
     return (score);
 }
-
-// static bool check_end_2(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
-//     static bool delta = false;
-//     if (p1_pairs_captured >= 5)
-//         return (true);
-//     if (detect_five_aligned(p1)) {
-//         /* p2 wins next turn by capturing a fifth pair even though p1 has 5 aligned */
-//         if (highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty() == false && delta == false) {
-//             delta = true;
-//             return (false);
-//         }
-//         /* game continue by capturing stones that will break the 5 alignment */
-//         if (detect_five_aligned(highlight_five_aligned(p1) & ~pair_capture_detector_highlight(p2, p1)) == false && delta == false) {
-//             delta = true;
-//             return (false);
-//         }
-//         if (delta == true) delta = false;
-//         return (true);
-//     }
-//     if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
-//         return (true);
-//     return (false);
-// }
 
 bool check_end(t_node const& node) {
     if (node.pid == 1)
@@ -455,49 +288,6 @@ bool check_end(t_node const& node) {
     return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, 2));
 }
 
-// Does not handle the case where we continue to play without having done the capture of the pairs that breaks the five !
-// bool check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
-//     static bool delta = false;
-//     if (p1_pairs_captured >= 5)
-//         return (true);
-//     if (detect_five_aligned(p1)) {
-//         /* p2 wins next turn by capturing a fifth pair even though p1 has 5 aligned */
-//         if (highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty() == false && delta == false) {
-//             delta = true;
-//             return (false);
-//         }
-//         /* game continue by capturing stones that will break the 5 alignment */
-//         if (detect_five_aligned(highlight_five_aligned(p1) & ~pair_capture_detector_highlight(p2, p1)) == false && delta == false) {
-//             delta = true;
-//             return (false);
-//         }
-//         if (delta == true) delta = false;
-//         return (true);
-//     }
-//     if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
-//         return (true);
-//     return (false);
-// }
-
-/* old version but simpler so we use it for now */
-// bool check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured) {
-//     if (player_pairs_captured >= 5)
-//         return (true);
-//     if (detect_five_aligned(player) == true)
-//         return (true);
-//     if (((player | opponent) ^ BitBoard::full).is_empty() == true)
-//         return (true);
-//     return (false);
-// }
-//
-// int32_t         min_val(int32_t const &a, int32_t const &b) {
-//     return (a < b ? a : b);
-// }
-//
-// int32_t         max_val(int32_t const &a, int32_t const &b) {
-//     return (a > b ? a : b);
-// }
-//
 // Eigen::Array2i  iterativeDeepening(t_node root, int max_depth) {
 //     AlphaBeta   alphabeta(max_depth, true, 500);
 //     t_ret       ret = { 0, 0 };
@@ -635,3 +425,10 @@ bool check_end(t_node const& node) {
 //     }
 //     return (false);
 // }
+
+t_ret           max(t_ret const& a, t_ret const& b) { return (a.score > b.score ? a : b); };
+t_ret           min(t_ret const& a, t_ret const& b) { return (a.score < b.score ? a : b); };
+int             max(int const& a, t_ret const& b)   { return (a > b.score ? a : b.score); };
+int             min(int const& a, t_ret const& b)   { return (a < b.score ? a : b.score); };
+int             max(int const& a, int const& b)     { return (a > b ? a : b); };
+int             min(int const& a, int const& b)     { return (a < b ? a : b); };
