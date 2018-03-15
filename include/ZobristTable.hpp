@@ -12,12 +12,12 @@
 # define S 3        // the number of states
 
 typedef struct  s_stored {
-    int         pos;
+    // int         pos;
     int32_t     upperbound;
     int32_t     lowerbound;
-    int32_t     score;
-    int8_t      depth;
-    uint8_t     flag;
+    // int32_t     score;
+    // int8_t      depth;
+    // uint8_t     flag;
 }               t_stored;
 
 namespace ZobristTable {
@@ -61,6 +61,8 @@ namespace ZobristTable {
         }
     };
     std::unordered_map<Key, t_stored, KeyHash>  map;
+    std::unordered_map<Key, int, KeyHash>  upperbound_map;
+    std::unordered_map<Key, int, KeyHash>  lowerbound_map;
 }
 
 #endif
