@@ -34,7 +34,7 @@ uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pair
 
     if (p1_pairs_captured >= 5)
         return (1);
-    /* if we detected a five alignement last turn and it's still here */
+    /* if we detected a five alignment last turn and it's still here */
     if (*d && detect_five_aligned(p1))
         return (1);
     if (detect_five_aligned(p1)) {

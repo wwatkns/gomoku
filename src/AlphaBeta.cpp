@@ -120,7 +120,7 @@ int32_t    player_score(t_node *node, uint8_t depth) {
         // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
         // score += ((board & node->opponent_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 10 : 0);
     }
-    if (detect_five_aligned(node->player)) score += 10000000 * depth; // 10,000,000pts for win by alignement
+    if (detect_five_aligned(node->player)) score += 10000000 * depth; // 10,000,000pts for win by alignment
     if (node->player_pairs_captured == 5)  score +=  5000000 * depth; //  5,000,000pts for win by pairs captures
     score += node->player_pairs_captured * 50000;                     //     50,000pts/captures
     return (score);
@@ -139,7 +139,7 @@ int32_t    opponent_score(t_node *node, uint8_t depth) {
         // Bonus x10 if patterns ends on opponent_forbidden, so he cannot counter
         // score += ((board & node->player_forbidden).is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 10 : 0);
     }
-    if (detect_five_aligned(node->opponent)) score += 10000000 * depth; // 10,000,000pts for win by alignement
+    if (detect_five_aligned(node->opponent)) score += 10000000 * depth; // 10,000,000pts for win by alignment
     if (node->opponent_pairs_captured == 5)  score +=  5000000 * depth; //  5,000,000pts for win by pairs captures
     score += node->opponent_pairs_captured * 50000;                     //     50,000pts/captures
     return (score);

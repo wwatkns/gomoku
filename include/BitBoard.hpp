@@ -93,7 +93,8 @@ public:
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
 BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured);
-BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
+// BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
+BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured);
 
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
 BitBoard    future_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);

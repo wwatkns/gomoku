@@ -373,12 +373,23 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
     return (res & ~p1 & ~p2);
 }
 
-BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) {
+// BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) {
+//     BitBoard    res;
+//     res |= highlight_win_capture_moves(p1, p2, p1_pairs_captured);
+//     res |= future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 }); // future pattern detection on OOOOO
+//     return (res & ~p1 & ~p2);
+// }
+/* now return the moves that instant win (no possible counter by opponent) */
+BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured) {
     BitBoard    res;
+    res = future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 });
+    /* if there is no possibility of breaking the alignment and no winning pair capture either */
+    if (pair_capture_breaking_five_detector(p2, (p1 | res)).is_empty() && highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty())
+        return (res & ~p1 & ~p2);
     res |= highlight_win_capture_moves(p1, p2, p1_pairs_captured);
-    res |= future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 }); // future pattern detection on OOOOO
     return (res & ~p1 & ~p2);
 }
+
 
 /*  detect a sub-pattern in a single direction
 */
