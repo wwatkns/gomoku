@@ -255,16 +255,20 @@ int32_t    player_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int32_t     score = 0;
 
-    if (detect_five_aligned(node.player))
+    if (detect_five_aligned(node.player) && pair_capture_breaking_five_detector(node.opponent, node.player).is_empty())
         return (214748364 * depth);
     if (node.player_pairs_captured >= 5)
         return (214748364 * depth);
     for (int i = 0; i < 10; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
-        score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+        if (0 <= i && i <= 1)
+            score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value * 5 : 0);
+        else
+            score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
-    score += pair_capture_detector(node.player, node.opponent).set_count() * 5000;// pairs capture threatening is good
-    score += node.player_pairs_captured * node.player_pairs_captured * 10000;
+    score += pair_capture_detector(node.player, node.opponent).set_count() * 5000;//  5,000pts / pairs capture threatening
+    score += node.player_pairs_captured * node.player_pairs_captured * 10000;     // 10,000pts 40,000pts 90,000pts 160,000pts
+    score += (detect_five_aligned(node.player) ? 2000000 * depth : 0);            // 2,000,000pts for non winning five-alignment
     return (score);
 }
 
@@ -272,7 +276,7 @@ int32_t    opponent_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int32_t     score = 0;
 
-    if (detect_five_aligned(node.opponent))
+    if (detect_five_aligned(node.opponent) && pair_capture_breaking_five_detector(node.player, node.opponent).is_empty())
         return (214748364 * depth);
     if (node.opponent_pairs_captured >= 5)
         return (214748364 * depth);
@@ -283,8 +287,9 @@ int32_t    opponent_score(t_node const &node, uint8_t depth) {
         else
             score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
-    score += pair_capture_detector(node.opponent, node.player).set_count() * 5000;// pairs capture threatening is good
-    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 10000; // 10,000pts 20,000pts 40,000pts 80,000pts
+    score += pair_capture_detector(node.opponent, node.player).set_count() * 5000;//  5,000pts / pairs capture threatening
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 10000; // 10,000pts 40,000pts 90,000pts 160,000pts
+    score += (detect_five_aligned(node.opponent) ? 2000000 * depth : 0);          // 2,000,000pts for non winning five-alignment
     return (score);
 }
 
