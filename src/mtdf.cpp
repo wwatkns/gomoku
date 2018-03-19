@@ -58,12 +58,13 @@ Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth) {
     g_counter = 0;
     g_nodes_explored = 0;
 
-    for (int depth = 2; depth <= max_depth; depth++) {
+    for (int depth = 1; depth <= max_depth; depth++) {
         g = mtdf(root, g, depth);
         if (times_up(start, 500)) {
             std::cout << "TIMES UP, reached depth : " << depth << std::endl;
             break;
         }
+        std::cout << "depth: " << depth << std::endl;
     }
     return ((Eigen::Array2i){ g.p / 19, g.p % 19 });
 }
@@ -84,29 +85,77 @@ t_ret   mtdf(t_node *root, t_ret g, int8_t depth) {
     return (best);
 }
 
+/*
+function AlphaBetaWithMemory(n : node_type; alpha , beta , d : integer) : integer;
+    if retrieve(n) == OK then // Transposition table lookup
+        if n.lowerbound >= beta then
+            return n.lowerbound;
+        if n.upperbound <= alpha then
+            return n.upperbound;
+        alpha := max(alpha, n.lowerbound);
+        beta := min(beta, n.upperbound);
+    if d == 0 then
+        g := evaluate(n); // leaf node
+    else if n == MAXNODE then
+        g := -INFINITY;
+        a := alpha; // save original alpha value
+        c := firstchild(n);
+        while (g < beta) and (c != NOCHILD) do
+            g := max(g, AlphaBetaWithMemory(c, a, beta, d - 1));
+            a := max(a, g);
+            c := nextbrother(c);
+    else // n is a MINNODE
+        g := +INFINITY;
+        b := beta; // save original beta value
+        c := firstchild(n);
+        while (g > alpha) and (c != NOCHILD) do
+            g := min(g, AlphaBetaWithMemory(c, alpha, b, d - 1));
+            b := min(b, g);
+            c := nextbrother(c);
+    // Traditional transposition table storing of bounds
+    // Fail low result implies an upper bound
+    if g <= alpha then
+        n.upperbound := g; 
+        store n.upperbound;
+    // Found an accurate minimax value - will not occur if called with zero window
+    if g >  alpha and g < beta then
+        n.lowerbound := g;
+        n.upperbound := g;
+        store n.lowerbound, n.upperbound;
+    // Fail high result implies a lower bound
+    if g >= beta then
+        n.lowerbound := g;
+        store n.lowerbound;
+    return g;
+*/
+
 t_ret   ft_alphaBetaWithMemory(t_node node, int alpha, int beta, int depth, int player) {
-    g_nodes_explored++;
-    int         value;
-    int         bound;
-    t_ret       best;
+    int             g;
+    int             lowerbound;
+    int             upperbound;
+    int             a; // alpha save
+    int             b; // beta save
+    t_ret           best;
 
-    if (ZobristTable::upperbound_map.find({node.player, node.opponent}) != ZobristTable::upperbound_map.end()) {
-        bound = ZobristTable::upperbound_map[{node.player, node.opponent}];
-        if (bound >= beta) {
-            return ((t_ret){ bound, -INF });
-        }
-        alpha = max(alpha, bound);
-    }
     if (ZobristTable::lowerbound_map.find({node.player, node.opponent}) != ZobristTable::lowerbound_map.end()) {
-        bound = ZobristTable::lowerbound_map[{node.player, node.opponent}];        
-        if (bound <= alpha) {
-            return ((t_ret){ bound, -INF });
-        }
-        beta = max(beta, bound);
+        lowerbound = ZobristTable::lowerbound_map[{node.player, node.opponent}];        
+        if (lowerbound >= beta) // Fail high
+            return ((t_ret){ lowerbound, -INF });
+        alpha = max(alpha, lowerbound);
     }
+    if (ZobristTable::upperbound_map.find({node.player, node.opponent}) != ZobristTable::upperbound_map.end()) {
+        upperbound = ZobristTable::upperbound_map[{node.player, node.opponent}];
+        if (upperbound <= alpha) // Fail Low
+            return ((t_ret){ upperbound, -INF });
+        beta = min(beta, upperbound);
+    }
+    // PBLM : cas où j'ai une lowerbound ou juste une upperbound...
+    // if (alpha >= beta)
+        // return ((t_ret){ bound, -INF });
 
-    if (depth == 0 || check_end(node))
+    if (depth == 0 || check_end(node)) {
         return ((t_ret){ score_function(node, depth+1), -INF });
+    }
 
     // MAX PLAYER
     else if (player) {
@@ -114,10 +163,10 @@ t_ret   ft_alphaBetaWithMemory(t_node node, int alpha, int beta, int depth, int 
         BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = ft_alphaBetaWithMemory(simulate_move(node, i), best.score, beta, depth-1, 0).score;
-                if (value > best.score)
-                    best = { value, i };
-                if (value > beta) {
+                g = ft_alphaBetaWithMemory(simulate_move(node, i), best.score, beta, depth-1, 0).score;
+                if (g > best.score)
+                    best = { g, i };
+                if (g >= beta) {
                     break;
                 }
             }
@@ -129,10 +178,10 @@ t_ret   ft_alphaBetaWithMemory(t_node node, int alpha, int beta, int depth, int 
         BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = ft_alphaBetaWithMemory(simulate_move(node, i), alpha, best.score, depth-1, 1).score;
-                if (value < best.score)
-                    best = { value, i };
-                if (alpha > value) {
+                g = ft_alphaBetaWithMemory(simulate_move(node, i), alpha, best.score, depth-1, 1).score;
+                if (g < best.score)
+                    best = { g, i };
+                if (g <= alpha) {
                     break;
                 }
             }
