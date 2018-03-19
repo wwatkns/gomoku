@@ -94,13 +94,11 @@ std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
 BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured);
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
-BitBoard    get_moves_to_explore(BitBoard const &p1, BitBoard const &p2);
 
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
 BitBoard    future_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    pattern_detector_highlight_open(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
-// BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
 
 bool        detect_five_aligned(BitBoard const &bitboard);
 BitBoard    highlight_five_aligned(BitBoard const &bitboard);

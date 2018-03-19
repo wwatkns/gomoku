@@ -38,7 +38,7 @@ bool        Computer::play(Player *other) {
     // AlphaBeta   alphabeta(4, false, 500);
     // int16_t p = alphabeta(node, -INF, INF, 5).p;
 
-    t_ret ret = alphaBetaWithMemory(root, -INF, INF, 7);
+    t_ret ret = alphaBetaWithMemory(root, -INF, INF, 6);
     action.pos = { ret.p / 19, ret.p % 19 };
     this->_gui->explored_moves_tmp = moves_to_explore(root.player, root.opponent, root.player_forbidden, root.player_pairs_captured, root.opponent_pairs_captured);
 

@@ -20,10 +20,6 @@ const std::array<t_pattern,11> BitBoard::patterns = {
     (t_pattern){ 0xD8, 5, 8, 16383 },  //   OO-OO  :  split four #2
     (t_pattern){ 0xE8, 5, 8, 16383 },  //   OOO-O  :  split four #3
     (t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
-
-    // (t_pattern){ 0x5C, 6, 8,  2047 },  //  -O-OOO  :  split four #1
-    // (t_pattern){ 0x6C, 6, 8,  2047 },  //  -OO-OO  :  split four #2
-    // (t_pattern){ 0x74, 6, 8,  2047 },  //  -OOO-O  :  split four #3
 };
 
 
@@ -117,7 +113,6 @@ void    BitBoard::remove(const uint64_t i) {
     this->values[i >> 6] &= ~(0x8000000000000000 >> (i & 0x3F));
 }
 
-
 static int popcount64(uint64_t x) {
     x = x - ((x >> 1) & 0x5555555555555555);
     x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
@@ -126,7 +121,7 @@ static int popcount64(uint64_t x) {
 /*  return the number of bits set to 1 in the bitboard using
     Brian Kernighan's method.
 */
-// int    BitBoard::set_count(void) const { // test other implementation below
+// int    BitBoard::set_count(void) const {
 //     uint64_t    tmp;
 //     int         res = 0;
 //
@@ -136,7 +131,7 @@ static int popcount64(uint64_t x) {
 //     return (res);
 // }
 
-int    BitBoard::set_count(void) const { // test other implementation below
+int    BitBoard::set_count(void) const {
     int         res = 0;
     for (int i = N; i--; )
         res += popcount64(this->values[i]);
@@ -368,36 +363,13 @@ bool        BitBoard::operator!=(BitBoard const &rhs) const {
 /*
 ** Non-member functions
 */
-/* will return the interesting positions to explore for p1,
-   it creates a star pattern of size 2 around p1 positions taking into account
-   p2 pieces (so a potential position behind an enemy stone will be ignored)
-   +-----------+
-   | 1 . 1 . 1 |
-   | . 1 1 1 . |
-   | 1 1 . 1 1 |
-   | . 1 1 1 . |
-   | 1 . 1 . 1 |
-   +-----------+
-*/
-BitBoard    get_moves_to_explore(BitBoard const &p1, BitBoard const &p2) {
-    BitBoard    res = p1.dilated() & ~p2;
-    // for (int d = direction::north; d < 8; ++d) {
-    //     res = (d > 0 && d < 4 ? res & ~BitBoard::border_right : (d > 4 && d < 8 ? res & ~BitBoard::border_left : res));
-    //     res |= (p1.shifted(d) & p2).shifted(d) ^ p1.shifted(d, 2);
-    // }
-    res |= pair_capture_detector(p1, p2);
-    return (res & ~p1 & ~p2);
-}
 
 BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured) {
     BitBoard    res;
-    // if (p2_pairs_captured == 4) /* NOTE : should do something more intelligent for the case of multiple captures in one move. */
-        // res |= pair_capture_detector(p2, p1);
     res |= highlight_win_capture_moves(p2, p1, p2_pairs_captured);
     res |= pattern_detector_highlight_open(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
     res |= pattern_detector_highlight_open(p2, p1, { 0x68, 6, 8, 0 }); // -OO-O-
-    res |= pattern_detector_highlight_open(p2, p1, { 0x78, 6, 4, 0 }); // -OOOO-
-    res |= pattern_detector_highlight_open(p2, p1, { 0xF0, 5, 8, 0 }); // |OOOO-
+    res |= pattern_detector_highlight_open(p2, p1, { 0x78, 5, 8, 0 }); // -OOOO
     res |= pattern_detector_highlight_open(p2, p1, { 0xB8, 5, 8, 0 }); // O-OOO
     res |= pattern_detector_highlight_open(p2, p1, { 0xD8, 5, 4, 0 }); // OO-OO
     return (res & ~p1 & ~p2);
@@ -405,11 +377,8 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
 
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) {
     BitBoard    res;
-    // if (p1_pairs_captured == 4) /* NOTE : should do something more intelligent for the case of multiple captures in one move. */
-        // res |= pair_capture_detector(p1, p2);
     res |= highlight_win_capture_moves(p1, p2, p1_pairs_captured);
-    res |= pattern_detector_highlight_open(p1, p2, { 0x78, 6, 4, 0 }); // -OOOO-
-    res |= pattern_detector_highlight_open(p1, p2, { 0xF0, 5, 8, 0 }); // |OOOO-
+    res |= pattern_detector_highlight_open(p1, p2, { 0x78, 5, 8, 0 }); // -OOOO
     res |= pattern_detector_highlight_open(p1, p2, { 0xB8, 5, 8, 0 }); // O-OOO
     res |= pattern_detector_highlight_open(p1, p2, { 0xD8, 5, 4, 0 }); // OO-OO
     return (res & ~p1 & ~p2);

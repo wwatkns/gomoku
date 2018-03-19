@@ -2,7 +2,7 @@
 #include "ZobristTable.hpp"
 #include "Player.hpp"
 
-bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit) { // THIS FUNCTION WORKS
+bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit) {
     return (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() > limit);
 }
 
@@ -23,12 +23,10 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
     BitBoard    moves;
     BitBoard    tmp;
     bool        win_instant = false;
-    bool        player_empty = player.is_empty();
-    bool        opponent_empty = opponent.is_empty();
 
-    if (player_empty) { /* if player has no stones */
-        if (!opponent_empty) /* if opponent has stones */
-            moves |= get_moves_to_explore(opponent, player);
+    if (player.is_empty()) { /* if player has no stones */
+        if (!opponent.is_empty()) /* if opponent has stones */
+            moves |= opponent.dilated() & ~player; /* dilate around opponent */
         else /* if the board is totally empty */
             moves.write(9, 9);
         return (moves);
@@ -45,13 +43,14 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
     moves |= get_winning_moves(player, opponent, player_pairs_captured);
     if (!moves.is_empty()) win_instant = true;
     moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
-    // moves |= pair_capture_detector(player, opponent);
     moves |= pair_capture_detector(opponent, player);
     moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
-    if (!win_instant)
-        moves |= pair_capture_detector(player, opponent);
+    // if (!win_instant)
+        // moves |= pair_capture_detector(player, opponent);
 
-    if (moves.set_count() <= EXPLORATION_THRESHOLD && !win_instant) {
+    // if (moves.set_count() <= EXPLORATION_THRESHOLD && !win_instant) {
+    if (!win_instant) {
+        moves |= pair_capture_detector(player, opponent);
         moves |= future_pattern_detector(player, opponent, { 0x78, 6, 4, 0 }); // -OOOO-
         if (moves.set_count() <= EXPLORATION_THRESHOLD) {
             moves |= future_pattern_detector(player, opponent, { 0x70, 5, 4, 0 }); // -OOO-
@@ -59,7 +58,7 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
             moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0 }); // |OOOO- // ??
             // NOTE: if all moves to explore are threatened by capture, maybe explore other moves (it happens yeah)
             if (moves.is_empty())
-                moves |= get_moves_to_explore(player, opponent) & ~player_forbidden;
+                moves |= player.dilated() & ~opponent; /* dilate around player */
         }
     }
     return (moves & ~player & ~opponent & ~player_forbidden);

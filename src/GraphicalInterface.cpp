@@ -243,8 +243,6 @@ void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) 
         // exit(1); // DEBUG
     } else {
         this->_winning_text = "";
-        // if (this->_end_game)
-            // this->_button_pause->set_state(false);
         this->_end_game = false;
     }
 }

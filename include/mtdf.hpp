@@ -53,7 +53,6 @@ t_ret           mtdf(t_node *root, int32_t firstguess, int8_t depth);
 int32_t         score_function(t_node const &node, uint8_t depth);
 int32_t         player_score(t_node const &node, uint8_t depth);
 int32_t         opponent_score(t_node const &node, uint8_t depth);
-// bool            check_end(BitBoard const& player, BitBoard const& opponent, uint8_t const& player_pairs_captured, uint8_t const& opponent_pairs_captured);
 
 t_node          simulate_move(t_node const &node, int i);
 
