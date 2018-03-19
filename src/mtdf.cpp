@@ -257,7 +257,7 @@ int32_t    player_score(t_node const &node, uint8_t depth) {
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
     score += pair_capture_detector(node.player, node.opponent).set_count() * 5000;// pairs capture threatening is good
-    score += node.player_pairs_captured * node.opponent_pairs_captured * 10000;
+    score += node.player_pairs_captured * node.player_pairs_captured * 10000;
     return (score);
 }
 
