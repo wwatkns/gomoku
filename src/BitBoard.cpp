@@ -369,18 +369,14 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
     res |= highlight_win_capture_moves(p2, p1, p2_pairs_captured);
     res |= pattern_detector_highlight_open(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
     res |= pattern_detector_highlight_open(p2, p1, { 0x68, 6, 8, 0 }); // -OO-O-
-    res |= pattern_detector_highlight_open(p2, p1, { 0x78, 5, 8, 0 }); // -OOOO
-    res |= pattern_detector_highlight_open(p2, p1, { 0xB8, 5, 8, 0 }); // O-OOO
-    res |= pattern_detector_highlight_open(p2, p1, { 0xD8, 5, 4, 0 }); // OO-OO
+    res |= future_pattern_detector(p2, p1, { 0xF8, 5, 8, 0 }); // future pattern detection on OOOOO
     return (res & ~p1 & ~p2);
 }
 
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) {
     BitBoard    res;
     res |= highlight_win_capture_moves(p1, p2, p1_pairs_captured);
-    res |= pattern_detector_highlight_open(p1, p2, { 0x78, 5, 8, 0 }); // -OOOO
-    res |= pattern_detector_highlight_open(p1, p2, { 0xB8, 5, 8, 0 }); // O-OOO
-    res |= pattern_detector_highlight_open(p1, p2, { 0xD8, 5, 4, 0 }); // OO-OO
+    res |= future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 }); // future pattern detection on OOOOO
     return (res & ~p1 & ~p2);
 }
 
@@ -403,8 +399,7 @@ static BitBoard single_direction_pattern_detector(BitBoard const &p1, BitBoard c
     moves leading to those. It's not the most efficient algorithm, we must improve
     it in the future, but it is robust.
 */
-
-BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) { // TODO : optimize this
+BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
     const uint8_t   patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
     const uint8_t    lengths[3] = {    6,    6,    5 };
     BitBoard        res;
@@ -484,12 +479,6 @@ BitBoard    pattern_detector_highlight_open(BitBoard const &p1, BitBoard const &
         }
     }
     return (res);
-}
-
-/*  TODO : Cannot handle the same pattern yet (it should check different directions similarly as forbidden_detector)
-*/
-BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2) {
-    return (future_pattern_detector(p1, p2, pattern1) & future_pattern_detector(p1, p2, pattern2));
 }
 
 bool        detect_five_aligned(BitBoard const &bitboard) {

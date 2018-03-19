@@ -95,7 +95,8 @@ void        Game::loop(void) {
             // (this->_game_engine->get_history()->back().pid == 1 ? p1_tmp.write(p) : p2_tmp.write(p));
             // test |= highlight_captured_stones(p1_tmp, p2_tmp, p);
             // test |= highlight_win_capture_moves(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured());
-            test |= pair_capture_breaking_five_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board));
+            // test |= pair_capture_breaking_five_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board));
+            test |= future_pattern_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xF8, 5, 8, 0 });
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xB8, 5, 8, 0 }); // O-OOO 0x5C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xD8, 5, 8, 0 }); // OO-OO 0x6C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0x68, 6, 8, 0 }); // OO-OO 0x6C is old

@@ -168,7 +168,7 @@ t_ret   mtdf(t_node *root, int32_t firstguess, int8_t depth) { // THIS FUNCTION 
         ret = alphaBetaWithMemory(*root, beta-1, beta, depth);
         std::cout << "score: " << ret.score << ", pos: (" << ret.p / 19 << ", " << ret.p % 19 << ")\n";
         bound[(ret.score < beta)] = ret.score;
-    } while (bound[0] >= bound[1]);
+    } while (bound[0] < bound[1]);
     return (ret);
 }
 
