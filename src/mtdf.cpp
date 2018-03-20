@@ -59,13 +59,15 @@ Eigen::Array2i  iterative_deepening(t_node *root, int8_t max_depth) {
     g_nodes_explored = 0;
 
     for (int depth = 1; depth <= max_depth; depth++) {
-        g = mtdf(root, g, depth);
-        if (times_up(start, 500)) {
-            std::cout << "TIMES UP, reached depth : " << depth << std::endl;
-            break;
-        }
         std::cout << "depth: " << depth << std::endl;
+        g = mtdf(root, g, depth);
+        // if (times_up(start, 500)) {
+            // std::cout << "TIMES UP, reached depth : " << depth << std::endl;
+            // break;
+        // }
     }
+    ZobristTable::upperbound_map.clear();
+    ZobristTable::lowerbound_map.clear();
     return ((Eigen::Array2i){ g.p / 19, g.p % 19 });
 }
 
@@ -137,18 +139,29 @@ t_ret   ft_alphaBetaWithMemory(t_node node, int alpha, int beta, int depth, int 
     int             b; // beta save
     t_ret           best;
 
-    if (ZobristTable::lowerbound_map.find({node.player, node.opponent}) != ZobristTable::lowerbound_map.end()) {
-        lowerbound = ZobristTable::lowerbound_map[{node.player, node.opponent}];        
-        if (lowerbound >= beta) // Fail high
-            return ((t_ret){ lowerbound, -INF });
-        alpha = max(alpha, lowerbound);
-    }
-    if (ZobristTable::upperbound_map.find({node.player, node.opponent}) != ZobristTable::upperbound_map.end()) {
-        upperbound = ZobristTable::upperbound_map[{node.player, node.opponent}];
-        if (upperbound <= alpha) // Fail Low
-            return ((t_ret){ upperbound, -INF });
-        beta = min(beta, upperbound);
-    }
+    std::cout << "\tdepth: " << depth << std::endl;
+    // if (depth < 5) {
+        // if (ZobristTable::lowerbound_map.find({node.player, node.opponent}) != ZobristTable::lowerbound_map.end()) {
+        if (ZobristTable::lowerbound_map.count({node.player, node.opponent}) > 0) {
+            lowerbound = ZobristTable::lowerbound_map[{node.player, node.opponent}];        
+            if (lowerbound >= beta) // Fail high
+            {
+                std::cout << "Fail high" << std::endl;
+                return ((t_ret){ lowerbound, -INF });
+            }
+            alpha = max(alpha, lowerbound);
+        }
+        // if (ZobristTable::upperbound_map.find({node.player, node.opponent}) != ZobristTable::upperbound_map.end()) {
+        if (ZobristTable::upperbound_map.count({node.player, node.opponent}) > 0) {
+            upperbound = ZobristTable::upperbound_map[{node.player, node.opponent}];
+            if (upperbound <= alpha) // Fail Low
+            {
+                std::cout << "Fail low" << std::endl;
+                return ((t_ret){ upperbound, -INF });
+            }
+            beta = min(beta, upperbound);
+        }
+    // }
     // PBLM : cas où j'ai une lowerbound ou juste une upperbound...
     // if (alpha >= beta)
         // return ((t_ret){ bound, -INF });
