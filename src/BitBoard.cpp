@@ -22,7 +22,6 @@ const std::array<t_pattern,11> BitBoard::patterns = {
     (t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
 };
 
-
 BitBoard::BitBoard(void) {
     this->zeros();
 }
@@ -366,30 +365,23 @@ bool        BitBoard::operator!=(BitBoard const &rhs) const {
 
 BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured) {
     BitBoard    res;
-    res |= highlight_win_capture_moves(p2, p1, p2_pairs_captured);
+    res |= win_by_capture_detector(p2, p1, p2_pairs_captured);
     res |= pattern_detector_highlight_open(p2, p1, { 0x70, 5, 4, 0 }); // -OOO-
     res |= pattern_detector_highlight_open(p2, p1, { 0x68, 6, 8, 0 }); // -OO-O-
     res |= future_pattern_detector(p2, p1, { 0xF8, 5, 8, 0 }); // future pattern detection on OOOOO
     return (res & ~p1 & ~p2);
 }
 
-// BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) {
-//     BitBoard    res;
-//     res |= highlight_win_capture_moves(p1, p2, p1_pairs_captured);
-//     res |= future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 }); // future pattern detection on OOOOO
-//     return (res & ~p1 & ~p2);
-// }
 /* now return the moves that instant win (no possible counter by opponent) */
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured) {
     BitBoard    res;
     res = future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 });
     /* if there is no possibility of breaking the alignment and no winning pair capture either */
-    if (pair_capture_breaking_five_detector(p2, (p1 | res)).is_empty() && highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty())
+    if (pair_capture_breaking_five_detector(p2, (p1 | res)).is_empty() && win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty())
         return (res & ~p1 & ~p2);
-    res |= highlight_win_capture_moves(p1, p2, p1_pairs_captured);
+    res = win_by_capture_detector(p1, p2, p1_pairs_captured);
     return (res & ~p1 & ~p2);
 }
-
 
 /*  detect a sub-pattern in a single direction
 */
@@ -447,7 +439,7 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_p
         }
         res |= tmp.shifted_inv(d, s);
     }
-    return (res & open_cells);
+    return (res & open_cells); // NOTE: really ? for patterns like ~OOOOO~ is will result in an empty bitboard even though the pattern was found
 }
 
 /*  will return the bitboard showing the open moves for p1 leading to the specified pattern.
@@ -567,7 +559,7 @@ BitBoard    pair_capture_breaking_five_detector(BitBoard const &p1, BitBoard con
     return (res);
 }
 
-BitBoard    highlight_win_capture_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) { // TODO : optimization
+BitBoard    win_by_capture_detector(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured) { // TODO : optimization
     BitBoard    captures = pair_capture_detector(p1, p2);
     BitBoard    res;
     if (!captures.is_empty()) {
@@ -585,6 +577,15 @@ BitBoard    highlight_win_capture_moves(BitBoard const &p1, BitBoard const &p2, 
         }
     }
     return (res);
+}
+
+/* return the positions of moves leading to unbreakable five */
+BitBoard    win_by_alignment_detector(BitBoard const &p1, BitBoard const &p2, BitBoard const &p1_forbidden, int p2_pairs_captured) {
+    BitBoard    res = (p1 | future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 })) & ~p1_forbidden;
+    res = highlight_five_aligned(res ^ pair_capture_detector_highlight(p2, res)) & ~p1 & ~p2;
+    if (!res.is_empty() && win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty())
+        return (res);
+    return (BitBoard::empty);
 }
 
 /*  returns the bitboard with the positions of the stones captured

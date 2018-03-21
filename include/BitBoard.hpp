@@ -93,7 +93,6 @@ public:
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
 BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured);
-// BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured);
 
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
@@ -108,7 +107,9 @@ BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);      
 BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, int move);  /* return the board showing the stones captured */
 BitBoard    pair_capture_detector_highlight(BitBoard const &p1, BitBoard const &p2); /* detect the positions leading to one or multiple captures but highlights the stones that will be captured */
 BitBoard    pair_capture_breaking_five_detector(BitBoard const &p1, BitBoard const &p2);
-BitBoard    highlight_win_capture_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
+
+BitBoard    win_by_capture_detector(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured); /* detect the positions that lead to an instant win by capture */
+BitBoard    win_by_alignment_detector(BitBoard const &p1, BitBoard const &p2, BitBoard const& p1_forbidden, int p2_pairs_captured); /* detect the positions that lead to an instant win by five alignment (unbreakable) */
 
 namespace direction {
     enum direction {

@@ -94,7 +94,6 @@ void    GraphicalInterface::_load_images(void) {
     this->_white_stone_tex = this->load_texture("./resources/circle_white_outlined.png");
     this->_black_stone_tex = this->load_texture("./resources/circle_black.png");
     this->_select_stone_tex = this->load_texture("./resources/circle_select.png");
-    // this->_explored_move_tex = this->load_texture("./resources/diamond.png");
     this->_explored_move_tex = this->load_texture("./resources/open_circle.png");
 }
 
@@ -349,7 +348,6 @@ void    GraphicalInterface::_render_explored(void) {
             g_pos = { i / 19, i % 19 };
             s_pos = this->grid_to_screen(g_pos);
             rect = {s_pos[1] - (this->_stone_size-10) / 2, s_pos[0] - (this->_stone_size-10) / 2, this->_stone_size-10, this->_stone_size-10};
-            // if (this->_game_engine->grid(g_pos[0], g_pos[1]) != -1 && this->_game_engine->grid(g_pos[0], g_pos[1]) != 1)
             SDL_RenderCopy(this->_renderer, this->_explored_move_tex, NULL, &rect);
         }
     }

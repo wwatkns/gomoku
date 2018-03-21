@@ -52,7 +52,7 @@ public:
     Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
     bool            get_mouse_action(void) const { return _mouse_action; };
     bool            get_end_game(void) const { return _end_game; };
-    
+
     bool            get_nu(void) const { return _nu; };
     bool            get_db(void) const { return _db; };
     void            set_nu(bool const &val) { _nu = val; };

@@ -19,7 +19,7 @@ Human	&Human::operator=(Human const &src) {
 }
 
 bool    Human::play(Player *other) {
-    t_action                                action;
+    t_action    action;
 
     if (this->_action_duration == std::chrono::steady_clock::duration::zero())
         this->_action_duration = this->_gui->get_analytics()->get_chronometer()->get_elapsed();

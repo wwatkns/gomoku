@@ -38,7 +38,7 @@ uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pair
     if (*d && detect_five_aligned(p1))
         return (1);
     if (detect_five_aligned(p1)) {
-        if (!highlight_win_capture_moves(p2, p1, p2_pairs_captured).is_empty() && !*d) { /* p2 wins next turn if he can play a move allowing him to capture for a total of 5 or more stones */
+        if (!win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty() && !*d) { /* p2 wins next turn if he can play a move allowing him to capture for a total of 5 or more stones */
             *d = true;
             return (0);
         }

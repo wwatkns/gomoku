@@ -12,6 +12,11 @@ public:
     Computer	&operator=(Computer const &rhs);
 
     virtual bool    play(Player *other);
+
+    AlphaBeta       get_alphaBeta(void) const { return (_alphaBeta); };
+
+private:
+    AlphaBeta   _alphaBeta;
 };
 
 #endif

@@ -1,6 +1,5 @@
 #include "Game.hpp"
-#include "BitBoard.hpp" // TMP
-// #include "ZobristTable.hpp"
+#include "BitBoard.hpp" // DEBUG
 
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
@@ -8,8 +7,6 @@ Game::Game(void)  {
     /* start menu */
     // this->_config = this->_gui->render_choice_menu();
     this->_config = "p1=C,p2=C,nu=1,db=1"; // DEBUG
-    // this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
-    // this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
     this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, this->_gui, 1));
     this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
@@ -87,20 +84,18 @@ void        Game::loop(void) {
             // if (!ZobristTable::map[{ this->_player_1->board, this->_player_2->board }])
                 // ZobristTable::map[{ this->_player_1->board, this->_player_2->board }] = 10;
             // std::cout << highlight_five_aligned(this->_c_player->board) << std::endl;
-            BitBoard    test;
-            // int         p = this->_game_engine->get_history()->back().pos[0] * 19 + this->_game_engine->get_history()->back().pos[1];
-            // std::cout << p <<std::endl;
-            // BitBoard p1_tmp = this->_game_engine->get_history()->back().p1_last;
-            // BitBoard p2_tmp = this->_game_engine->get_history()->back().p2_last;
-            // (this->_game_engine->get_history()->back().pid == 1 ? p1_tmp.write(p) : p2_tmp.write(p));
+            // BitBoard    test;
             // test |= highlight_captured_stones(p1_tmp, p2_tmp, p);
-            // test |= highlight_win_capture_moves(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured());
-            test |= pair_capture_breaking_five_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board));
+            // test |= win_by_capture_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured());
+            // test |= pair_capture_breaking_five_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board));
+
+            // test |= get_winning_moves_debug(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured()));
+
             // test |= future_pattern_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xF8, 5, 8, 0 });
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xB8, 5, 8, 0 }); // O-OOO 0x5C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xD8, 5, 8, 0 }); // OO-OO 0x6C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0x68, 6, 8, 0 }); // OO-OO 0x6C is old
-            std::cout << test << std::endl;
+            // std::cout << test << std::endl;
             // std::cout << pair_capture_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[8]) << std::endl;
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
@@ -115,6 +110,13 @@ void        Game::loop(void) {
 bool        Game::undo(void) {
     bool    last = (this->_game_engine->get_history_size() == 0);
     this->_game_engine->delete_last_action(this->_player_1, this->_player_2);
+    this->_gui->explored_moves_tmp = moves_to_explore(
+        this->_c_player->board,
+        (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board),
+        this->_c_player->board_forbidden,
+        this->_c_player->get_pairs_captured(),
+        (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured())
+    );
     return last;
 }
 
