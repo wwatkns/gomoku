@@ -36,6 +36,7 @@ public:
     AIPlayer    &operator=(AIPlayer const &rhs);
 
     t_best          minmax(t_node node, int depth, int player);
+    t_best          alphabeta(t_node, int depth, int alpha, int beta, int player);
     // int             negamax(t_node node, int depth, int player); /* Need a specific heuristic for this one */
 
     // int             mtdf();
