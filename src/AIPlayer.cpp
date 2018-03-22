@@ -96,12 +96,15 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
     int         value;
 
     if (this->_TT.count({ node.player, node.opponent }) > 0) {
-        if (this->_TT[{ node.player, node.opponent }].lowerbound >= beta)
+        if (this->_TT[{ node.player, node.opponent }].depth >= depth) {
+            if (this->_TT[{ node.player, node.opponent }].lowerbound >= beta) {
             return ((t_best){ this->_TT[{ node.player, node.opponent }].lowerbound, -INF });
-        if (this->_TT[{ node.player, node.opponent }].upperbound <= alpha)
+            }
+            if (this->_TT[{ node.player, node.opponent }].upperbound <= alpha) {
             return ((t_best){ this->_TT[{ node.player, node.opponent }].upperbound, -INF });
+            }
         alpha = this->max(alpha, this->_TT[{ node.player, node.opponent }].lowerbound);
-        beta = this->min(alpha, this->_TT[{ node.player, node.opponent }].upperbound);
+        }
     }
 
     if (depth == 0 || check_end(node)) {

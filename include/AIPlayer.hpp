@@ -28,6 +28,7 @@ typedef struct      s_best {
 }                   t_best;
 
 typedef struct  s_stored {
+    int     depth;
     int     upperbound;
     int     lowerbound;
 }               t_stored;
