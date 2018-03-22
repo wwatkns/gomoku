@@ -44,6 +44,7 @@ public:
     t_best          alphabeta(t_node, int depth, int alpha, int beta, int player);
     t_best          alphabetawithmemory(t_node, int depth, int alpha, int beta, int player);
     t_best          mtdf(t_node node, t_best f, int depth);
+    t_best          iterativedeepening(t_node node, int maxdepth);
     // int             negamax(t_node node, int depth, int player); /* Need a specific heuristic for this one */
 
 private:

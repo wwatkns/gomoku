@@ -185,13 +185,14 @@ t_best          AIPlayer::mtdf(t_node node, t_best f, int depth) {
     return (best);
 }
 
+t_best          AIPlayer::iterativedeepening(t_node node, int maxdepth) {
+    t_best      g = { 0, 0 };
 
     for (int depth = 1; depth < maxdepth; depth++) {
-        g = 
+        g = this->mtdf(node, g, depth);
     }
-    return ();
+    return (g);
 }
-*/
 
 BitBoard        AIPlayer::get_moves(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured) {
     BitBoard    moves;
