@@ -12,7 +12,8 @@
 # define S 3        // the number of states
 
 typedef struct  s_stored {
-    int32_t     score;
+    int         score;
+    int         move;
     int8_t      depth;
     uint8_t     flag;
 }               t_stored;
@@ -20,14 +21,12 @@ typedef struct  s_stored {
 namespace ZobristTable {
     enum flag {
         exact,
-        // lowerbound,
-        // upperbound
-        beta,
-        alpha
+        lowerbound,
+        upperbound
     };
 
     /* initialization of Zobrist Hashing */
-    std::array<std::array<uint64_t, S>, SIZE>   _init_zobrist_table(void) {
+    static const std::array<std::array<uint64_t, S>, SIZE>   _init_zobrist_table(void) {
         std::array<std::array<uint64_t, S>, SIZE> table;
         std::srand(std::time(nullptr));
         for (int n = 0; n < SIZE; n++) {
@@ -36,7 +35,7 @@ namespace ZobristTable {
         }
         return (table);
     }
-    const std::array<std::array<uint64_t, S>, SIZE> _table = _init_zobrist_table();
+    static const std::array<std::array<uint64_t, S>, SIZE> _table = _init_zobrist_table();
     /* the key the hashing function will use */
     struct Key {
         BitBoard    p1;
@@ -57,7 +56,7 @@ namespace ZobristTable {
             return (hash);
         }
     };
-    std::unordered_map<Key, t_stored, KeyHash>  map;
+    // std::unordered_map<Key, t_stored, KeyHash>  map;
 }
 
 #endif

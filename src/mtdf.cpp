@@ -1,10 +1,9 @@
 #include "mtdf.hpp"
-#include "ZobristTable.hpp"
 #include "Player.hpp"
 
-bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit) {
-    return (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() > limit);
-}
+// bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit) {
+//     return (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() > limit);
+// }
 
 t_node          create_node(Player const& player, Player const& opponent) {
     t_node  node;
@@ -250,6 +249,7 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
 //     return (child);
 // }
 
+
 AlphaBeta::AlphaBeta(int max_depth, int time_limit, uint8_t pid, uint8_t verbose) : _max_depth(max_depth), _current_max_depth(0), _search_limit_ms(time_limit), _pid(pid), _verbose(verbose) {
     this->search_stopped = false;
 }
@@ -267,14 +267,32 @@ AlphaBeta	&AlphaBeta::operator=(AlphaBeta const &rhs) {
     return (*this);
 }
 
+t_ret const AlphaBeta::_mtdf(t_node root, int firstguess, int depth) {
+    int bound[2] = { -INF, INF };
+    int beta;
+    t_ret   ret = { firstguess, 0 };
+
+    do {
+        beta = ret.score + (ret.score == bound[0]);
+        // ret = _root_max(root, beta-1, beta, depth);
+        ret = _max(root, beta-1, beta, depth);
+        // std::cout << "score: " << ret.score << ", pos: (" << ret.p / 19 << ", " << ret.p % 19 << ")\n";
+        bound[(ret.score < beta)] = ret.score;
+    } while (bound[0] < bound[1]);
+    return (ret);
+}
+
 t_ret const AlphaBeta::operator()(t_node root) { /* iterative deepening */
     t_ret       ret = { 0, 0 };
     t_ret       tmp;
     this->search_stopped = false;
     this->_search_start = std::chrono::steady_clock::now();
+    this->_ordered_root_moves.clear();
 
-    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_max_depth; this->_current_max_depth += 2) { // we increment by 2 as scoring function is asymmetric
-        tmp = _max(root, -INF, INF, this->_current_max_depth);
+    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_max_depth; this->_current_max_depth += 2) {
+        this->_TT.clear();
+        // tmp = _root_max(root, -INF, INF, this->_current_max_depth);
+        tmp = _mtdf(root, ret.score, this->_current_max_depth);
         _debug_search(tmp);
         if (this->search_stopped)
             break;
@@ -287,23 +305,35 @@ t_ret   AlphaBeta::_min(t_node node, int alpha, int beta, int depth) {
     if (this->_times_up())
         return ((t_ret){-INF, 0 });
 
-    if (depth == 0 || check_end(node))
-        return ((t_ret){ score_function(node, depth+1), 0 });
+    /* Transposition Table Lookup */
+    t_ret lookup = _TT_lookup(node, alpha, beta, depth);
+    if (lookup.score != -INF)
+        return (lookup);
+
+    if (depth == 0 || check_end(node)) {
+        t_ret ret = { score_function(node, depth+1), -1 };
+        _TT_store(node, ret, depth, ZobristTable::flag::exact); /* NEW */
+        return (ret);
+        // return ((t_ret){ score_function(node, depth+1), 0 });
+    }
 
     t_ret       ret;
-    t_ret       best = {INF, 0 };
+    t_ret       best = {INF, -1 };
     BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
     for (int i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             ret = _max(_create_child(node, i), alpha, beta, depth-1);
-            if (ret.score < best.score) {
+            if (ret.p == -1 || ret.score < best.score) {
                 best = { ret.score, i };
                 beta = min(beta, best.score);
-                if (alpha >= beta) /* beta cut-off */
-                    break;
+                if (alpha >= beta) /* alpha cut-off */ {
+                    _TT_store(node, best, depth, ZobristTable::flag::lowerbound); /* NEW */
+                    return (best);
+                }
             }
         }
     }
+    _TT_store(node, best, depth, ZobristTable::flag::lowerbound); /* upperbound if it was a break */
     return (best);
 }
 
@@ -311,25 +341,105 @@ t_ret   AlphaBeta::_max(t_node node, int alpha, int beta, int depth) {
     if (this->_times_up())
         return ((t_ret){ INF, 0 });
 
-    if (depth == 0 || check_end(node))
-        return ((t_ret){ score_function(node, depth+1), 0 });
+    /* Transposition Table Lookup */
+    t_ret lookup = _TT_lookup(node, alpha, beta, depth);
+    if (lookup.score != -INF)
+        return (lookup);
+
+    if (depth == 0 || check_end(node)) {
+        t_ret ret = { score_function(node, depth+1), -1 };
+        _TT_store(node, ret, depth, ZobristTable::flag::exact); /* NEW */
+        return (ret);
+        // return ((t_ret){ score_function(node, depth+1), 0 });
+    }
 
     t_ret       ret;
-    t_ret       best = {-INF, 0 };
+    t_ret       best = {-INF, -1 };
     BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
     for (int i = 0; i < 361; ++i) {
         if (moves.check_bit(i)) {
             ret = _min(_create_child(node, i), alpha, beta, depth-1);
             _debug_append_explored(ret.score, i, depth);
-            if (ret.score > best.score) {
+            if (ret.p == -1 || ret.score > best.score) {
                 best = { ret.score, i };
                 alpha = max(alpha, best.score);
-                if (alpha >= beta) /* alpha cut-off */
-                    break;
+                if (alpha >= beta) /* beta cut-off */ {
+                    _TT_store(node, best, depth, ZobristTable::flag::upperbound); /* NEW */
+                    return (best);
+                }
             }
         }
     }
+    _TT_store(node, best, depth, ZobristTable::flag::upperbound); /* NEW */
     return (best);
+}
+
+t_ret   AlphaBeta::_root_max(t_node node, int alpha, int beta, int depth) {
+    t_ret       ret;
+    t_ret       best = {-INF, -1 };
+
+    /* if we're at the top of our iterative deepening function */
+    if (this->_ordered_root_moves.size() == 0) {
+        BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                ret = _min(_create_child(node, i), alpha, beta, depth-1);
+                this->_ordered_root_moves.insert((t_ret){ ret.score, i }); /* NEW */
+                _debug_append_explored(ret.score, i, depth);
+                if (ret.p == -1 || ret.score > best.score) {
+                    best = { ret.score, i };
+                    alpha = max(alpha, best.score);
+                    if (alpha >= beta) /* beta cut-off */
+                        break;
+                }
+            }
+        }
+    }
+    else {
+        std::multiset<t_ret, retmaxcmp> ordered_moves;
+
+        for (std::multiset<t_ret, retmaxcmp>::iterator it = this->_ordered_root_moves.begin(); it != this->_ordered_root_moves.end(); ++it) {
+            ret = _min(_create_child(node, it->p), alpha, beta, depth-1);
+            ordered_moves.insert((t_ret){ ret.score, it->p }); /* NEW */
+            _debug_append_explored(ret.score, it->p, depth);
+            if (ret.p == -1 || ret.score > best.score) {
+                best = { ret.score, it->p };
+                alpha = max(alpha, best.score);
+                if (alpha >= beta) /* beta cut-off */
+                    break;
+            }
+        }
+        this->_ordered_root_moves = ordered_moves; /* NEW */
+    }
+    return (best);
+}
+
+t_ret       AlphaBeta::_TT_lookup(t_node const& node, int alpha, int beta, int8_t depth) {
+     /* the entry exists */
+    if (this->_TT.find({node.player, node.opponent}) != this->_TT.end()) {
+        int true_depth = (this->_current_max_depth - depth) + 1;
+        t_stored stored = this->_TT[{node.player, node.opponent}];
+        if (stored.depth <= true_depth) { /* careful as our depth is reversed */
+            // std::cout << "TT_lookup " << std::to_string(true_depth) << " - score: " << stored.score << ", d: " << std::to_string(stored.depth) << ", flag: " << std::to_string(stored.flag) << std::endl;
+            if (stored.flag == ZobristTable::flag::exact)
+                return ((t_ret){ stored.score, stored.move });
+            else if (stored.flag == ZobristTable::flag::upperbound && stored.score <= alpha)
+                return ((t_ret){ alpha, stored.move });
+            else if (stored.flag == ZobristTable::flag::lowerbound && stored.score >= beta)
+                return ((t_ret){ beta, stored.move });
+        }
+    }
+    return ((t_ret){-INF, -1 });
+}
+
+void        AlphaBeta::_TT_store(t_node const& node, t_ret best, int8_t depth, int8_t flag) {
+    t_stored    entry;
+
+    entry.depth = (this->_current_max_depth - depth) + 1;
+    entry.score = best.score;
+    entry.move  = best.p;
+    entry.flag  = flag;
+    this->_TT[{node.player, node.opponent}] = entry;
 }
 
 t_node      AlphaBeta::_create_child(t_node const& parent, int m) {
@@ -395,11 +505,214 @@ void    AlphaBeta::_debug_search(t_ret const& ret) {
     }
 }
 
+// AlphaBeta::AlphaBeta(int max_depth, int time_limit, uint8_t pid, uint8_t verbose) : _max_depth(max_depth), _current_max_depth(0), _search_limit_ms(time_limit), _pid(pid), _verbose(verbose) {
+//     this->search_stopped = false;
+// }
+//
+// AlphaBeta::AlphaBeta(AlphaBeta const &src) {
+//     *this = src;
+// }
+//
+// AlphaBeta::~AlphaBeta(void) {
+// }
+//
+// AlphaBeta	&AlphaBeta::operator=(AlphaBeta const &rhs) {
+//     this->_max_depth = rhs.get_max_depth();
+//     this->_search_limit_ms = rhs.get_search_limit_ms();
+//     return (*this);
+// }
+//
+// t_ret const AlphaBeta::operator()(t_node root) { /* iterative deepening */
+//     t_ret       ret = { 0, 0 };
+//     t_ret       tmp;
+//     this->search_stopped = false;
+//     this->_search_start = std::chrono::steady_clock::now();
+//     this->_ordered_root_moves.clear();
+//
+//     for (this->_current_max_depth = 1; this->_current_max_depth <= this->_max_depth; this->_current_max_depth += 2) {
+//         tmp = _root_max(root, -INF, INF, this->_current_max_depth);
+//         _debug_search(tmp);
+//         if (this->search_stopped)
+//             break;
+//         ret = tmp;
+//     }
+//     return (ret);
+// }
+//
+// t_ret   AlphaBeta::_min(t_node node, int alpha, int beta, int depth) {
+//     if (this->_times_up())
+//         return ((t_ret){-INF, 0 });
+//
+//     if (depth == 0 || check_end(node))
+//         return ((t_ret){ score_function(node, depth+1), 0 });
+//
+//     t_ret       ret;
+//     t_ret       best = {INF, 0 };
+//     BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
+//     for (int i = 0; i < 361; ++i) {
+//         if (moves.check_bit(i)) {
+//             ret = _max(_create_child(node, i), alpha, beta, depth-1);
+//             if (ret.score < best.score) {
+//                 best = { ret.score, i };
+//                 beta = min(beta, best.score);
+//                 if (alpha >= beta) /* alpha cut-off */
+//                     break;
+//             }
+//         }
+//     }
+//     return (best);
+// }
+//
+// t_ret   AlphaBeta::_max(t_node node, int alpha, int beta, int depth) {
+//     if (this->_times_up())
+//         return ((t_ret){ INF, 0 });
+//
+//     if (depth == 0 || check_end(node))
+//         return ((t_ret){ score_function(node, depth+1), 0 });
+//
+//     t_ret       ret;
+//     t_ret       best = {-INF, 0 };
+//     BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+//     for (int i = 0; i < 361; ++i) {
+//         if (moves.check_bit(i)) {
+//             ret = _min(_create_child(node, i), alpha, beta, depth-1);
+//             _debug_append_explored(ret.score, i, depth);
+//             if (ret.score > best.score) {
+//                 best = { ret.score, i };
+//                 alpha = max(alpha, best.score);
+//                 if (alpha >= beta) /* beta cut-off */
+//                     break;
+//             }
+//         }
+//     }
+//     return (best);
+// }
+//
+// t_ret   AlphaBeta::_root_max(t_node node, int alpha, int beta, int depth) {
+//     t_ret       ret;
+//     t_ret       best = {-INF, 0 };
+//
+//     /* if we're at the top of our iterative deepening function */
+//     if (this->_ordered_root_moves.size() == 0) {
+//         BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+//         for (int i = 0; i < 361; ++i) {
+//             if (moves.check_bit(i)) {
+//                 ret = _min(_create_child(node, i), alpha, beta, depth-1);
+//                 this->_ordered_root_moves.insert((t_ret){ ret.score, i }); /* NEW */
+//                 _debug_append_explored(ret.score, i, depth);
+//                 if (ret.score > best.score) {
+//                     best = { ret.score, i };
+//                     alpha = max(alpha, best.score);
+//                     if (alpha >= beta) /* beta cut-off */
+//                         break;
+//                 }
+//             }
+//         }
+//     }
+//     else {
+//         std::multiset<t_ret, retmaxcmp> ordered_moves;
+//
+//         for (std::multiset<t_ret, retmaxcmp>::iterator it = this->_ordered_root_moves.begin(); it != this->_ordered_root_moves.end(); ++it) {
+//             ret = _min(_create_child(node, it->p), alpha, beta, depth-1);
+//             ordered_moves.insert((t_ret){ ret.score, it->p }); /* NEW */
+//             _debug_append_explored(ret.score, it->p, depth);
+//             if (ret.score > best.score) {
+//                 best = { ret.score, it->p };
+//                 alpha = max(alpha, best.score);
+//                 if (alpha >= beta) /* beta cut-off */
+//                     break;
+//             }
+//         }
+//         this->_ordered_root_moves = ordered_moves; /* NEW */
+//     }
+//     return (best);
+// }
+//
+// t_node      AlphaBeta::_create_child(t_node const& parent, int m) {
+//     t_node  child = parent;
+//     /* simulate player move */
+//     if (child.cid == 1) {
+//         child.player.write(m);
+//         BitBoard captured = highlight_captured_stones(child.player, child.opponent, m);
+//         if (!captured.is_empty()) {
+//             child.player_pairs_captured += captured.set_count() / 2;
+//             child.opponent &= ~captured;
+//         }
+//         child.cid = 2;
+//     }/* simulate opponent move */
+//     else {
+//         child.opponent.write(m);
+//         BitBoard captured = highlight_captured_stones(child.opponent, child.player, m);
+//         if (!captured.is_empty()) {
+//             child.opponent_pairs_captured += captured.set_count() / 2;
+//             child.player &= ~captured;
+//         }
+//         child.cid = 1;
+//     }
+//     child.player_forbidden = forbidden_detector(child.player, child.opponent);
+//     child.opponent_forbidden = forbidden_detector(child.opponent, child.player);
+//     return (child);
+// }
+//
+// bool    AlphaBeta::_times_up(void) {
+//     if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - this->_search_start).count() >= this->_search_limit_ms) {
+//         this->search_stopped = true;
+//         return (true);
+//     }
+//     return (false);
+// }
+//
+// int     AlphaBeta::_elapsed_ms(void) {
+//     return (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - this->_search_start).count());
+// }
+//
+// void    AlphaBeta::_debug_append_explored(int score, int i, int depth) {
+//     if (this->_verbose >= verbose::normal && depth == this->_current_max_depth) {
+//         char    tmp[256];
+//         std::sprintf(tmp, "  | %2d-%c : %11d pts\n", 19-(i/19), "ABCDEFGHJKLMNOPQRST"[i%19], score);
+//         this->_debug_string.append(tmp);
+//     }
+// }
+//
+// void    AlphaBeta::_debug_search(t_ret const& ret) {
+//     if (this->_verbose >= verbose::normal) {
+//         if (this->_current_max_depth == 1)
+//             std::printf("\n[player %d - %s]\n", this->_pid, (this->_pid == 1 ? "black" : "white"));
+//
+//         std::printf("[%c] Depth %d: %2d-%c, %11d pts in %3dms\n%s",
+//             (this->search_stopped ? 'x' : 'o'),
+//             this->_current_max_depth, 19-(ret.p/19),
+//             "ABCDEFGHJKLMNOPQRST"[ret.p%19],
+//             ret.score,
+//             _elapsed_ms(),
+//             (this->_verbose == verbose::debug ? (this->search_stopped ? "" : this->_debug_string.c_str()) : "")
+//         );
+//         this->_debug_string.clear();
+//     }
+// }
 
 bool check_end(t_node const& node) {
     if (node.cid == 1)
         return (check_end(node.player, node.opponent, node.player_pairs_captured, node.opponent_pairs_captured, 1));
     return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, 2));
+}
+
+int32_t        score_function_light(t_node const &node, uint8_t depth) {
+    /* in the light function we only check the captures, threats by capture, and five aligned */
+    int64_t     score = 0;
+    /* player evalutation */
+    if (node.player_pairs_captured >= 5)
+        return (50000000 * depth);
+    score += (detect_five_aligned(node.player) ? 2000000 * depth : 0);
+    score += pair_capture_detector(node.player, node.opponent).set_count() * 5000;
+    score += node.player_pairs_captured * node.player_pairs_captured * 10000;
+    /* opponent evalutation */
+    if (node.opponent_pairs_captured >= 5)
+        return (-50000000 * depth);
+    score -= (detect_five_aligned(node.opponent) ? 2000000 * depth : 0) * 2;
+    score -= pair_capture_detector(node.opponent, node.player).set_count() * 5000 * 2;
+    score -= node.opponent_pairs_captured * node.opponent_pairs_captured * 10000 * 2;
+    return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
 }
 
 int32_t        score_function(t_node const &node, uint8_t depth) {
@@ -414,10 +727,12 @@ int64_t    player_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int64_t     score = 0;
 
-    if (detect_five_aligned(node.player) && pair_capture_breaking_five_detector(node.opponent, node.player).is_empty()) // not good
-        return (50000000 * depth); // 50,000,000pts for win
+    /* detect if current board has an unbreakable five */
+    board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
+    if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
+        return (50000000 * depth);
     if (node.player_pairs_captured >= 5)
-        return (50000000 * depth); // 50,000,000pts for win
+        return (50000000 * depth); // 50,000,000pts / depth for win
     for (int i = 0; i < 10; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         if (0 <= i && i <= 2)
@@ -435,7 +750,9 @@ int64_t    opponent_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int64_t     score = 0;
 
-    if (detect_five_aligned(node.opponent) && pair_capture_breaking_five_detector(node.player, node.opponent).is_empty()) // not good
+    /* detect if current board has an unbreakable five */
+    board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
+    if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
         return (50000000 * depth);
     if (node.opponent_pairs_captured >= 5)
         return (50000000 * depth);
