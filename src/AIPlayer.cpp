@@ -30,7 +30,7 @@ t_best          AIPlayer::minmax(t_node node, int depth, int player) {
         BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->minmax(this->simulate_move(node, i), depth - 1, 0).score;
+                value = this->minmax(this->simulate_move(node, i), depth - 1, !player).score;
                 best = value > best.score ? (t_best){ value, i } : best;
             }
         }
@@ -40,7 +40,7 @@ t_best          AIPlayer::minmax(t_node node, int depth, int player) {
         BitBoard moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->minmax(this->simulate_move(node, i), depth - 1, 1).score;
+                value = this->minmax(this->simulate_move(node, i), depth - 1, !player).score;
                 best = value < best.score ? (t_best){ value, i } : best;
             }
         }
@@ -61,7 +61,7 @@ t_best          AIPlayer::alphabeta(t_node node, int depth, int alpha, int beta,
         BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->alphabeta(this->simulate_move(node, i), depth - 1, alpha, beta, 0).score;
+                value = this->alphabeta(this->simulate_move(node, i), depth - 1, alpha, beta, !player).score;
                 best = value > best.score ? (t_best){ value, i } : best;
                 alpha = this->max(alpha, best.score);
                 if (beta <= alpha) {
@@ -76,7 +76,7 @@ t_best          AIPlayer::alphabeta(t_node node, int depth, int alpha, int beta,
         BitBoard moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->alphabeta(this->simulate_move(node, i), depth - 1, alpha, beta, 1).score;
+                value = this->alphabeta(this->simulate_move(node, i), depth - 1, alpha, beta, !player).score;
                 best = value < best.score ? (t_best){ value, i } : best;
                 beta = this->min(beta, best.score);
                 if (beta <= alpha) {
@@ -113,7 +113,7 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
         BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->alphabetawithmemory(this->simulate_move(node, i), depth - 1, a, beta, 0).score;
+                value = this->alphabetawithmemory(this->simulate_move(node, i), depth - 1, a, beta, !player).score;
                 best = value > best.score ? (t_best){ value, i } : best;
                 a = this->max(a, best.score);
                 if (best.score >= beta) {
@@ -129,7 +129,7 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
         BitBoard moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->alphabetawithmemory(this->simulate_move(node, i), depth - 1, alpha, b, 1).score;
+                value = this->alphabetawithmemory(this->simulate_move(node, i), depth - 1, alpha, b, !player).score;
                 best = value < best.score ? (t_best){ value, i } : best;
                 b = this->min(b, best.score);
                 if (best.score <= alpha) {
