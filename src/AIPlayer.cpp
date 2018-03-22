@@ -162,32 +162,15 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
 
 t_best          AIPlayer::mtdf(t_node node, t_best f, int depth) {
     t_best      g = f;
-    t_best      best { -INF, -INF };
     int         bounds[2] = { -INF, INF };
     int         beta;
-    int         value;
-    BitBoard    moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
 
     while (bounds[0] < bounds[1]) {
         beta = g.score + (g.score == bounds[0]);
-
-        for (int i = 0; i < 361; i++) {
-            if (moves.check_bit(i)) {
-                value = this->alphabetawithmemory(node, depth, beta - 1, beta, 1).score;
-                best = value > best.score ? (t_best){ value, i } : best;
-                // a = this->max(a, best.score);
-                // if (best.score >= beta)
-                    // break;
-                std::cout << "best: " << best.score << ", " << best.pos << std::endl;
-                // getchar();
-            }
-        }
-
+        g = this->alphabetawithmemory(node, depth, beta - 1, beta, 1);
         bounds[g.score < beta] = g.score;
-        // if (g.pos > -1)
-            // best = g;
     }
-    return (best);
+    return (g);
 }
 
 t_best          AIPlayer::iterativedeepening(t_node node, int maxdepth) {
