@@ -27,6 +27,11 @@ typedef struct      s_best {
     int             pos;
 }                   t_best;
 
+typedef struct  s_stored {
+    int     upperbound;
+    int     lowerbound;
+}               t_stored;
+
 class AIPlayer {
 
 public:
@@ -39,13 +44,8 @@ public:
     t_best          alphabeta(t_node, int depth, int alpha, int beta, int player);
     // int             negamax(t_node node, int depth, int player); /* Need a specific heuristic for this one */
 
-    // int             mtdf();
-    // int             iterativedeepening(t_node node, int maxdepth);
-    
-
 private:
-    std::unordered_map<ZobristTable::Key, int, ZobristTable::KeyHash>    TT_lowerbound;
-    std::unordered_map<ZobristTable::Key, int, ZobristTable::KeyHash>    TT_upperbound;
+    std::unordered_map<ZobristTable::Key, t_stored, ZobristTable::KeyHash>    _TT;
     
     // int          alphabetawithmemory();
     BitBoard        get_moves(BitBoard const& player, BitBoard const& opponent,

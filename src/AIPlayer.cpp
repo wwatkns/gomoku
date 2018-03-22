@@ -3,8 +3,7 @@
 
 AIPlayer::AIPlayer(void) {
     // Stack some room for transposition tables
-    this->TT_lowerbound.reserve(204800);
-    this->TT_upperbound.reserve(204800);
+    this->_TT.reserve(409600);
 }
 
 AIPlayer::AIPlayer(AIPlayer const &src) {
