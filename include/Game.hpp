@@ -3,11 +3,13 @@
 
 # include <vector>
 # include <string>
+# include "GraphicalInterface.hpp"
+# include "BitBoard.hpp"
 # include "Player.hpp"
 # include "Human.hpp"
 # include "Computer.hpp"
 # include "GameEngine.hpp"
-# include "GraphicalInterface.hpp"
+// # include "GraphicalInterface.hpp"
 // # include "Chronometer.hpp"
 # include <thread> // TMP
 

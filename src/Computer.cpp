@@ -1,10 +1,12 @@
 #include "Computer.hpp"
+
 #include <cstdlib> // TMP
 #include <thread> // TMP
 
 Computer::Computer(GameEngine *game_engine, uint8_t id) : Player(game_engine, NULL, id) {
     std::srand(std::time(nullptr));
     this->type = 1;
+    this->ai_algorithm = new AIPlayer;
 }
 
 Computer::Computer(Computer const &src) : Player(src) {
@@ -25,6 +27,7 @@ bool        Computer::play(Player *other) {
     t_action                                action;
     Eigen::Array2i                          pos;
     t_node                                  node;
+    t_best                                  bestmove;
 
     node.player = this->board;
     node.opponent = other->board;
@@ -36,12 +39,26 @@ bool        Computer::play(Player *other) {
 
     action_beg = std::chrono::steady_clock::now();
 
+    /* AIPlayer test */
+    bestmove = ai_algorithm->minmax(node, 4, 1);
+    action.pos = (Eigen::Array2i){ bestmove.pos / 19, bestmove.pos % 19 };
+
     // action.pos = alphabeta_pruning(&node, -INF, INF, 3);
     // action.pos = iterative_deepening(&node, 3);
 
     // int16_t p = mtdf(&node, 0, 3).p;
 
-    action.pos = iterative_deepening(&node, 12);
+    // std::cout << "--- player " << std::to_string(other->get_id()) << std::endl;
+    // action.pos = iterative_deepening(&node, 10);
+    // action.pos = mtdf();
+    // action.pos = ft_alphaBetaWithMemory(&node, -INF, INF, 3).p;
+
+
+    // t_ret g = { 0, 0 };
+    // g = mtdf(&node, g, 5);
+    // std::cout << "--- score: " << g.score << ", pos: (" << g.p / 19 << ", " << g.p % 19 << ")\n";
+    // action.pos = { g.p / 19, g.p % 19 };
+    
     // AlphaBeta   alphabeta(4, false, 500);
     // int16_t p = alphabeta(node, -INF, INF, 5).p;
 

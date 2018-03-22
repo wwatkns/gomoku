@@ -6,7 +6,7 @@
 # include <list>
 # include <Eigen/Dense>
 // # include "MinMax.hpp"
-# include "AlphaBeta.hpp"
+// # include "AlphaBeta.hpp"
 # include "BitBoard.hpp"
 
 # define BOARD_COLS 19

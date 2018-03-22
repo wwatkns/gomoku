@@ -1,9 +1,9 @@
 #include "gomoku.hpp"
 #include "Game.hpp"
-#include "GraphicalInterface.hpp"
+// #include "GraphicalInterface.hpp"
 
 #include <bitset>
-#include "BitBoard.hpp"
+// #include "BitBoard.hpp"
 
 int     main(int argc, char **argv) {
     // uint64_t    mask = 1;

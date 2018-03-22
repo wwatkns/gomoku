@@ -2,6 +2,7 @@
 # define COMPUTER_HPP
 
 # include "Player.hpp"
+# include "AIPlayer.hpp"
 
 class Computer : public Player {
 
@@ -12,6 +13,7 @@ public:
     Computer	&operator=(Computer const &rhs);
 
     virtual bool    play(Player *other);
+    AIPlayer        *ai_algorithm;
 };
 
 #endif

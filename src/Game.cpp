@@ -1,13 +1,12 @@
 #include "Game.hpp"
-#include "BitBoard.hpp" // TMP
-// #include "ZobristTable.hpp"
+// #include "BitBoard.hpp" // TMP
 
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
     /* start menu */
     // this->_config = this->_gui->render_choice_menu();
-    this->_config = "p1=C,p2=C,nu=1"; // DEBUG
+    this->_config = "p1=C,p2=H,nu=1"; // DEBUG
     this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
     this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
