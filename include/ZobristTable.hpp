@@ -11,14 +11,14 @@
 # define SIZE 361   // the number of cells on the board (19*19)
 # define S 3        // the number of states
 
-typedef struct  s_stored {
+// typedef struct  s_stored {
     // int         pos;
-    int32_t     upperbound;
-    int32_t     lowerbound;
+    // int32_t     upperbound;
+    // int32_t     lowerbound;
     // int32_t     score;
     // int8_t      depth;
     // uint8_t     flag;
-}               t_stored;
+// }               t_stored;
 
 namespace ZobristTable {
     enum flag {
@@ -30,15 +30,16 @@ namespace ZobristTable {
     };
 
     /* initialization of Zobrist Hashing */
-    std::array<std::array<uint64_t, S>, SIZE>   _init_zobrist_table(void) {
-        std::array<std::array<uint64_t, S>, SIZE> table;
-        std::srand(std::time(nullptr));
-        for (int n = 0; n < SIZE; n++) {
-            for (int s = 0; s < S; s++)
-                table[n][s] = std::rand();
-        }
-        return (table);
-    }
+    std::array<std::array<uint64_t, S>, SIZE>   _init_zobrist_table(void);
+    // std::array<std::array<uint64_t, S>, SIZE>   _init_zobrist_table(void) {
+    //     std::array<std::array<uint64_t, S>, SIZE> table;
+    //     std::srand(std::time(nullptr));
+    //     for (int n = 0; n < SIZE; n++) {
+    //         for (int s = 0; s < S; s++)
+    //             table[n][s] = std::rand();
+    //     }
+    //     return (table);
+    // }
     const std::array<std::array<uint64_t, S>, SIZE> _table = _init_zobrist_table();
     /* the key the hashing function will use */
     struct Key {
@@ -60,9 +61,9 @@ namespace ZobristTable {
             return (hash);
         }
     };
-    std::unordered_map<Key, t_stored, KeyHash>  map;
-    std::unordered_map<Key, int, KeyHash>  upperbound_map;
-    std::unordered_map<Key, int, KeyHash>  lowerbound_map;
+    // std::unordered_map<Key, t_stored, KeyHash>  map;
+    // std::unordered_map<Key, int, KeyHash>  upperbound_map;
+    // std::unordered_map<Key, int, KeyHash>  lowerbound_map;
 }
 
 #endif
