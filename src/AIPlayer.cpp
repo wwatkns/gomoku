@@ -1,4 +1,5 @@
-#include "AIPlayer.cpp"
+#include "AIPlayer.hpp"
+// #include "Computer.hpp"
 
 AIPlayer::AIPlayer(void) {
     // Stack some room for transposition tables
@@ -17,37 +18,38 @@ AIPlayer        &AIPlayer::operator=(AIPlayer const&rhs) {
     return(*this);
 }
 
-Eigen::Array2i  AIPlayer::minmax(t_node node, int depth, int player) {
+t_best          AIPlayer::minmax(t_node node, int depth, int player) {
     /* Simple minmax algorithm */
-    int         best;
+    t_best      best;
     int         value;
 
     if (depth == 0 || check_end(node)) {
-        return (score_function(node, depth_ + 1));
+        return ((t_best){ score_function(node, depth + 1), -INF });
     }
     else if (player) {
-        best = -INF;
+        best = { -INF, -INF };
         BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->minmax(this->simulate_move(node, i), depth - 1, 0);
-                best = max(best, value);
+                value = this->minmax(this->simulate_move(node, i), depth - 1, 0).score;
+                best = value > best.score ? (t_best){ value, i } : best;
             }
         }
     }
     else {
-        best = INF;
+        best = { INF, -INF };
         BitBoard moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
-                value = this->minmax(this->simulate_move(node, i), depth - 1, 1);
-                best = min(best, value);                
+                value = this->minmax(this->simulate_move(node, i), depth - 1, 1).score;
+                best = value < best.score ? (t_best){ value, i } : best;
             }
         }
     }
     return (best);
 }
 
+/*
 int         AIPlayer::iterativedeepening(t_node node, int maxdepth) {
 
     for (int depth = 1; depth < maxdepth; depth++) {
@@ -55,6 +57,7 @@ int         AIPlayer::iterativedeepening(t_node node, int maxdepth) {
     }
     return ();
 }
+*/
 
 BitBoard        AIPlayer::get_moves(BitBoard const& player, BitBoard const& opponent, BitBoard const& player_forbidden, int player_pairs_captured, int opponent_pairs_captured) {
     BitBoard    moves;
