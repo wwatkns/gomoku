@@ -43,6 +43,7 @@ public:
     t_best          minmax(t_node node, int depth, int player);
     t_best          alphabeta(t_node, int depth, int alpha, int beta, int player);
     t_best          alphabetawithmemory(t_node, int depth, int alpha, int beta, int player);
+    t_best          mtdf(t_node node, t_best f, int depth);
     // int             negamax(t_node node, int depth, int player); /* Need a specific heuristic for this one */
 
 private:
