@@ -89,8 +89,72 @@ t_best          AIPlayer::alphabeta(t_node node, int depth, int alpha, int beta,
     return (best);
 }
 
-/*
-int         AIPlayer::iterativedeepening(t_node node, int maxdepth) {
+t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha, int beta, int player) {
+    /* Alphabeta with memory using transposition table */
+    t_stored    bounds;
+    t_best      best;
+    int         value;
+
+    if (this->_TT.count({ node.player, node.opponent }) > 0) {
+        if (this->_TT[{ node.player, node.opponent }].lowerbound >= beta)
+            return ((t_best){ this->_TT[{ node.player, node.opponent }].lowerbound, -INF });
+        if (this->_TT[{ node.player, node.opponent }].upperbound <= alpha)
+            return ((t_best){ this->_TT[{ node.player, node.opponent }].upperbound, -INF });
+        alpha = this->max(alpha, this->_TT[{ node.player, node.opponent }].lowerbound);
+        beta = this->min(alpha, this->_TT[{ node.player, node.opponent }].upperbound);
+    }
+
+    if (depth == 0 || check_end(node)) {
+        return ((t_best){ score_function(node, depth + 1), -INF });
+    }
+    else if (player) {
+        best = { -INF, -INF };
+        int a = alpha;
+        BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                value = this->alphabetawithmemory(this->simulate_move(node, i), depth - 1, a, beta, 0).score;
+                best = value > best.score ? (t_best){ value, i } : best;
+                a = this->max(a, best.score);
+                if (best.score >= beta) {
+                    // std::cout << "Cut max!" << std::endl;
+                    break;
+                }
+            }
+        }
+    }
+    else {
+        best = { INF, -INF };
+        int b = beta;
+        BitBoard moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                value = this->alphabetawithmemory(this->simulate_move(node, i), depth - 1, alpha, b, 1).score;
+                best = value < best.score ? (t_best){ value, i } : best;
+                b = this->min(b, best.score);
+                if (best.score <= alpha) {
+                    // std::cout << "Cut min!" << std::endl;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (best.score <= alpha) {
+        bounds.upperbound = alpha;
+    }
+    if (best.score > alpha && best.score < beta) {
+        bounds.upperbound = alpha;
+        bounds.lowerbound = beta;
+    }
+    if (best.score >= beta) {
+        bounds.lowerbound = beta;
+    }
+    this->_TT[{ node.player, node.opponent }];
+
+    return (best);
+}
+
 
     for (int depth = 1; depth < maxdepth; depth++) {
         g = 
