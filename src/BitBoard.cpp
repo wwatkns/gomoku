@@ -8,18 +8,40 @@ const BitBoard                BitBoard::border_right = (std::array<uint64_t, N>)
 const BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000000000 };
 const BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
 const BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
-const std::array<t_pattern,11> BitBoard::patterns = {
-    (t_pattern){ 0x70, 5, 4,  8192 },  //   -OOO-  :  open three
-    (t_pattern){ 0x68, 6, 8,  7000 },  //  -OO-O-  :  open split three
-    (t_pattern){ 0x78, 6, 4, 65535 },  //  -OOOO-  :  open four
-    (t_pattern){ 0xE0, 4, 8,   255 },  //    OOO-  :  close three
-    (t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
-    (t_pattern){ 0xB0, 5, 8,   127 },  //   O-OO-  :  close split three #2
-    (t_pattern){ 0xF0, 5, 8,  1023 },  //   OOOO-  :  close four
-    (t_pattern){ 0xB8, 5, 8, 16383 },  //   O-OOO  :  split four #1
-    (t_pattern){ 0xD8, 5, 8, 16383 },  //   OO-OO  :  split four #2
-    (t_pattern){ 0xE8, 5, 8, 16383 },  //   OOO-O  :  split four #3
-    (t_pattern){ 0xF8, 5, 4, 65535 }   //   OOOOO  :  five
+const std::array<t_pattern,10> BitBoard::patterns = {
+    // (t_pattern){ 0x70, 5, 4,  8192 },  //   -OOO-  :  open three
+    // (t_pattern){ 0x68, 6, 8,  7000 },  //  -OO-O-  :  open split three
+    // (t_pattern){ 0x78, 6, 4, 65535 },  //  -OOOO-  :  open four
+    // (t_pattern){ 0xE0, 4, 8,   255 },  //    OOO-  :  close three
+    // (t_pattern){ 0xD0, 5, 8,   127 },  //   OO-O-  :  close split three #1
+    // (t_pattern){ 0xB0, 5, 8,   127 },  //   O-OO-  :  close split three #2
+    // (t_pattern){ 0xF0, 5, 8,  1023 },  //   OOOO-  :  close four
+    // (t_pattern){ 0xB8, 5, 8, 16383 },  //   O-OOO  :  split four #1
+    // (t_pattern){ 0xD8, 5, 8, 16383 },  //   OO-OO  :  split four #2
+    // (t_pattern){ 0xE8, 5, 8, 16383 }   //   OOO-O  :  split four #3
+
+    // (t_pattern){ 0x70, 5, 4,  320 },  //   -OOO-  :  open three
+    // (t_pattern){ 0x68, 6, 8,  240 },  //  -OO-O-  :  open split three
+    // (t_pattern){ 0x78, 6, 4, 1000 },  //  -OOOO-  :  open four
+    // (t_pattern){ 0xE0, 4, 8,   20 },  //    OOO-  :  close three
+    // (t_pattern){ 0xD0, 5, 8,   10 },  //   OO-O-  :  close split three #1
+    // (t_pattern){ 0xB0, 5, 8,   10 },  //   O-OO-  :  close split three #2
+    // (t_pattern){ 0xF0, 5, 8,   50 },  //   OOOO-  :  close four
+    // (t_pattern){ 0xB8, 5, 8, 5000 },  //   O-OOO  :  split four #1  |
+    // (t_pattern){ 0xD8, 5, 8, 5000 },  //   OO-OO  :  split four #2  |> that much ?
+    // (t_pattern){ 0xE8, 5, 8, 5000 }   //   OOO-O  :  split four #3  |
+
+    (t_pattern){ 0x70, 5, 4, 1000 },  //   -OOO-  :  open three
+    (t_pattern){ 0x68, 6, 8,  950 },  //  -OO-O-  :  open split three
+    (t_pattern){ 0x78, 6, 4, 2000 },  //  -OOOO-  :  open four
+    (t_pattern){ 0xE0, 4, 8,   10 },  //    OOO-  :  close three
+    (t_pattern){ 0xD0, 5, 8,   10 },  //   OO-O-  :  close split three #1
+    (t_pattern){ 0xB0, 5, 8,   10 },  //   O-OO-  :  close split three #2
+    (t_pattern){ 0xF0, 5, 8,   50 },  //   OOOO-  :  close four
+    (t_pattern){ 0xB8, 5, 8,  200 },  //   O-OOO  :  split four #1  |
+    (t_pattern){ 0xD8, 5, 8,  200 },  //   OO-OO  :  split four #2  |> that much ?
+    (t_pattern){ 0xE8, 5, 8,  200 }   //   OOO-O  :  split four #3  |
+
 };
 
 BitBoard::BitBoard(void) {

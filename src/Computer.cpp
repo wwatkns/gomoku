@@ -28,20 +28,7 @@ bool        Computer::play(Player *other) {
 
     action_beg = std::chrono::steady_clock::now();
 
-    // action.pos = alphabeta_pruning(&node, -INF, INF, 3);
-    // action.pos = iterative_deepening(&node, 3);
-
-    // int16_t p = mtdf(&node, 0, 3).p;
-
-    // action.pos = iterativeDeepening(node, 10);
-    // AlphaBeta   alphabeta(4, false, 500);
-    // int16_t p = alphabeta(node, -INF, INF, 5).p;
-
-    // t_ret ret = alphaBetaWithMemory(root, -INF, INF, 5);
-
     t_ret ret = this->_alphaBeta(root);
-
-    // t_ret ret = iterativeDeepening(root, 9);
     action.pos = { range(ret.p / 19, 0, 18), range(ret.p % 19, 0, 18) };
     this->_gui->explored_moves_tmp = moves_to_explore(root.player, root.opponent, root.player_forbidden, root.player_pairs_captured, root.opponent_pairs_captured);
 

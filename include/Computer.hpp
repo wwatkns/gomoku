@@ -13,10 +13,10 @@ public:
 
     virtual bool    play(Player *other);
 
-    AlphaBeta       get_alphaBeta(void) const { return (_alphaBeta); };
+    AlphaBetaWithIterativeDeepening get_alphaBeta(void) const { return (_alphaBeta); };
 
 private:
-    AlphaBeta   _alphaBeta;
+    AlphaBetaWithIterativeDeepening _alphaBeta;
 };
 
 #endif
