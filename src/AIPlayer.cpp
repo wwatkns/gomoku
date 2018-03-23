@@ -109,6 +109,31 @@ t_best          AIPlayer::alphabeta(t_node node, int depth, int alpha, int beta,
                 }
             }
         }
+    return (best);
+}
+
+t_best          AIPlayer::alphabetanegamax(t_node node, int depth, int alpha, int beta, int color) {
+    /* Negamax */
+    t_best      best;
+    int         value;
+
+    this->nbnode++; // DEBUG
+    if (depth == 0 || check_end(node)) {
+        this->nbleaf++; // DEBUG
+        return ((t_best){ (color * this->score_function(node, depth + 1)), -INF });
+    }
+    else {
+        best = { -INF, -INF };
+        BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                value = -this->alphabetanegamax(this->simulate_move(node, i), depth - 1, -beta, -alpha, -color).score;
+                best = value > best.score ? (t_best){ value, i } : best;
+                alpha = this->max(alpha, value);
+                if (alpha >= beta)
+                    break;
+            }
+        }
     }
     return (best);
 }
