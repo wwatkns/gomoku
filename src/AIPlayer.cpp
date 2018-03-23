@@ -138,11 +138,14 @@ t_best          AIPlayer::alphabetanegamax(t_node node, int depth, int alpha, in
     return (best);
 }
 
+/*
 t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha, int beta, int player) {
-    /* Alphabeta with memory using transposition table */
+    // Alphabeta with memory using transposition table
     t_stored    bounds;
     t_best      best;
     int         value;
+
+    this->nbnode++; // DEBUG
 
     if (this->_TT.count({ node.player, node.opponent }) > 0) {
         if (this->_TT[{ node.player, node.opponent }].depth >= depth) {
@@ -158,8 +161,11 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
     }
 
     if (depth == 0 || check_end(node)) {
-        return ((t_best){ score_function(node, depth + 1), -INF });
+        this->nbleaf++; // DEBUG
+        return ((t_best){ this->score_function(node, depth + 1), -INF });
     }
+
+
     else if (player) {
         best = { -INF, -INF };
         int a = alpha;
@@ -170,7 +176,6 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
                 best = value > best.score ? (t_best){ value, i } : best;
                 a = this->max(a, best.score);
                 if (best.score >= beta) {
-                    // std::cout << "Cut max!" << std::endl;
                     break;
                 }
             }
@@ -186,7 +191,6 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
                 best = value < best.score ? (t_best){ value, i } : best;
                 b = this->min(b, best.score);
                 if (best.score <= alpha) {
-                    // std::cout << "Cut min!" << std::endl;
                     break;
                 }
             }
@@ -205,7 +209,63 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
         bounds.lowerbound = beta;
     }
     this->_TT[{ node.player, node.opponent }];
+    return (best);
+}
+*/
 
+t_best          AIPlayer::negamaxwithmemory(t_node node, int depth, int alpha, int beta, int color) {
+    /* Negamax */
+    t_stored    bounds;    
+    t_best      best;
+    int         value;
+    int         a = alpha;
+
+    this->nbnode++; // DEBUG
+    if (this->_TT.count({ node.player, node.opponent }) > 0 && this->_TT[{ node.player, node.opponent }].depth >= depth) {
+        if (this->_TT[{ node.player, node.opponent }].flag == 1) { // Exact
+            return (this->_TT[{ node.player, node.opponent }].value);
+        }
+        else if (this->_TT[{ node.player, node.opponent }].flag == 2) { // Lowerbound
+            alpha = this->max(alpha, this->_TT[{ node.player, node.opponent }].value);
+        }
+        else if (this->_TT[{ node.player, node.opponent }].flag == 3) { // Upperbound
+            beta = this->min(beta, this->_TT[{ node.player, node.opponent }].value);
+        }
+        if (alpha >= beta) {
+            return (this->_TT[{ node.player, node.opponent }].value);
+        }
+    }
+
+    if (depth == 0 || check_end(node)) {
+        this->nbleaf++; // DEBUG
+        return ((t_best){ (color * this->score_function(node, depth + 1)), -INF });
+    }
+    else {
+        best = { -INF, -INF };
+        BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                value = -this->negamaxwithmemory(this->simulate_move(node, i), depth - 1, -beta, -alpha, -color).score;
+                best = value > best.score ? (t_best){ value, i } : best;
+                alpha = this->max(alpha, value);
+                if (alpha >= beta)
+                    break;
+            }
+        }
+    }
+
+    bounds.value = best;
+    bounds.depth = depth;
+    if (best.score <= a) {
+        bounds.flag = 3; // Upperbound
+    }
+    else if (best.score >= beta) {
+        bounds.flag = 2; // Lowerbound
+    }
+    else {
+        bounds.flag = 1; // Exact
+    }
+    this->_TT[{ node.player, node.opponent }] = bounds;
     return (best);
 }
 

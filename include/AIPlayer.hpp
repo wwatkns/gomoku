@@ -29,8 +29,11 @@ typedef struct      s_best {
 
 typedef struct  s_stored {
     int     depth;
-    int     upperbound;
-    int     lowerbound;
+    t_best  value;
+    // int     upperbound;
+    // int     lowerbound;
+    /* Flags used for negamax with memory: 1 is exact, 2 is lowerbound and 3 is upperbound */
+    int     flag;
 }               t_stored;
 
 class AIPlayer {
@@ -45,9 +48,10 @@ public:
     t_best          negamax(t_node node, int depth, int color);
     t_best          alphabeta(t_node, int depth, int alpha, int beta, int player);
     t_best          alphabetanegamax(t_node node, int depth, int alpha, int beta, int color);
+    // t_best          alphabetawithmemory(t_node, int depth, int alpha, int beta, int player);
+    t_best          negamaxwithmemory(t_node node, int depth, int alpha, int beta, int color);
     t_best          mtdf(t_node node, t_best f, int depth);
     t_best          iterativedeepening(t_node node, int maxdepth);
-    // int             negamax(t_node node, int depth, int player); /* Need a specific heuristic for this one */
 
 private:
     std::unordered_map<ZobristTable::Key, t_stored, ZobristTable::KeyHash>    _TT;
