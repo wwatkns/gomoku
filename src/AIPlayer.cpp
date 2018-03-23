@@ -52,6 +52,7 @@ t_best          AIPlayer::negamax(t_node node, int depth, int color) {
     /* Negamax */
     t_best      best;
     int         value;
+    BitBoard    moves;
 
     this->nbnode++; // DEBUG
     if (depth == 0 || check_end(node)) {
@@ -60,7 +61,10 @@ t_best          AIPlayer::negamax(t_node node, int depth, int color) {
     }
     else {
         best = { -INF, -INF };
-        BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        if (color == 1)
+            moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        if (color == -1)
+            moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
                 value = -this->negamax(this->simulate_move(node, i), depth - 1, -color).score;
@@ -109,6 +113,7 @@ t_best          AIPlayer::alphabeta(t_node node, int depth, int alpha, int beta,
                 }
             }
         }
+    }
     return (best);
 }
 
@@ -116,6 +121,7 @@ t_best          AIPlayer::alphabetanegamax(t_node node, int depth, int alpha, in
     /* Negamax */
     t_best      best;
     int         value;
+    BitBoard    moves;    
 
     this->nbnode++; // DEBUG
     if (depth == 0 || check_end(node)) {
@@ -124,7 +130,10 @@ t_best          AIPlayer::alphabetanegamax(t_node node, int depth, int alpha, in
     }
     else {
         best = { -INF, -INF };
-        BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        if (color == 1)
+            moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        if (color == -1)
+            moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
                 value = -this->alphabetanegamax(this->simulate_move(node, i), depth - 1, -beta, -alpha, -color).score;
@@ -290,6 +299,7 @@ t_best          AIPlayer::alphabetawithmemory(t_node node, int depth, int alpha,
 
 t_best          AIPlayer::negamaxwithmemory(t_node node, int depth, int alpha, int beta, int color) {
     /* Negamax */
+    BitBoard    moves;
     t_stored    bounds;    
     t_best      best;
     int         value;
@@ -317,7 +327,10 @@ t_best          AIPlayer::negamaxwithmemory(t_node node, int depth, int alpha, i
     }
     else {
         best = { -INF, -INF };
-        BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        if (color == 1)
+            moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        if (color == -1)
+            moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
                 value = -this->negamaxwithmemory(this->simulate_move(node, i), depth - 1, -beta, -alpha, -color).score;
@@ -360,9 +373,10 @@ t_best          AIPlayer::mtdf(t_node node, t_best f, int depth) {
 t_best          AIPlayer::iterativedeepening(t_node node, int maxdepth) {
     t_best      g = { 0, 0 };
 
-    for (int depth = 1; depth < maxdepth; depth++) {
+    for (int depth = 1; depth < maxdepth; (depth = depth + 2)) {
         g = this->mtdf(node, g, depth);
     }
+    this->_TT.clear();
     return (g);
 }
 
@@ -396,8 +410,8 @@ BitBoard        AIPlayer::get_moves(BitBoard const& player, BitBoard const& oppo
     return (moves & ~player & ~opponent);
 }
 
-t_node      AIPlayer::simulate_move(t_node const &node, int i) { // this is the biggest performance hit
-    t_node  child = node;
+t_node          AIPlayer::simulate_move(t_node const &node, int i) { // this is the biggest performance hit
+    t_node      child = node;
     /* simulate player move */
     if (child.pid == 1) {
         child.player.write(i);
@@ -424,7 +438,7 @@ t_node      AIPlayer::simulate_move(t_node const &node, int i) { // this is the 
     return (child);
 }
 
-int32_t     AIPlayer::score_function(t_node const &node, uint8_t depth) {
+int32_t         AIPlayer::score_function(t_node const &node, uint8_t depth) {
     int32_t     score = 0;
 
     // if (node.pid == 2) {
@@ -437,7 +451,7 @@ int32_t     AIPlayer::score_function(t_node const &node, uint8_t depth) {
     return (score);
 }
 
-int32_t     AIPlayer::player_score(t_node const &node, uint8_t depth) {
+int32_t         AIPlayer::player_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int32_t     score = 0;
 
@@ -455,7 +469,7 @@ int32_t     AIPlayer::player_score(t_node const &node, uint8_t depth) {
     return (score);
 }
 
-int32_t    AIPlayer::opponent_score(t_node const &node, uint8_t depth) {
+int32_t         AIPlayer::opponent_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int32_t     score = 0;
 
@@ -477,7 +491,7 @@ int32_t    AIPlayer::opponent_score(t_node const &node, uint8_t depth) {
     return (score);
 }
 
-bool        AIPlayer::check_end(t_node const& node) {
+bool            AIPlayer::check_end(t_node const& node) {
     if (node.pid == 2) {
         if (node.player_pairs_captured >= 5 || detect_five_aligned(node.player))
             return (true);
