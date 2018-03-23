@@ -48,6 +48,30 @@ t_best          AIPlayer::minmax(t_node node, int depth, int player) {
     return (best);
 }
 
+t_best          AIPlayer::negamax(t_node node, int depth, int color) {
+    /* Negamax */
+    t_best      best;
+    int         value;
+
+    this->nbnode++; // DEBUG
+    if (depth == 0 || check_end(node)) {
+        this->nbleaf++; // DEBUG
+        return ((t_best){ (color * this->score_function(node, depth + 1)), -INF });
+    }
+    else {
+        best = { -INF, -INF };
+        BitBoard moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                value = -this->negamax(this->simulate_move(node, i), depth - 1, -color).score;
+                best = value > best.score ? (t_best){ value, i } : best;
+            }
+        }
+    }
+    return (best);
+}
+
+
 t_best          AIPlayer::alphabeta(t_node node, int depth, int alpha, int beta, int player) {
     /* Minmax with alpha-beta pruning */
     t_best      best;
