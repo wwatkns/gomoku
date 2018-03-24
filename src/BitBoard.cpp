@@ -8,7 +8,7 @@ const BitBoard                BitBoard::border_right = (std::array<uint64_t, N>)
 const BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000000000 };
 const BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
 const BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
-const std::array<t_pattern,10> BitBoard::patterns = {
+const std::array<t_pattern,11> BitBoard::patterns = {
     // (t_pattern){ 0x70, 5, 4,  8192 },  //   -OOO-  :  open three
     // (t_pattern){ 0x68, 6, 8,  7000 },  //  -OO-O-  :  open split three
     // (t_pattern){ 0x78, 6, 4, 65535 },  //  -OOOO-  :  open four
@@ -40,9 +40,16 @@ const std::array<t_pattern,10> BitBoard::patterns = {
     (t_pattern){ 0xF0, 5, 8,   50 },  //   OOOO-  :  close four
     (t_pattern){ 0xB8, 5, 8,  200 },  //   O-OOO  :  split four #1  |
     (t_pattern){ 0xD8, 5, 8,  200 },  //   OO-OO  :  split four #2  |> that much ?
-    (t_pattern){ 0xE8, 5, 8,  200 }   //   OOO-O  :  split four #3  |
-
+    (t_pattern){ 0xE8, 5, 8,  200 },  //   OOO-O  :  split four #3  |
+    (t_pattern){ 0xF8, 5, 4,  250 },  //   OOOOO  :  five
 };
+
+/* population count of a 64-bit unsigned integer (count the number of set bits) */
+static int popcount64(uint64_t x) {
+    x = x - ((x >> 1) & 0x5555555555555555);
+    x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+    return (((x + (x >> 4)) & 0x0F0F0F0F0F0F0F0F) * 0x0101010101010101) >> 56;
+}
 
 BitBoard::BitBoard(void) {
     this->zeros();
@@ -134,11 +141,6 @@ void    BitBoard::remove(const uint64_t i) {
     this->values[i >> 6] &= ~(0x8000000000000000 >> (i & 0x3F));
 }
 
-static int popcount64(uint64_t x) {
-    x = x - ((x >> 1) & 0x5555555555555555);
-    x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
-    return (((x + (x >> 4)) & 0x0F0F0F0F0F0F0F0F) * 0x0101010101010101) >> 56;
-}
 /*  return the number of bits set to 1 in the bitboard using
     Brian Kernighan's method.
 */

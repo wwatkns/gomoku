@@ -3,6 +3,8 @@
 
 # include <string>
 # include <set>
+# include <vector>
+# include <algorithm>
 # include <iostream>
 # include <Eigen/Dense>
 # include <stdio.h>
@@ -16,9 +18,7 @@ class Player;
 
 typedef struct  s_node {
     BitBoard        player;
-    BitBoard        player_forbidden;
     BitBoard        opponent;
-    BitBoard        opponent_forbidden;
     uint8_t         cid;
     uint8_t         player_pairs_captured;
     uint8_t         opponent_pairs_captured;
@@ -31,6 +31,12 @@ typedef struct  s_ret {
     bool operator<(s_ret const& b) const { return (score < b.score); }
     bool operator>(s_ret const& b) const { return (score > b.score); }
 }               t_ret;
+
+typedef struct  s_move {
+    int         eval;
+    int         p;
+    t_node      node;
+}               t_move;
 
 t_node          create_node(Player const& player, Player const& opponent);
 
@@ -45,10 +51,8 @@ BitBoard        moves_to_explore(BitBoard const& player, BitBoard const& opponen
 
 // t_ret           mtdf(t_node *root, int32_t firstguess, int8_t depth);
 
-// int32_t         score_function_light(t_node const &node, uint8_t depth); // WIP
+int32_t         evaluation_function(t_node const &node, uint8_t depth); // WIP
 int32_t         score_function(t_node const &node, uint8_t depth);
-int64_t         player_score(t_node const &node, uint8_t depth);
-int64_t         opponent_score(t_node const &node, uint8_t depth);
 
 // t_node          simulate_move(t_node const &node, int i);
 
@@ -116,7 +120,8 @@ private:
     uint8_t                                 _pid;
     uint8_t                                 _verbose;
     std::string                             _debug_string;
-    std::multiset<t_ret, retmaxcmp>         _ordered_root_moves;
+    // std::multiset<t_ret, retmaxcmp>         _ordered_root_moves;
+    std::vector<t_move>                     _root_moves;
 
     /* analytics */
     int                                     _n_explored_nodes;
@@ -127,6 +132,8 @@ private:
     t_ret                                   _root_max(t_node node, int alpha, int beta, int depth);
     t_ret                                   _max(t_node node, int alpha, int beta, int depth);
     t_ret                                   _min(t_node node, int alpha, int beta, int depth);
+
+    std::vector<t_move>                     _move_generation(t_node const& node, int depth);
 
     t_node                                  _create_child(t_node const& parent, int m);
     bool                                    _times_up(void);

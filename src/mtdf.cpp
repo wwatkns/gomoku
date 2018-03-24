@@ -10,8 +10,8 @@ t_node          create_node(Player const& player, Player const& opponent) {
 
     node.player = player.board;
     node.opponent = opponent.board;
-    node.player_forbidden = player.board_forbidden;
-    node.opponent_forbidden = opponent.board_forbidden;
+    // node.player_forbidden = player.board_forbidden;
+    // node.opponent_forbidden = opponent.board_forbidden;
     node.cid = 1;
     node.player_pairs_captured = player.get_pairs_captured();
     node.opponent_pairs_captured = opponent.get_pairs_captured();
@@ -70,6 +70,11 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
     }
     return (moves & ~player & ~opponent & ~player_forbidden);
 }
+
+/* comparison functions to sort std::vector<t_move> */
+static bool cmpMin(t_move const& a, t_move const& b) { return (a.eval < b.eval); }
+static bool cmpMax(t_move const& a, t_move const& b) { return (a.eval > b.eval); }
+
 
 // static void debug_scores(int score, int i, int depth, int max_depth = 5) {
 //     if (depth == max_depth)
@@ -609,9 +614,9 @@ t_ret const AlphaBetaWithIterativeDeepening::operator()(t_node root) { /* iterat
 
     this->search_stopped = false;
     this->_search_start = std::chrono::steady_clock::now();
-    this->_ordered_root_moves.clear();
+    this->_root_moves.clear();
 
-    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_max_depth; this->_current_max_depth += 1) {
+    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_max_depth; this->_current_max_depth += 2) {
         current = _root_max(root, -INF, INF, this->_current_max_depth);
         _debug_search(current);
         if (this->search_stopped)
@@ -629,14 +634,14 @@ t_ret   AlphaBetaWithIterativeDeepening::_min(t_node node, int alpha, int beta, 
     if (depth == 0 || check_end(node))
         return ((t_ret){ score_function(node, depth+1), 0 });
 
-    t_ret       current;
-    t_ret       best = { INF, 0 };
-    BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
+    t_ret               current;
+    t_ret               best = { INF, 0 };
+    std::vector<t_move> moves = _move_generation(node, depth);
 
-    for (int i = 0; i < 361; ++i) if (moves.check_bit(i)) {
-        current = _max(_create_child(node, i), alpha, beta, depth-1);
+    for (std::vector<t_move>::const_iterator move = moves.begin(); move != moves.end(); ++move) {
+        current = _max(move->node, alpha, beta, depth-1);
         if (current < best) {
-            best = { current.score, i };
+            best = { current.score, move->p };
             beta = min(beta, best.score);
             if (alpha >= beta) /* alpha cut-off */
                 return (best);
@@ -653,15 +658,15 @@ t_ret   AlphaBetaWithIterativeDeepening::_max(t_node node, int alpha, int beta, 
     if (depth == 0 || check_end(node))
         return ((t_ret){ score_function(node, depth+1), 0 });
 
-    t_ret       current;
-    t_ret       best = {-INF, 0 };
-    BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+    t_ret               current;
+    t_ret               best = {-INF, 0 };
+    std::vector<t_move> moves = _move_generation(node, depth);
 
-    for (int i = 0; i < 361; ++i) if (moves.check_bit(i)) {
-        current = _min(_create_child(node, i), alpha, beta, depth-1);
-        _debug_append_explored(current.score, i, depth);
+    for (std::vector<t_move>::const_iterator move = moves.begin(); move != moves.end(); ++move) {
+        current = _min(move->node, alpha, beta, depth-1);
+        _debug_append_explored(current.score, move->p, depth);
         if (current > best) {
-            best = { current.score, i };
+            best = { current.score, move->p };
             alpha = max(alpha, best.score);
             if (alpha >= beta) /* beta cut-off */
                 return (best);
@@ -675,38 +680,48 @@ t_ret   AlphaBetaWithIterativeDeepening::_root_max(t_node node, int alpha, int b
     t_ret       best = {-INF, 0 };
 
     /* if we're at the top of our iterative deepening function */
-    if (this->_ordered_root_moves.size() == 0) {
-        BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
-        for (int i = 0; i < 361; ++i) {
-            if (moves.check_bit(i)) {
-                current = _min(_create_child(node, i), alpha, beta, depth-1);
-                this->_ordered_root_moves.insert((t_ret){ current.score, i });
-                _debug_append_explored(current.score, i, depth);
-                if (current > best) {
-                    best = { current.score, i };
-                    alpha = max(alpha, best.score);
-                    if (alpha >= beta) /* beta cut-off */
-                        return (best);
-                }
-            }
+    if (this->_current_max_depth == 1)
+        this->_root_moves = _move_generation(node, depth);
+    /* otherwise the estimation at the previous iterative deepening loop will be used */
+    for (std::vector<t_move>::iterator move = this->_root_moves.begin(); move != this->_root_moves.end(); ++move) {
+        current = _min(move->node, alpha, beta, depth-1);
+        move->eval = current.score;
+        _debug_append_explored(current.score, move->p, depth);
+        if (current > best) {
+            best = { current.score, move->p };
+            alpha = max(alpha, best.score);
         }
-    } else {
-        std::multiset<t_ret, retmaxcmp> ordered_moves;
-
-        for (std::multiset<t_ret, retmaxcmp>::iterator it = this->_ordered_root_moves.begin(); it != this->_ordered_root_moves.end(); ++it) {
-            current = _min(_create_child(node, it->p), alpha, beta, depth-1);
-            ordered_moves.insert((t_ret){ current.score, it->p });
-            _debug_append_explored(current.score, it->p, depth);
-            if (current > best) {
-                best = { current.score, it->p };
-                alpha = max(alpha, best.score);
-                if (alpha >= beta) /* beta cut-off */
-                    return (best);
-            }
-        }
-        this->_ordered_root_moves = ordered_moves;
     }
+    std::sort(this->_root_moves.begin(), this->_root_moves.end(), cmpMax);
     return (best);
+}
+
+static int popcount64(uint64_t x) {
+    x = x - ((x >> 1) & 0x5555555555555555);
+    x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+    return (((x + (x >> 4)) & 0x0F0F0F0F0F0F0F0F) * 0x0101010101010101) >> 56;
+}
+
+// this will also take into account the estimation of the node at previous iterative deepening loop
+std::vector<t_move> AlphaBetaWithIterativeDeepening::_move_generation(t_node const& node, int depth) {
+    std::vector<t_move> serialized;
+    BitBoard            moves;
+
+    /* compute the moves to explore for the given player */
+    if (node.cid == 1)
+        moves = moves_to_explore(node.player, node.opponent, forbidden_detector(node.player, node.opponent), node.player_pairs_captured, node.opponent_pairs_captured);
+    else
+        moves = moves_to_explore(node.opponent, node.player, forbidden_detector(node.opponent, node.player), node.opponent_pairs_captured, node.player_pairs_captured);
+    /* convert the bitboard of moves to a list of positions */
+    for (int i = 0; i < N; ++i)
+        if (moves.values[i]) do {
+            int idx = 63 - popcount64((moves.values[i] & -moves.values[i]) - 1) + (BITS * i);
+            t_node move = _create_child(node, idx);
+            serialized.push_back((t_move){ evaluation_function(move, depth), idx, move });
+        } while (moves.values[i] &= moves.values[i] - 1);
+    /* sort the elements in the list by score */
+    std::sort(serialized.begin(), serialized.end(), (node.cid == 2 ? cmpMin : cmpMax));
+    return (serialized);
 }
 
 t_node      AlphaBetaWithIterativeDeepening::_create_child(t_node const& parent, int m) {
@@ -730,16 +745,14 @@ t_node      AlphaBetaWithIterativeDeepening::_create_child(t_node const& parent,
         }
         child.cid = 1;
     }
-    child.player_forbidden = forbidden_detector(child.player, child.opponent);
-    child.opponent_forbidden = forbidden_detector(child.opponent, child.player);
     return (child);
 }
 
 bool    AlphaBetaWithIterativeDeepening::_times_up(void) {
-    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - this->_search_start).count() >= this->_search_limit_ms) {
-        this->search_stopped = true;
-        return (true);
-    }
+    // if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - this->_search_start).count() >= this->_search_limit_ms) {
+    //     this->search_stopped = true;
+    //     return (true);
+    // }
     return (false);
 }
 
@@ -827,7 +840,7 @@ t_ret   AlphaBetaWithMemory::_min(t_node node, int alpha, int beta, int depth) {
 
     t_ret       current;
     t_ret       best = { INF, 0 };
-    BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
+    BitBoard    moves = moves_to_explore(node.opponent, node.player, forbidden_detector(node.opponent, node.player), node.opponent_pairs_captured, node.player_pairs_captured);
 
     for (int i = 0; i < 361; ++i) if (moves.check_bit(i)) {
         current = _max(_create_child(node, i), alpha, beta, depth-1);
@@ -861,7 +874,7 @@ t_ret   AlphaBetaWithMemory::_max(t_node node, int alpha, int beta, int depth) {
 
     t_ret       current;
     t_ret       best = {-INF, 0 };
-    BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+    BitBoard    moves = moves_to_explore(node.player, node.opponent, forbidden_detector(node.player, node.opponent), node.player_pairs_captured, node.opponent_pairs_captured);
 
     for (int i = 0; i < 361; ++i) if (moves.check_bit(i)) {
         current = _min(_create_child(node, i), alpha, beta, depth-1);
@@ -885,7 +898,7 @@ t_ret   AlphaBetaWithMemory::_root_max(t_node node, int alpha, int beta, int dep
 
     /* if we're at the top of our iterative deepening function */
     if (this->_ordered_root_moves.size() == 0) {
-        BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
+        BitBoard    moves = moves_to_explore(node.player, node.opponent, forbidden_detector(node.player, node.opponent), node.player_pairs_captured, node.opponent_pairs_captured);
         for (int i = 0; i < 361; ++i) {
             if (moves.check_bit(i)) {
                 current = _min(_create_child(node, i), alpha, beta, depth-1);
@@ -970,8 +983,6 @@ t_node      AlphaBetaWithMemory::_create_child(t_node const& parent, int m) {
         }
         child.cid = 1;
     }
-    child.player_forbidden = forbidden_detector(child.player, child.opponent);
-    child.opponent_forbidden = forbidden_detector(child.opponent, child.player);
     return (child);
 }
 
@@ -1019,19 +1030,36 @@ bool check_end(t_node const& node) {
     return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, 2));
 }
 
-int32_t        score_function(t_node const &node, uint8_t depth) {
+static inline const int64_t player_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    // score += player_score(node, depth);
-    // score -= opponent_score(node, depth) * 2;
-    // score += player_score(node, depth) * (node.cid ^ 0x3);
-    // score -= opponent_score(node, depth) * (node.cid);
-    score += player_score(node, depth) * (node.cid == 1 ? 3 : 1);
-    score -= opponent_score(node, depth) * (node.cid == 2 ? 3 : 1);
-    return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
+    if (node.player_pairs_captured >= 5)
+        return (500000 * depth);
+    score += pair_capture_detector(node.player, node.opponent).set_count() * 50;//  5,000pts / pairs capture threatening
+    score += node.player_pairs_captured * node.player_pairs_captured * 100; // pairs capture score
+    return (score);
 }
 
-int64_t    player_score(t_node const &node, uint8_t depth) {
+static inline const int64_t opponent_evaluation(t_node const &node, uint8_t depth) {
+    int64_t     score = 0;
+
+    if (node.opponent_pairs_captured >= 5)
+        return (500000 * depth);
+    score += pair_capture_detector(node.opponent, node.player).set_count() * 50;//  5,000pts / pairs capture threatening
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100; // pairs capture score
+    return (score);
+}
+
+int32_t        evaluation_function(t_node const &node, uint8_t depth) {
+    int64_t     score = 0;
+    /* we give more weight to the player whose turn is next */
+    score += player_evaluation(node, depth) * (node.cid == 2 ? 3 : 1);
+    score -= opponent_evaluation(node, depth) * (node.cid == 1 ? 3 : 1);
+    return (score);
+}
+
+
+static inline const int64_t player_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int64_t     score = 0;
 
@@ -1041,17 +1069,16 @@ int64_t    player_score(t_node const &node, uint8_t depth) {
         return (500000 * depth); // 50000000
     if (node.player_pairs_captured >= 5)
         return (500000 * depth); // 50,000,000pts / depth for win
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 11; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
     score += pair_capture_detector(node.player, node.opponent).set_count() * 50;//  5,000pts / pairs capture threatening
     score += node.player_pairs_captured * node.player_pairs_captured * 100;     // 10,000pts 40,000pts 90,000pts 160,000pts
-    score += (detect_five_aligned(node.player) ? 750 * depth : 0);              // 2,000,000pts for non winning five-alignment
     return (score);
 }
 
-int64_t    opponent_score(t_node const &node, uint8_t depth) {
+static inline const int64_t opponent_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     int64_t     score = 0;
 
@@ -1061,16 +1088,22 @@ int64_t    opponent_score(t_node const &node, uint8_t depth) {
         return (500000 * depth);
     if (node.opponent_pairs_captured >= 5)
         return (500000 * depth);
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 11; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
     }
     score += pair_capture_detector(node.opponent, node.player).set_count() * 50;//  5,000pts / pairs capture threatening
     score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100; // 10,000pts 40,000pts 90,000pts 160,000pts
-    score += (detect_five_aligned(node.opponent) ? 750 * depth : 0);            // 2,000,000pts for non winning five-alignment
     return (score);
 }
 
+int32_t        score_function(t_node const &node, uint8_t depth) {
+    int64_t     score = 0;
+    /* we give more weight to the player whose turn is next */
+    score += player_score(node, depth) * (node.cid == 2 ? 3 : 1);
+    score -= opponent_score(node, depth) * (node.cid == 1 ? 3 : 1);
+    return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
+}
 
 t_ret           max(t_ret const& a, t_ret const& b) { return (a.score > b.score ? a : b); };
 t_ret           min(t_ret const& a, t_ret const& b) { return (a.score < b.score ? a : b); };
