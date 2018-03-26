@@ -6,7 +6,7 @@
 // #include "BitBoard.hpp"
 
 namespace options {
-    t_options      g_options = { 1, 5 };
+    t_options      g_options = { 5, 1 };
 }
 
 static int      get_depth(int depth) {
@@ -58,16 +58,6 @@ static void     print_options(void) {
 }
 
 int             main(int argc, char **argv) {
-    // uint64_t    mask = 1;
-    //
-    // for (int i = 0; i < 32; i++) {
-    //     mask |= mask << 1;
-    //     std::cout << std::bitset<64>(mask) << " : " << std::hex << mask << std::endl;
-    // }
-    //
-    // exit(1);
-
-    // TODO: Add argparser in order to select algorithm
     try {
         boost::program_options::options_description     desc("Options");
         desc.add_options()
