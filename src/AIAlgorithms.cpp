@@ -29,7 +29,6 @@ t_best          MinMax::minmax(t_node node, int depth, int player) {
     int         value;
 
     this->nbnode++; // DEBUG
-    std::cout << "MinMax" << std::endl;
     if (depth == 0 || check_end(node)) {
         this->nbleaf++; // DEBUG
         return ((t_best){ this->score_function(node, depth + 1), -INF });
@@ -119,7 +118,6 @@ t_best          AlphaBeta::alphabeta(t_node node, int depth, int alpha, int beta
     int         value;
 
     this->nbnode++; // DEBUG
-    std::cout << "AlphaBeta" << std::endl;    
     if (depth == 0 || check_end(node)) {
         this->nbleaf++; // DEBUG
         return ((t_best){ this->score_function(node, depth + 1), -INF });
@@ -222,7 +220,6 @@ t_best          MTDf::alphabetawithmemory(t_node node, int depth, int alpha, int
     int         value;
 
     this->nbnode++; // DEBUG
-    std::cout << "MTDf" << std::endl;
     if (this->_TT.count({ node.player, node.opponent }) > 0 && this->_TT[{ node.player, node.opponent }].depth >= depth) {
         if (this->_TT[{ node.player, node.opponent }].flag == 1) { // Exact
             return (this->_TT[{ node.player, node.opponent }].value);
