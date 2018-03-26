@@ -45,19 +45,12 @@ public:
     std::list<t_action>                     get_history_copy(void) const { return _history; };
     uint32_t                                get_history_size(void) const { return _history.size(); };
     std::chrono::steady_clock::time_point   get_initial_timepoint(void) const { return _initial_timepoint; };
-    /* Setters */
-    void                                    inc_game_turn(void);
 
     Eigen::ArrayXXi                         grid;
-    // MinMax                                  *minmax;
 
 private:
     std::list<t_action>                     _history;
     std::chrono::steady_clock::time_point   _initial_timepoint;
-    uint32_t                                _game_turn;
-    // bool                                    _almost_win_p1;
-    // bool                                    _almost_win_p2;
-
 
     /* the possible states of the board cells */
     struct state {

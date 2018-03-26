@@ -1,11 +1,11 @@
 #include "Human.hpp"
 
-Human::Human(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id) {
+Human::Human(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id), _alphaBeta(11, 250, id, verbose::quiet) {
     this->type = 0;
     this->_action_duration = std::chrono::steady_clock::duration::zero();
 }
 
-Human::Human(Human const &src) : Player(src) {
+Human::Human(Human const &src) : Player(src), _alphaBeta(src.get_alphaBeta()) {
     *this = src;
 }
 
@@ -21,6 +21,11 @@ Human	&Human::operator=(Human const &src) {
 bool    Human::play(Player *other) {
     t_action    action;
 
+    if (this->suggested_move(0) == -1) {
+        t_node  root = create_node(*this, *other);
+        t_ret   ret = this->_alphaBeta(root);
+        this->suggested_move = { range(ret.p / 19, 0, 18), range(ret.p % 19, 0, 18) };
+    }
     if (this->_action_duration == std::chrono::steady_clock::duration::zero())
         this->_action_duration = this->_gui->get_analytics()->get_chronometer()->get_elapsed();
 
@@ -35,13 +40,11 @@ bool    Human::play(Player *other) {
         action.pid = this->_id;
         action.ppc = this->_pairs_captured;
         if (this->_game_engine->check_action(action, *this, *other)) {
-            // t_ret ret = alphaBetaWithMemory(create_node(*this, *other), -INF, INF, 6);
-            // this->_gui->explored_moves_tmp = ret.moves; // DEBUG
-
             this->_game_engine->update_game_state(action, this, other);
+            this->suggested_move = { -1, -1 };
             this->_action_duration = std::chrono::steady_clock::duration::zero();
-            return true;
+            return (true);
         }
     }
-    return false;
+    return (false);
 }

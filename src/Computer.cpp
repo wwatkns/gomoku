@@ -36,12 +36,11 @@ bool        Computer::play(Player *other) {
    // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
     action.duration = std::chrono::steady_clock::now() - action_beg;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
-
     action.id = this->_game_engine->get_history_size() + 1;
     action.p1_last = this->board;
     action.p2_last = other->board;
     action.pid = this->_id;
     action.ppc = this->_pairs_captured;
     this->_game_engine->update_game_state(action, this, other);
-    return true;
+    return (true);
 }

@@ -74,6 +74,7 @@ private:
     void            _render_forbidden(void);
     void            _render_select(void);
     void            _render_explored(void);
+    void            _render_suggestion(void);
     void            _render_secondary_viewport(void);
     void            _render_buttons(void);
     void            _render_pause(void);
@@ -112,6 +113,7 @@ private:
     SDL_Texture     *_black_stone_tex;
     SDL_Texture     *_select_stone_tex;
     SDL_Texture     *_explored_move_tex;
+    SDL_Texture     *_suggested_move_tex;
     SDL_Texture     *_forbidden_tex;
     SDL_Rect        _forbidden_rect;
     /* Computed textures */

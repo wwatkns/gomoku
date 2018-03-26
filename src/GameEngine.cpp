@@ -1,7 +1,7 @@
 #include "GameEngine.hpp"
 #include "Player.hpp"
 
-GameEngine::GameEngine(void) : _game_turn(0) {
+GameEngine::GameEngine(void) {
     this->grid = Eigen::ArrayXXi::Constant(BOARD_COLS, BOARD_ROWS, state::free);
     this->_initial_timepoint = std::chrono::steady_clock::now();
 }
@@ -147,9 +147,4 @@ Eigen::Array22i GameEngine::get_end_line(BitBoard const &bitboard) {
         }
     }
     return (pos);
-}
-
-/* Setters */
-void    GameEngine::inc_game_turn(void) {
-    this->_game_turn++;
 }

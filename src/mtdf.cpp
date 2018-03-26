@@ -616,7 +616,7 @@ t_ret const AlphaBetaWithIterativeDeepening::operator()(t_node root) { /* iterat
     this->_search_start = std::chrono::steady_clock::now();
     this->_root_moves.clear();
 
-    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_max_depth; this->_current_max_depth += 1) {
+    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_max_depth; this->_current_max_depth += 2) {
         current = _root_max(root, -INF, INF, this->_current_max_depth);
         _debug_search(current);
         if (this->search_stopped)
@@ -1071,11 +1071,11 @@ static inline const int64_t player_score(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
     /* detect if current board has an unbreakable five */
-    // board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
-    // if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
-    //     return (500000 * depth); // 50000000
-    // if (node.player_pairs_captured >= 5)
-    //     return (500000 * depth); // 50,000,000pts / depth for win
+    board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
+    if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
+        return (500000 * depth); // 50000000
+    if (node.player_pairs_captured >= 5)
+        return (500000 * depth); // 50,000,000pts / depth for win
     for (int i = 0; i < 11; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
@@ -1090,11 +1090,11 @@ static inline const int64_t opponent_score(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
     /* detect if current board has an unbreakable five */
-    // board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
-    // if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
-    //     return (500000 * depth);
-    // if (node.opponent_pairs_captured >= 5)
-    //     return (500000 * depth);
+    board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
+    if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
+        return (500000 * depth);
+    if (node.opponent_pairs_captured >= 5)
+        return (500000 * depth);
     for (int i = 0; i < 11; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
@@ -1107,17 +1107,17 @@ static inline const int64_t opponent_score(t_node const &node, uint8_t depth) {
 int32_t        score_function(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    BitBoard board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
-    if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
-        return (INF); // 50000000
-    if (node.player_pairs_captured >= 5)
-        return (INF); // 50,000,000pts / depth for win
-
-    board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
-    if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
-        return (-INF);
-    if (node.opponent_pairs_captured >= 5)
-        return (-INF);
+    // BitBoard board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
+    // if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
+    //     return (INF); // 50000000
+    // if (node.player_pairs_captured >= 5)
+    //     return (INF); // 50,000,000pts / depth for win
+    //
+    // board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
+    // if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
+    //     return (-INF);
+    // if (node.opponent_pairs_captured >= 5)
+    //     return (-INF);
     /* we give more weight to the player whose turn is next, the correct verified order is [1, 2] */
     score += player_score(node, depth) * (node.cid == 1 ? 2:1);
     score -= opponent_score(node, depth) * (node.cid == 2 ? 2:1);

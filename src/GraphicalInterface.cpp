@@ -95,6 +95,7 @@ void    GraphicalInterface::_load_images(void) {
     this->_black_stone_tex = this->load_texture("./resources/circle_black.png");
     this->_select_stone_tex = this->load_texture("./resources/circle_select.png");
     this->_explored_move_tex = this->load_texture("./resources/open_circle.png");
+    this->_suggested_move_tex = this->load_texture("./resources/diamond.png");
 }
 
 void    GraphicalInterface::_init_sdl(void) {
@@ -225,6 +226,7 @@ void    GraphicalInterface::update_display(void) {
     this->_render_forbidden();
     this->_render_select();
     if (this->_db) this->_render_explored();
+    this->_render_suggestion(); // TODO: condition with boolean in configuration
     this->_render_secondary_viewport();
     this->_render_buttons();
     this->_render_pause();
@@ -368,6 +370,18 @@ void    GraphicalInterface::_render_explored(void) {
             rect = {s_pos[1] - (this->_stone_size-10) / 2, s_pos[0] - (this->_stone_size-10) / 2, this->_stone_size-10, this->_stone_size-10};
             SDL_RenderCopy(this->_renderer, this->_explored_move_tex, NULL, &rect);
         }
+    }
+}
+
+void    GraphicalInterface::_render_suggestion(void) {
+    Eigen::Array2i  s_pos;
+    SDL_Rect        rect;
+    // t_action        last_action = this->_game_engine->get_history()->back();
+
+    if (this->_analytics->get_c_player()->type == 0) {
+        s_pos = this->grid_to_screen(this->_analytics->get_c_player()->suggested_move);
+        rect = {s_pos[1] - (this->_stone_size-10) / 2, s_pos[0] - (this->_stone_size-10) / 2, this->_stone_size-10, this->_stone_size-10};
+        SDL_RenderCopy(this->_renderer, this->_suggested_move_tex, NULL, &rect);
     }
 }
 
@@ -562,12 +576,16 @@ void    GraphicalInterface::_close_sdl(void) {
     SDL_DestroyTexture(this->_white_stone_tex);
     SDL_DestroyTexture(this->_black_stone_tex);
     SDL_DestroyTexture(this->_select_stone_tex);
+    SDL_DestroyTexture(this->_explored_move_tex);
+    SDL_DestroyTexture(this->_suggested_move_tex);
     SDL_DestroyTexture(this->_forbidden_tex);
     SDL_DestroyTexture(this->_board_grid_tex);
     this->_white_tex = NULL;
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
     this->_select_stone_tex = NULL;
+    this->_explored_move_tex = NULL;
+    this->_suggested_move_tex = NULL;
     this->_forbidden_tex = NULL;
     this->_board_grid_tex = NULL;
     SDL_DestroyWindow(this->_window);

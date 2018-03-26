@@ -29,6 +29,7 @@ public:
     uint8_t         type;
     BitBoard        board;
     BitBoard        board_forbidden;
+    Eigen::Array2i  suggested_move;
 
 protected:
     GameEngine          *_game_engine;

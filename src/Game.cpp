@@ -55,8 +55,6 @@ void        Game::_cap_framerate(uint32_t const &framerate) {
     last = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
 }
 
-/* TODO: implement draw game (no winners)
-*/
 void        Game::loop(void) {
     bool        action_performed;
     bool        action_undo;
@@ -88,11 +86,7 @@ void        Game::loop(void) {
             // test |= highlight_captured_stones(p1_tmp, p2_tmp, p);
             // test |= win_by_capture_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured());
             // test |= pair_capture_breaking_five_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board));
-
             // test |= get_winning_moves_debug(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured()));
-
-            std::cout << "five aligned : " << detect_five_aligned(this->_c_player->board) << std::endl;
-
             // test |= future_pattern_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xF8, 5, 8, 0 });
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xB8, 5, 8, 0 }); // O-OOO 0x5C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xD8, 5, 8, 0 }); // OO-OO 0x6C is old
@@ -114,12 +108,12 @@ bool        Game::undo(void) {
     this->_game_engine->delete_last_action(this->_player_1, this->_player_2);
     this->_gui->explored_moves_tmp = moves_to_explore(
         this->_c_player->board,
-        (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board),
+        (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1)->board,
         this->_c_player->board_forbidden,
         this->_c_player->get_pairs_captured(),
-        (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured())
+        (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1)->get_pairs_captured()
     );
-    return last;
+    return (last);
 }
 
 /*  Restart only reset the game to 0 with the same configuration, while
