@@ -1,17 +1,11 @@
 #include "mtdf.hpp"
 #include "Player.hpp"
 
-// bool            times_up(std::chrono::steady_clock::time_point start, uint32_t limit) {
-//     return (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count() > limit);
-// }
-
 t_node          create_node(Player const& player, Player const& opponent) {
     t_node  node;
 
     node.player = player.board;
     node.opponent = opponent.board;
-    // node.player_forbidden = player.board_forbidden;
-    // node.opponent_forbidden = opponent.board_forbidden;
     node.cid = 1;
     node.player_pairs_captured = player.get_pairs_captured();
     node.opponent_pairs_captured = opponent.get_pairs_captured();
@@ -30,7 +24,18 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
         return (moves & ~player & ~opponent);
     }
 
-    /* if five aligned, we want to play the counter move */
+    /* if player has instant win moves, we return only those */
+    moves |= win_by_capture_detector(player, opponent, player_pairs_captured);
+    moves |= win_by_alignment_detector(player, opponent, player_forbidden, opponent_pairs_captured);
+    if (!moves.is_empty())
+        return (moves & ~player & ~opponent & ~player_forbidden);
+
+    /* if opponent can win next turn, only explore the moves that will try to prevent that */
+    moves  = future_pattern_detector(opponent, player, { 0xF8, 5, 8, 0 });
+    if (!moves.is_empty() && !detect_five_aligned(opponent | moves))
+        return (moves);
+
+    /* if opponent has five aligned, we want to play the counter move */
     if (detect_five_aligned(opponent)) {
         moves = pair_capture_breaking_five_detector(player, opponent);
         if (moves.is_empty())
@@ -38,12 +43,6 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
         if (!moves.is_empty())
             return (moves & ~player & ~opponent);
     }
-
-    /* if we detect an instant winning move, we return only this one */
-    moves |= win_by_capture_detector(player, opponent, player_pairs_captured);
-    moves |= win_by_alignment_detector(player, opponent, player_forbidden, opponent_pairs_captured);
-    if (!moves.is_empty())
-        return (moves & ~player & ~opponent & ~player_forbidden);
 
     /* opponent threats of open-threes, five-alignments and captures */
     moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
@@ -53,11 +52,11 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
     moves |= future_pattern_detector(player, opponent, { 0xF8, 5, 8, 0 }); // OOOOO
     moves |= future_pattern_detector(player, opponent, { 0x78, 6, 4, 0 }); // -OOOO-
     moves |= pair_capture_detector(player, opponent);
-    // moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
+    moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
 
     /* explore building open-threes */
     if (moves.set_count() <= EXPLORATION_THRESHOLD) {
-        moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
+        // moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
         moves |= future_pattern_detector(player, opponent, { 0x70, 5, 4, 0 }); // -OOO-
         moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0 }); // -OO-O-
 
@@ -74,186 +73,6 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
 /* comparison functions to sort std::vector<t_move> */
 static bool cmpMin(t_move const& a, t_move const& b) { return (a.eval < b.eval); } //  ascending order : <--1----2----3-->
 static bool cmpMax(t_move const& a, t_move const& b) { return (a.eval > b.eval); } // descending order : <--3----2----1-->
-
-
-// static void debug_scores(int score, int i, int depth, int max_depth = 5) {
-//     if (depth == max_depth)
-//         std::printf("  %2d-%c : %d\n", 19-(i/19), "ABCDEFGHJKLMNOPQRST"[i%19], score);
-// }
-
-// t_ret   alphaBetaWithMemory(t_node node, int alpha, int beta, int depth) {
-//     printf("> player%d explored moves:\n", node.cid);
-//     return (alphaBetaMax(node, alpha, beta, depth));
-// }
-//
-// t_ret   alphaBetaMin(t_node node, int alpha, int beta, int depth) {
-//     t_ret   ret;
-//     t_ret   best = {INF, 0 };
-//
-//     if (depth == 0 || check_end(node))
-//         return ((t_ret){ score_function(node, depth+1), 0 });
-//
-//     BitBoard    moves = moves_to_explore(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured, node.player_pairs_captured);
-//     for (int i = 0; i < 361; ++i) {
-//         if (moves.check_bit(i)) {
-//             ret = alphaBetaMax(simulate_move(node, i), alpha, beta, depth-1);
-//             if (ret.score < best.score) {
-//                 best = { ret.score, i };
-//                 beta = min(beta, best.score);
-//                 if (alpha >= beta) /* beta cut-off */
-//                     break;
-//             }
-//         }
-//     }
-//     return (best);
-// }
-
-// t_ret   alphaBetaMax(t_node node, int alpha, int beta, int depth) {
-//     t_ret   ret;
-//     t_ret   best = {-INF, 0 };
-//
-//     if (depth == 0 || check_end(node))
-//         return ((t_ret){ score_function(node, depth+1), 0 });
-//
-//     BitBoard    moves = moves_to_explore(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured, node.opponent_pairs_captured);
-//     for (int i = 0; i < 361; ++i) {
-//         if (moves.check_bit(i)) {
-//             ret = alphaBetaMin(simulate_move(node, i), alpha, beta, depth-1);
-//             debug_scores(ret.score, i, depth);
-//             if (ret.score > best.score) {
-//                 best = { ret.score, i };
-//                 alpha = max(alpha, best.score);
-//                 if (alpha >= beta) /* alpha cut-off */
-//                     break;
-//             }
-//         }
-//     }
-//     return (best);
-// }
-
-// void        TT_store(t_node const &node, int32_t g, int32_t alpha, int32_t beta, int8_t depth, int flag) {
-//     t_stored    entry;
-//
-//     entry.depth = depth;
-//     entry.score = g;
-//     entry.flag = flag;
-//     ZobristTable::map[{node.player, node.opponent}] = entry;
-// }
-//
-// int32_t        TT_lookup(t_node const &node, int32_t alpha, int32_t beta, int8_t depth) {
-//     t_stored    entry;
-//
-//     if (ZobristTable::map.count({node.player, node.opponent})) {
-//         entry = ZobristTable::map[{node.player, node.opponent}];
-//         if (entry.depth >= depth) {
-//             if (entry.flag == ZobristTable::flag::exact)
-//                 return (entry.score);
-//             else if (entry.flag == ZobristTable::flag::alpha && entry.score <= alpha)
-//                 return (alpha);
-//             else if (entry.flag == ZobristTable::flag::beta && entry.score >= beta)
-//                 return (beta);
-//         }
-//     }
-//     return (-INF);
-// }
-
-// t_ret  iterative_deepening(t_node root, int8_t max_depth) { // THIS FUNCTION WORKS
-//     std::chrono::steady_clock::time_point   start = std::chrono::steady_clock::now();
-//     t_ret                                   ret = { 0, 0 };
-//     t_ret                                   last;
-//
-//     std::cout << std::endl;
-//     for (int depth = 1; depth < max_depth; depth += 2) {
-//         ret = alphaBetaWithMemory(root, -INF, INF, depth);
-//         std::cout << ret.score << std::endl;
-//         if (times_up(start, 500)) {
-//             ret = last;
-//             std::cout << "TIMES UP, reached depth : " << depth << std::endl;
-//             break;
-//         }
-//         last = ret;
-//     }
-//     return (ret);
-// }
-//
-// t_ret   mtdf(t_node *root, int32_t firstguess, int8_t depth) { // THIS FUNCTION WORKS?
-//     int32_t bound[2] = { -INF, INF };
-//     int32_t beta;
-//     t_ret   ret = { firstguess, 0 };
-//
-//     do {
-//         beta = ret.score + (ret.score == bound[0]);
-//         ret = alphaBetaWithMemory(*root, beta-1, beta, depth);
-//         std::cout << "score: " << ret.score << ", pos: (" << ret.p / 19 << ", " << ret.p % 19 << ")\n";
-//         bound[(ret.score < beta)] = ret.score;
-//     } while (bound[0] < bound[1]);
-//     return (ret);
-// }
-
-// void        TT_store(t_node const &node, int32_t best, int32_t alpha, int32_t beta, int8_t depth) {
-//     t_stored    entry;
-//
-//     entry.depth = depth;
-//     entry.score = best;
-//     if (best <= alpha)
-//         entry.flag = ZobristTable::flag::upperbound;
-//     else if (best >= beta)
-//         entry.flag = ZobristTable::flag::lowerbound;
-//     else
-//         entry.flag = ZobristTable::flag::exact;
-//     ZobristTable::map[{node.player, node.opponent}] = entry;
-//     // std::cout << "TT storing : " << entry.score << " " << std::to_string(entry.flag) << " " << std::to_string(entry.depth) << std::endl;
-// }
-
-// int32_t        TT_lookup(t_node const &node, int32_t alpha, int32_t beta, int8_t depth) {
-//     t_stored    entry;
-//
-//     if (ZobristTable::map.count({node.player, node.opponent})) {
-//         entry = ZobristTable::map[{node.player, node.opponent}];
-//         // std::cout << "TT lookup : " << entry.score << " " << std::to_string(entry.flag) << " " << std::to_string(entry.depth) << std::endl;
-//         // std::cout << "TT lookup at " << std::to_string(depth) << std::endl;
-//         if (entry.depth >= depth) {
-//             if (entry.flag == ZobristTable::flag::exact)
-//                 return (entry.score);
-//             else if (entry.flag == ZobristTable::flag::lowerbound && entry.score > alpha)
-//                 alpha = entry.score;
-//             else if (entry.flag == ZobristTable::flag::upperbound && entry.score < beta)
-//                 beta = entry.score;
-//             if (alpha >= beta)
-//                 return (entry.score);
-//         }
-//     }
-//     return (-INF);
-// }
-
-// t_node  simulate_move(t_node const &node, int i) { // this is the biggest performance hit
-//     t_node  child = node;
-//     /* simulate player move */
-//     if (child.cid == 1) {
-//         child.player.write(i);
-//         BitBoard captured = highlight_captured_stones(child.player, child.opponent, i);
-//         if (!captured.is_empty()) {
-//             child.player_pairs_captured += captured.set_count() / 2;
-//             child.opponent &= ~captured;
-//         }
-//         child.player_forbidden = forbidden_detector(child.player, child.opponent);
-//         child.opponent_forbidden = forbidden_detector(child.opponent, child.player);
-//         child.cid = 2;
-//     }/* simulate opponent move */
-//     else {
-//         child.opponent.write(i);
-//         BitBoard captured = highlight_captured_stones(child.opponent, child.player, i);
-//         if (!captured.is_empty()) {
-//             child.opponent_pairs_captured += captured.set_count() / 2;
-//             child.player &= ~captured;
-//         }
-//         child.player_forbidden = forbidden_detector(child.player, child.opponent);
-//         child.opponent_forbidden = forbidden_detector(child.opponent, child.player);
-//         child.cid = 1;
-//     }
-//     return (child);
-// }
-
 
 // AlphaBeta::AlphaBeta(int max_depth, int time_limit, uint8_t pid, uint8_t verbose) : _max_depth(max_depth), _current_max_depth(0), _search_limit_ms(time_limit), _pid(pid), _verbose(verbose) {
 //     this->search_stopped = false;
