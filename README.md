@@ -12,3 +12,17 @@ Download the latest development library for MacOSX:
 - Boost 1.66.0 (on MacOs just do `brew install brew`)
 
 Then put the `.framework` files in `HOME/Library/Frameworks`.
+
+## Usage
+
+```
+Options:
+  -h [ --help ]         Print help options
+  -a [ --ai ] arg       Choose AI algorithm:
+                        (1) default,
+                        (2) MinMax,
+                        (3) AlphaBeta,
+                        (4) MTDf,
+                        (5) MCTS
+  -d [ --depth ] arg    Select the maximum depth
+```
