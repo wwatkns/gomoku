@@ -2,6 +2,8 @@ SRC_PATH = ./src/
 INC_PATH = ./include/
 OBJ_PATH = ./obj/
 EIGEN_PATH = $(HOME)/.eigen/
+BOOST_PATH = $(HOME)/.brew/Cellar/boost/1.66.0/include
+BOOST_LIB = $(HOME)/.brew/Cellar/boost/1.66.0/lib/libboost_program_options.a
 
 NAME = gomoku
 CC = clang++
@@ -37,12 +39,12 @@ OBJ_NAME = $(SRC_NAME:.cpp=.o)
 
 SRC = $(addprefix $(SRC_PATH), $(SRC_NAME))
 OBJ = $(addprefix $(OBJ_PATH), $(OBJ_NAME))
-INC = $(addprefix -I,$(INC_PATH) $(EIGEN_PATH))
+INC = $(addprefix -I,$(INC_PATH) $(EIGEN_PATH) $(BOOST_PATH))
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	$(CC) $(CFLGS) $(INC) $(SDL) $(SDLFLGS) $(OBJ) -o $(NAME)
+	$(CC) $(CFLGS) $(INC) $(SDL) $(BOOST_LIB) $(SDLFLGS) $(OBJ) -o $(NAME)
 
 $(OBJ_PATH)%.o: $(SRC_PATH)%.cpp
 	@mkdir -p $(OBJ_PATH)

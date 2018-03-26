@@ -8,7 +8,7 @@
 class Computer : public Player {
 
 public:
-    Computer(GameEngine *game_engine, uint8_t id, uint8_t algo_type, int depth);
+    Computer(GameEngine *game_engine, uint8_t id, int algo_type, int depth);
     Computer(Computer const &src);
     ~Computer(void);
     Computer	&operator=(Computer const &rhs);

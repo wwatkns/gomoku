@@ -3,12 +3,12 @@
 #include <cstdlib> // TMP
 #include <thread> // TMP
 
-Computer::Computer(GameEngine *game_engine, uint8_t id, uint8_t algo_type, int depth) : Player(game_engine, NULL, id) {
+Computer::Computer(GameEngine *game_engine, uint8_t id, int algo_type, int depth) : Player(game_engine, NULL, id) {
     std::srand(std::time(nullptr));
     this->type = 1;
-    if (algo_type == 1)
+    if (algo_type == 2)
         this->ai_algorithm = (AIPlayer*)new MinMax();
-    else if (algo_type == 2)
+    else if (algo_type == 3)
         this->ai_algorithm = (AIPlayer*)new AlphaBeta();
     else
         this->ai_algorithm = (AIPlayer*)new MTDf(); // TODO: put William's algorithm rather than MTDf

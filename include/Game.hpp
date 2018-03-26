@@ -3,6 +3,7 @@
 
 # include <vector>
 # include <string>
+# include <boost/program_options.hpp>
 # include "GraphicalInterface.hpp"
 # include "BitBoard.hpp"
 # include "Player.hpp"
