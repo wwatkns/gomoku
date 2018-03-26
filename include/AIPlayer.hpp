@@ -30,8 +30,6 @@ typedef struct      s_best {
 typedef struct  s_stored {
     int     depth;
     t_best  value;
-    // int     upperbound;
-    // int     lowerbound;
     /* Flags used for negamax with memory: 1 is exact, 2 is lowerbound and 3 is upperbound */
     int     flag;
 }               t_stored;
@@ -44,19 +42,14 @@ public:
     ~AIPlayer(void);
     AIPlayer    &operator=(AIPlayer const &rhs);
 
-    t_best          minmax(t_node node, int depth, int player);
-    t_best          negamax(t_node node, int depth, int color);
-    t_best          alphabeta(t_node, int depth, int alpha, int beta, int player);
-    t_best          alphabetanegamax(t_node node, int depth, int alpha, int beta, int color);
-    t_best          alphabetawithmemory(t_node, int depth, int alpha, int beta, int player);
-    t_best          negamaxwithmemory(t_node node, int depth, int alpha, int beta, int color);
-    t_best          mtdf(t_node node, t_best f, int depth);
-    t_best          iterativedeepening(t_node node, int maxdepth);
+    int             nbnode; // DEBUG
+    int             nbleaf; // DEBUG
 
-private:
+    virtual t_best  getmove(t_node node, int depth) = 0;
+
+protected:
     std::unordered_map<ZobristTable::Key, t_stored, ZobristTable::KeyHash>    _TT;
     
-    // int          alphabetawithmemory();
     BitBoard        get_moves(BitBoard const& player, BitBoard const& opponent,
                     BitBoard const& player_forbidden, int player_pairs_captured,
                     int opponent_pairs_captured);
@@ -66,8 +59,8 @@ private:
     int32_t         opponent_score(t_node const &node, uint8_t depth);
     bool            check_end(t_node const& node);
 
-    // t_ret        max(t_ret const& a, t_ret const& b) { return (a.score > b.score ? a : b); };
-    // t_ret        min(t_ret const& a, t_ret const& b) { return (a.score < b.score ? a : b); };
+    t_best          max(t_best const& a, t_best const& b) { return (a.score > b.score ? a : b); };
+    t_best          min(t_best const& a, t_best const& b) { return (a.score < b.score ? a : b); };
     int             max(int const& a, t_best const& b)   { return (a > b.score ? a : b.score); };
     int             min(int const& a, t_best const& b)   { return (a < b.score ? a : b.score); };
     int             max(int const& a, int const& b)     { return (a > b ? a : b); };

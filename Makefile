@@ -16,6 +16,7 @@ SDL_TTF_INC = $(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers/
 SDL = -F $(HOME)/Library/Frameworks -I$(SDL_INC) -I$(SDL_IMG_INC) -I$(SDL_TTF_INC)
 
 SRC_NAME =	main.cpp\
+			AIAlgorithms.cpp\
 			AIPlayer.cpp\
 			ZobristTable.cpp\
 			Game.cpp\

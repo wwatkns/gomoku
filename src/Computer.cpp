@@ -3,10 +3,16 @@
 #include <cstdlib> // TMP
 #include <thread> // TMP
 
-Computer::Computer(GameEngine *game_engine, uint8_t id) : Player(game_engine, NULL, id) {
+Computer::Computer(GameEngine *game_engine, uint8_t id, uint8_t algo_type, int depth) : Player(game_engine, NULL, id) {
     std::srand(std::time(nullptr));
     this->type = 1;
-    this->ai_algorithm = new AIPlayer;
+    if (algo_type == 1)
+        this->ai_algorithm = (AIPlayer*)new MinMax();
+    else if (algo_type == 2)
+        this->ai_algorithm = (AIPlayer*)new AlphaBeta();
+    else
+        this->ai_algorithm = (AIPlayer*)new MTDf(); // TODO: put William's algorithm rather than MTDf
+    this->depth = depth;
 }
 
 Computer::Computer(Computer const &src) : Player(src) {
@@ -40,7 +46,10 @@ bool        Computer::play(Player *other) {
     action_beg = std::chrono::steady_clock::now();
 
     /* AIPlayer test */
-    bestmove = ai_algorithm->minmax(node, 4, 1);
+    ai_algorithm->nbnode = 0;
+    ai_algorithm->nbleaf = 0;
+    bestmove = ai_algorithm->getmove(node, this->depth);
+    std::cout << "node nb: " << ai_algorithm->nbnode << "; leaf nb: " << ai_algorithm->nbleaf << std::endl;
     action.pos = (Eigen::Array2i){ bestmove.pos / 19, bestmove.pos % 19 };
 
     // action.pos = alphabeta_pruning(&node, -INF, INF, 3);

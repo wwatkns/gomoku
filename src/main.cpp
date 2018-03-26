@@ -14,6 +14,8 @@ int     main(int argc, char **argv) {
     // }
     //
     // exit(1);
+
+    // TODO: Add argparser in order to select algorithm
     Game    *game = new Game();
 
     game->loop();

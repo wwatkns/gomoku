@@ -7,8 +7,8 @@ Game::Game(void)  {
     /* start menu */
     // this->_config = this->_gui->render_choice_menu();
     this->_config = "p1=C,p2=H,nu=1"; // DEBUG
-    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
-    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
+    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1, 1, 3));
+    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2, 1, 3));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
@@ -112,8 +112,8 @@ void        Game::restart(void) {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
 
-    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
-    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
+    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1, 1, 3));
+    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2, 1, 3));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
@@ -131,8 +131,8 @@ void        Game::newgame(void) {
 
     this->_config = this->_gui->render_choice_menu();
 
-    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1));
-    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2));
+    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1, 1, 3));
+    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2, 1, 3));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
