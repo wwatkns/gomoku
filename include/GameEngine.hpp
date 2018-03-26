@@ -55,6 +55,8 @@ private:
     std::list<t_action>                     _history;
     std::chrono::steady_clock::time_point   _initial_timepoint;
     uint32_t                                _game_turn;
+    // bool                                    _almost_win_p1;
+    // bool                                    _almost_win_p2;
 
 
     /* the possible states of the board cells */
@@ -67,6 +69,15 @@ private:
             white_free = 10,
             forbidden = 20
         };
+    };
+};
+
+namespace end {
+    enum end {
+        none = 0,
+        player_win = 1,
+        opponent_win = 2,
+        draw = 3
     };
 };
 

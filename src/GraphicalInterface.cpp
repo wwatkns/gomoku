@@ -233,17 +233,35 @@ void    GraphicalInterface::update_display(void) {
 }
 
 void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) {
-    if (check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured(), p1.get_id()) == 1) { // TODO : implement draw condition (check_end() == 2)
+    uint8_t end = check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured(), p1.get_id());
+
+    if (end == end::none) {
+        this->_winning_text = "";
+        this->_end_game = false;
+    }
+    else if (end == end::player_win) {
         std::string type = (p1.type == 0 ? "human" : "computer");
         this->_winning_color = (p1.type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
         this->_winning_text = std::string("Player ")+std::to_string(p1.get_id())+std::string(" (")+type+std::string(") wins");
         this->_button_pause->set_state(true);
         this->_end_game = true;
-        // exit(1); // DEBUG
-    } else {
-        this->_winning_text = "";
-        this->_end_game = false;
+        this->_win_alignment = this->_game_engine->get_end_line(this->_analytics->get_c_player()->board);
     }
+    else if (end == end::opponent_win) {
+        std::string type = (p2.type == 0 ? "human" : "computer");
+        this->_winning_color = (p2.type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
+        this->_winning_text = std::string("Player ")+std::to_string(p2.get_id())+std::string(" (")+type+std::string(") wins");
+        this->_button_pause->set_state(true);
+        this->_end_game = true;
+        this->_win_alignment = this->_game_engine->get_end_line((this->_analytics->get_c_player()->get_id() == 1 ? this->_analytics->get_player_2()->board : this->_analytics->get_player_1()->board));
+    }
+    else if (end == end::draw) {
+        this->_winning_color = (SDL_Color){255, 255, 255, 255};
+        this->_winning_text = std::string("Draw game");
+        this->_button_pause->set_state(true);
+        this->_end_game = true;
+    }
+    // exit(1); // DEBUG
 }
 
 void    GraphicalInterface::_render_board(void) {
@@ -402,9 +420,9 @@ void    GraphicalInterface::_render_pause(void) {
 void    GraphicalInterface::_render_winning_screen(void) {
     if (this->_end_game) {
         /* draw line alignment */
-        Eigen::Array22i line = this->_game_engine->get_end_line(this->_analytics->get_c_player()->board);
-        Eigen::Array2i  p1 = this->grid_to_screen(line.row(0));
-        Eigen::Array2i  p2 = this->grid_to_screen(line.row(1));
+        // Eigen::Array22i line = this->_game_engine->get_end_line(this->_analytics->get_c_player()->board); // TODO: win is not always current player
+        Eigen::Array2i  p1 = this->grid_to_screen(this->_win_alignment.row(0));
+        Eigen::Array2i  p2 = this->grid_to_screen(this->_win_alignment.row(1));
         SDL_Color       color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_white : this->_color_black);
         SDL_SetRenderDrawColor(this->_renderer, color.r, color.g, color.b, color.a);
         SDL_RenderDrawLine(this->_renderer, p1(0), p1(1), p2(0), p2(1));
@@ -412,9 +430,9 @@ void    GraphicalInterface::_render_winning_screen(void) {
         if (!(p1(0) == p2(0) && p1(1) == p2(1))) {
             int32_t     size = (int32_t)(this->_stone_size * 0.1);
             SDL_Rect    rect2 = { p1(0)-size/2, p1(1)-size/2, size, size };
-            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(line(0,1),line(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
+            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(this->_win_alignment(0,1),this->_win_alignment(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
             rect2 = { p2(0)-size/2, p2(1)-size/2, size, size };
-            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(line(0,1),line(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
+            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(this->_win_alignment(0,1),this->_win_alignment(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
         }
         /* draw winning text */
         SDL_Rect    rect = { this->_winning_font_text->get_pos()[0], this->_winning_font_text->get_pos()[1], 0, 0 };

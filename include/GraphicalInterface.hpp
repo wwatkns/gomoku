@@ -152,6 +152,8 @@ private:
     bool            _db;
     bool            _end_game;
 
+    Eigen::Array22i _win_alignment;
+
     std::string     _stone_num_text;
     SDL_Color       _stone_num_color;
     FontText        *_stone_num_font_text;

@@ -2,7 +2,7 @@
 #include <cstdlib> // TMP
 #include <thread> // TMP
 
-Computer::Computer(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id), _alphaBeta(9, 500, id, verbose::debug) {
+Computer::Computer(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id), _alphaBeta(8, 500, id, verbose::debug) {
     std::srand(std::time(nullptr));
     this->type = 1;
 }

@@ -41,7 +41,7 @@ const std::array<t_pattern,11> BitBoard::patterns = {
     (t_pattern){ 0xB8, 5, 8,  200 },  //   O-OOO  :  split four #1  |
     (t_pattern){ 0xD8, 5, 8,  200 },  //   OO-OO  :  split four #2  |> that much ?
     (t_pattern){ 0xE8, 5, 8,  200 },  //   OOO-O  :  split four #3  |
-    (t_pattern){ 0xF8, 5, 4,  250 },  //   OOOOO  :  five
+    (t_pattern){ 0xF8, 5, 4,  400 },  //   OOOOO  :  five
 };
 
 /* population count of a 64-bit unsigned integer (count the number of set bits) */
@@ -140,19 +140,6 @@ void    BitBoard::write(const uint64_t i) {
 void    BitBoard::remove(const uint64_t i) {
     this->values[i >> 6] &= ~(0x8000000000000000 >> (i & 0x3F));
 }
-
-/*  return the number of bits set to 1 in the bitboard using
-    Brian Kernighan's method.
-*/
-// int    BitBoard::set_count(void) const {
-//     uint64_t    tmp;
-//     int         res = 0;
-//
-//     for (int i = 0; i < N; ++i)
-//         for (tmp = this->values[i]; tmp; res++)
-//             tmp &= tmp - 1;
-//     return (res);
-// }
 
 int    BitBoard::set_count(void) const {
     int         res = 0;
@@ -463,7 +450,7 @@ static BitBoard sub_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_p
         }
         res |= tmp.shifted_inv(d, s);
     }
-    return (res & open_cells); // NOTE: really ? for patterns like ~OOOOO~ is will result in an empty bitboard even though the pattern was found
+    return (res);
 }
 
 /*  will return the bitboard showing the open moves for p1 leading to the specified pattern.
@@ -510,11 +497,15 @@ BitBoard    pattern_detector_highlight_open(BitBoard const &p1, BitBoard const &
 
 bool        detect_five_aligned(BitBoard const &bitboard) {
     BitBoard    tmp;
-    for (int i = 0; i < D; ++i) {
+
+    for (int d = direction::north; d < D; ++d) {
         tmp = bitboard;
-        for(int n = 1; (tmp &= tmp.shifted(i)).is_empty() == false; ++n)
-            if (n >= 4)
+        for (int n = 1; !tmp.is_empty(); ++n) {
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp &= tmp.shifted(d);
+            if (n >= 5)
                 return (true);
+        }
     }
     return (false);
 }

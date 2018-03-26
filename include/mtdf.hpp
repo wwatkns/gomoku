@@ -120,7 +120,6 @@ private:
     uint8_t                                 _pid;
     uint8_t                                 _verbose;
     std::string                             _debug_string;
-    // std::multiset<t_ret, retmaxcmp>         _ordered_root_moves;
     std::vector<t_move>                     _root_moves;
 
     /* analytics */
@@ -166,7 +165,7 @@ private:
     uint8_t                                 _pid;
     uint8_t                                 _verbose;
     std::string                             _debug_string;
-    std::multiset<t_ret, retmaxcmp>         _ordered_root_moves;
+    std::vector<t_move>                     _root_moves;
     std::unordered_map<ZobristTable::Key, t_stored, ZobristTable::KeyHash>  _TT;
 
     /* analytics */
@@ -178,6 +177,8 @@ private:
     t_ret                                   _root_max(t_node node, int alpha, int beta, int depth);
     t_ret                                   _max(t_node node, int alpha, int beta, int depth);
     t_ret                                   _min(t_node node, int alpha, int beta, int depth);
+
+    std::vector<t_move>                     _move_generation(t_node const& node, int alpha, int beta, int depth);
 
     t_ret                                   _TT_lookup(t_node const& node, int alpha, int beta, int8_t depth);
     void                                    _TT_store(t_node const& node, t_ret best, int8_t depth, int8_t flag);
