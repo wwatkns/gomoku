@@ -14,6 +14,16 @@
 // # include "Chronometer.hpp"
 # include <thread> // TMP
 
+namespace options {
+
+    typedef struct      s_options {
+        int                 depth;
+        int                 algo_type;
+    }                   t_options;
+
+    extern t_options       g_options;
+}
+
 class Game {
 
 public:

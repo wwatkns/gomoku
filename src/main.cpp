@@ -5,8 +5,23 @@
 #include <bitset>
 // #include "BitBoard.hpp"
 
+namespace options {
+    t_options      g_options = { 1, 5 };
+}
 
-static int      get_ai_algorithm(int algo_type) {
+static int      get_depth(int depth) {
+    if (depth < 1) {
+        return (10);
+    }
+    else if (depth > 11) {
+        std::cout << "Are you sure?!" << std::endl;
+        return (depth);
+    }
+    else
+        return (depth);
+}
+
+static int      get_algo_type(int algo_type) {
     std::cout << "You have selected: ";
     switch (algo_type) {
         case 1:
@@ -53,16 +68,12 @@ int             main(int argc, char **argv) {
     // exit(1);
 
     // TODO: Add argparser in order to select algorithm
-    Game    *game = new Game();
-    int     algo_type = 1;
-    int     depth = 10;
-
     try {
         boost::program_options::options_description     desc("Options");
         desc.add_options()
             ("help,h", "Print help options")
             ("ai,a", boost::program_options::value<int>(), "Choose AI algorithm:\n(1) default,\n(2) MinMax,\n(3) AlphaBeta,\n(4) MTDf,\n(5) MCTS")
-            ("depth,d", boost::program_options::value<int>(&depth), "Select the maximum depth");
+            ("depth,d", boost::program_options::value<int>(), "Select the maximum depth");
         boost::program_options::variables_map           vm;
         try {
             boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);
@@ -73,10 +84,10 @@ int             main(int argc, char **argv) {
                 return (0);
             }
             if (vm.count("ai")) {
-                options::g_options.algo_type = get_ai_algorithm(vm["ai"].as<int>());
+                options::g_options.algo_type = get_algo_type(vm["ai"].as<int>());
             }
             if (vm.count("depth")) {
-                options::g_options.depth = vm["depth"].as<int>();
+                options::g_options.depth = get_depth(vm["depth"].as<int>());
                 std::cout << "Maximum depth: " << options::g_options.depth << std::endl;
             }
         }
@@ -84,6 +95,7 @@ int             main(int argc, char **argv) {
             std::cerr << "Error: " << e.what() << std::endl << desc << std::endl;
             return (1);
         }
+        Game    *game = new Game();        
         game->loop(); // Start the game
     }
     catch(std::exception& e) {

@@ -7,6 +7,7 @@ Game::Game()  {
     /* start menu */
     // this->_config = this->_gui->render_choice_menu();
     this->_config = "p1=C,p2=H,nu=1"; // DEBUG
+    std::cout << "options::g_options.depth: " << options::g_options.depth << std::endl;
     this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, 1, options::g_options.algo_type, options::g_options.depth));
     this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, 2, options::g_options.algo_type, options::g_options.depth));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
