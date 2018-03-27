@@ -6,7 +6,6 @@ Game::Game(void)  {
     this->_gui = new GraphicalInterface(this->_game_engine);
     /* start menu */
     this->_config = this->_gui->render_choice_menu();
-    // this->_config = "p1=C,p2=C,nu=1,db=1"; // DEBUG
     this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, this->_gui, 1));
     this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
@@ -31,6 +30,7 @@ Game	&Game::operator=(Game const &src) {
     this->_player_1 = src.get_player_1();
     this->_player_2 = src.get_player_2();
     this->_game_engine = src.get_game_engine();
+    this->_gui = src.get_gui();
     return (*this);
 }
 
@@ -57,8 +57,8 @@ void        Game::_cap_framerate(uint32_t const &framerate) {
 }
 
 void        Game::loop(void) {
-    bool        action_performed;
-    bool        action_undo;
+    bool    action_performed;
+    bool    action_undo;
 
     while (true) {
         action_undo = false;
@@ -80,22 +80,14 @@ void        Game::loop(void) {
             this->_gui->update_end_game(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1);
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
             // std::cout << "________________________\n" << this->_c_player->board << std::endl;
-            // if (!ZobristTable::map[{ this->_player_1->board, this->_player_2->board }])
-                // ZobristTable::map[{ this->_player_1->board, this->_player_2->board }] = 10;
-            // std::cout << highlight_five_aligned(this->_c_player->board) << std::endl;
             // BitBoard    test;
             // test |= highlight_captured_stones(p1_tmp, p2_tmp, p);
             // test |= win_by_capture_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured());
             // test |= pair_capture_breaking_five_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board));
             // test |= get_winning_moves_debug(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured()));
             // test |= future_pattern_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xF8, 5, 8, 0 });
-            // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xB8, 5, 8, 0 }); // O-OOO 0x5C is old
-            // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xD8, 5, 8, 0 }); // OO-OO 0x6C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0x68, 6, 8, 0 }); // OO-OO 0x6C is old
-
             // test |= highlight_five_aligned(this->_c_player->board);
-            // std::cout << pair_capture_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
-            // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[8]) << std::endl;
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);

@@ -659,7 +659,7 @@ t_ret   AlphaBetaWithMemory::_min(t_node node, int alpha, int beta, int depth) {
 
     t_ret               current;
     t_ret               best = { INF, 0 };
-    std::vector<t_move> moves = _move_generation(node, alpha, beta, depth);
+    std::vector<t_move> moves = _move_generation(node, depth);
 
     for (std::vector<t_move>::const_iterator move = moves.begin(); move != moves.end(); ++move) {
         current = _max(move->node, alpha, beta, depth-1);
@@ -693,7 +693,7 @@ t_ret   AlphaBetaWithMemory::_max(t_node node, int alpha, int beta, int depth) {
 
     t_ret               current;
     t_ret               best = {-INF, 0 };
-    std::vector<t_move> moves = _move_generation(node, alpha, beta, depth);
+    std::vector<t_move> moves = _move_generation(node, depth);
 
     for (std::vector<t_move>::const_iterator move = moves.begin(); move != moves.end(); ++move) {
         current = _min(move->node, alpha, beta, depth-1);
@@ -716,7 +716,7 @@ t_ret   AlphaBetaWithMemory::_root_max(t_node node, int alpha, int beta, int dep
     t_ret       best = {-INF, 0 };
 
     if (this->_root_moves.size() == 0)
-        this->_root_moves = _move_generation(node, alpha, beta, depth);
+        this->_root_moves = _move_generation(node, depth);
     for (std::vector<t_move>::iterator move = this->_root_moves.begin(); move != this->_root_moves.end(); ++move) {
         current = _min(move->node, alpha, beta, depth-1);
         move->eval = current.score;
@@ -731,7 +731,7 @@ t_ret   AlphaBetaWithMemory::_root_max(t_node node, int alpha, int beta, int dep
 }
 
 // this will also take into account the estimation of the node at previous iterative deepening loop
-std::vector<t_move> AlphaBetaWithMemory::_move_generation(t_node const& node, int alpha, int beta, int depth) {
+std::vector<t_move> AlphaBetaWithMemory::_move_generation(t_node const& node, int depth) {
     std::vector<t_move> serialized;
     BitBoard            moves;
 
@@ -850,7 +850,7 @@ bool check_end(t_node const& node) {
     return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, 2));
 }
 
-static inline const int64_t player_evaluation(t_node const &node, uint8_t depth) {
+static inline int64_t player_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
     if (!pattern_detector(node.player, node.opponent, BitBoard::patterns[10]).is_empty())
@@ -862,7 +862,7 @@ static inline const int64_t player_evaluation(t_node const &node, uint8_t depth)
     return (score);
 }
 
-static inline const int64_t opponent_evaluation(t_node const &node, uint8_t depth) {
+static inline int64_t opponent_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
     if (!pattern_detector(node.opponent, node.player, BitBoard::patterns[10]).is_empty())
@@ -971,12 +971,13 @@ int32_t        evaluation_function(t_node const &node, uint8_t depth) {
     non-threatened patterns found, 'w' being the weight of the pattern and
     'z' the penalty for threatened patterns (defaults to 0.5)
 */
-static inline const int64_t player_score(t_node const &node, uint8_t depth) {
+static inline int64_t player_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     BitBoard    captb;
     int64_t     score = 0;
     int64_t     count;
 
+    (void)depth; // TODO
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.opponent, node.player) ^ node.player, node.opponent, BitBoard::patterns[i]);
@@ -988,12 +989,13 @@ static inline const int64_t player_score(t_node const &node, uint8_t depth) {
     return (score);
 }
 
-static inline const int64_t opponent_score(t_node const &node, uint8_t depth) {
+static inline int64_t opponent_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
     BitBoard    captb;
     int64_t     score = 0;
     int64_t     count;
 
+    (void)depth; // TODO
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.player, node.opponent) ^ node.opponent, node.player, BitBoard::patterns[i]);

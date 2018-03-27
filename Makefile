@@ -5,8 +5,7 @@ EIGEN_PATH = $(HOME)/.eigen/
 
 NAME = gomoku
 CC = clang++
-# CFLGS = -Werror -Wextra -Wall -Ofast -std=c++11
-CFLGS = -std=c++11 -Ofast
+CFLGS = -Werror -Wextra -Wall -std=c++11 -Ofast
 
 SDLFLGS = -framework SDL2 -framework SDL2_image -framework SDL2_ttf
 SDL_INC = $(HOME)/Library/Frameworks/SDL2.framework/Headers/
@@ -15,8 +14,10 @@ SDL_TTF_INC = $(HOME)/Library/Frameworks/SDL2_ttf.framework/Headers/
 
 SDL = -F $(HOME)/Library/Frameworks -I$(SDL_INC) -I$(SDL_IMG_INC) -I$(SDL_TTF_INC)
 
-SRC_NAME = main.cpp mtdf.cpp Game.cpp GameEngine.cpp GraphicalInterface.cpp BitBoard.cpp Chronometer.cpp Button.cpp ButtonSwitch.cpp ButtonSelect.cpp FontHandler.cpp FontText.cpp \
-		   Analytics.cpp Player.cpp Human.cpp Computer.cpp
+SRC_NAME = main.cpp mtdf.cpp Game.cpp GameEngine.cpp GraphicalInterface.cpp \
+		   BitBoard.cpp Chronometer.cpp Button.cpp ButtonSwitch.cpp \
+		   ButtonSelect.cpp FontHandler.cpp FontText.cpp Analytics.cpp \
+		   Player.cpp Human.cpp Computer.cpp
 OBJ_NAME = $(SRC_NAME:.cpp=.o)
 
 SRC = $(addprefix $(SRC_PATH), $(SRC_NAME))

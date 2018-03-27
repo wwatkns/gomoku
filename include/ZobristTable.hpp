@@ -19,7 +19,6 @@ typedef struct  s_stored {
     uint8_t     flag;
 }               t_stored;
 
-
 namespace ZobristTable {
     enum flag {
         exact,

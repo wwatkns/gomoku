@@ -75,7 +75,7 @@ struct retmincmp {
     }
 };
 
-/* Alpha-Beta pruning with iterative deepening and root move ordering */
+/* Alpha-Beta pruning with iterative deepening and root move ordering from last iterative deepening iteration and move sorting with evaluation function */
 class AlphaBetaWithIterativeDeepening {
 
 public:
@@ -157,7 +157,7 @@ private:
     t_ret                                   _max(t_node node, int alpha, int beta, int depth);
     t_ret                                   _min(t_node node, int alpha, int beta, int depth);
 
-    std::vector<t_move>                     _move_generation(t_node const& node, int alpha, int beta, int depth);
+    std::vector<t_move>                     _move_generation(t_node const& node, int depth);
 
     t_ret                                   _TT_lookup(t_node const& node, int alpha, int beta, int8_t depth);
     void                                    _TT_store(t_node const& node, t_ret best, int8_t depth, int8_t flag);

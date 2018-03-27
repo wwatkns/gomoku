@@ -55,7 +55,6 @@ private:
     Chronometer                     *_chrono;
     std::map<std::string,t_data>    _data;
     float                           _res_ratio;
-    SDL_Color                       _font_color;
 
     TTF_Font                        *_font;
     TTF_Font                        *_font_title;

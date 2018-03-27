@@ -1,14 +1,14 @@
 #include "BitBoard.hpp"
 
 /* assignation of static variables */
-const std::array<int16_t, D>  BitBoard::shifts = { -19, -18, 1, 20, 19, 18, -1, -20 };
-const BitBoard                BitBoard::full = (std::array<uint64_t, N>){ 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF800000 };
-const BitBoard                BitBoard::empty = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0 };
-const BitBoard                BitBoard::border_right = (std::array<uint64_t, N>){ 0x200004000080, 0x10000200004000, 0x800010000200004, 0x800010000200, 0x40000800010000, 0x2000040000800000 };
-const BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){ 0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000000000 };
-const BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){ 0xFFFFE00000000000, 0, 0, 0, 0, 0 };
-const BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){ 0, 0, 0, 0, 0, 0x3FFFF800000 };
-const std::array<t_pattern,8> BitBoard::patterns = {
+const std::array<int16_t, D>  BitBoard::shifts = {{-19, -18, 1, 20, 19, 18, -1, -20}};
+const BitBoard                BitBoard::full = (std::array<uint64_t, N>){{0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFF800000}};
+const BitBoard                BitBoard::empty = (std::array<uint64_t, N>){{0, 0, 0, 0, 0, 0}};
+const BitBoard                BitBoard::border_right = (std::array<uint64_t, N>){{0x200004000080, 0x10000200004000, 0x800010000200004, 0x800010000200, 0x40000800010000, 0x2000040000800000}};
+const BitBoard                BitBoard::border_left = (std::array<uint64_t, N>){{0x8000100002000040, 0x8000100002000, 0x400008000100002, 0x400008000100, 0x20000400008000, 0x1000020000000000}};
+const BitBoard                BitBoard::border_top = (std::array<uint64_t, N>){{0xFFFFE00000000000, 0, 0, 0, 0, 0}};
+const BitBoard                BitBoard::border_bottom = (std::array<uint64_t, N>){{0, 0, 0, 0, 0, 0x3FFFF800000}};
+const std::array<t_pattern,8> BitBoard::patterns = {{
     // (t_pattern){ 0x70, 5, 4,  8192 },  //   -OOO-  :  open three
     // (t_pattern){ 0x68, 6, 8,  7000 },  //  -OO-O-  :  open split three
     // (t_pattern){ 0x78, 6, 4, 65535 },  //  -OOOO-  :  open four
@@ -43,18 +43,18 @@ const std::array<t_pattern,8> BitBoard::patterns = {
     // (t_pattern){ 0xE8, 5, 8,  200 },  //   OOO-O  :  split four #3  |
     // (t_pattern){ 0xF8, 5, 4,  400 },  //   OOOOO  :  five
 
-    (t_pattern){ 0xF8, 5, 4, 10000 },  //   OOOOO  :  five
-    (t_pattern){ 0x78, 6, 4,  1000 },  //  -OOOO-  :  open four
-    (t_pattern){ 0x70, 5, 4,   100 },  //   -OOO-  :  open three
-    (t_pattern){ 0x68, 6, 8,    90 },  //  -OO-O-  :  open split three
-    (t_pattern){ 0xF0, 5, 8,    20 },  //  |OOOO-  :  close four
-    (t_pattern){ 0xB8, 5, 8,    20 },  //   O-OOO  :  split four #1
-    (t_pattern){ 0xD8, 5, 8,    20 },  //   OO-OO  :  split four #2
-    (t_pattern){ 0xE8, 5, 8,    20 },  //   OOO-O  :  split four #3
+    (t_pattern){0xF8, 5, 4, 10000},  //   OOOOO  :  five
+    (t_pattern){0x78, 6, 4,  1000},  //  -OOOO-  :  open four
+    (t_pattern){0x70, 5, 4,   100},  //   -OOO-  :  open three
+    (t_pattern){0x68, 6, 8,    90},  //  -OO-O-  :  open split three
+    (t_pattern){0xF0, 5, 8,    20},  //  |OOOO-  :  close four
+    (t_pattern){0xB8, 5, 8,    20},  //   O-OOO  :  split four #1
+    (t_pattern){0xD8, 5, 8,    20},  //   OO-OO  :  split four #2
+    (t_pattern){0xE8, 5, 8,    20}  //   OOO-O  :  split four #3
     // (t_pattern){ 0xE0, 4, 8,   10 },  //  |OOO-   :  close three
     // (t_pattern){ 0xD0, 5, 8,   10 },  //  |OO-O-  :  close split three #1
     // (t_pattern){ 0xB0, 5, 8,   10 },  //  |O-OO-  :  close split three #2
-};
+}};
 
 /* population count of a 64-bit unsigned integer (count the number of set bits) */
 static int popcount64(uint64_t x) {

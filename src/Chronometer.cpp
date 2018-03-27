@@ -15,6 +15,7 @@ Chronometer::~Chronometer(void) {
 }
 
 Chronometer	&Chronometer::operator=(Chronometer const &src) {
+    (void)src;
     return (*this);
 }
 

@@ -36,7 +36,6 @@ protected:
     GraphicalInterface  *_gui;
     uint8_t             _id;
     uint8_t             _pairs_captured;
-
 };
 
 #endif

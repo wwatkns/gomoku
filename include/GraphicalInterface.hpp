@@ -15,8 +15,6 @@
 # include "Button.hpp"
 # include "ButtonSwitch.hpp"
 # include "ButtonSelect.hpp"
-// # include "MinMax.hpp"
-// # include "SDL2_gfxPrimitives.h"
 
 # define COLS 19
 # define ROWS 19
@@ -130,9 +128,6 @@ private:
     Button          *_button_restart;
     ButtonSwitch    *_button_pause;
     Button          *_button_undo;
-    /* start menu buttons */
-    ButtonSelect    *_menu_button_player_1;
-    ButtonSelect    *_menu_button_player_2;
 
     /* gui colors */
     SDL_Color         _color_board_bg = { 215, 168,  84, 255 };
@@ -140,7 +135,7 @@ private:
     SDL_Color               _color_bg = {  15,  15,  15, 255 };
     SDL_Color              _color_win = {  45,  45,  45, 255 };
     SDL_Color           _color_header = {  35,  35,  35, 255 };
-    SDL_Color           _color_button = {  53,  53,  53, 255 };
+    // SDL_Color           _color_button = {  53,  53,  53, 255 };
     SDL_Color             _color_font = { 160, 160, 160, 255 };
     SDL_Color           _color_font_2 = { 180, 180, 180, 255 };
     SDL_Color          _color_onhover = { 150, 150, 150, 255 };

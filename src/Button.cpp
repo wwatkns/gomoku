@@ -1,6 +1,6 @@
 #include "Button.hpp"
 
-Button::Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, Eigen::Array2i padding, TTF_Font *font, SDL_Color bg_color, SDL_Color font_color, SDL_Color hover_color, SDL_Color outline_color) : _renderer(renderer), _text(text), _font(font), _box_color(bg_color), _txt_color(font_color), _hover_color(hover_color), _outline_color(outline_color) {
+Button::Button(SDL_Renderer *renderer, std::string text, Eigen::Array2i pos, Eigen::Array2i padding, TTF_Font *font, SDL_Color bg_color, SDL_Color font_color, SDL_Color hover_color, SDL_Color outline_color) : _text(text), _box_color(bg_color), _txt_color(font_color), _hover_color(hover_color), _outline_color(outline_color), _font(font), _renderer(renderer) {
     this->_pad_w = padding[0];
     this->_pad_h = padding[1];
     this->_state = false;
@@ -25,6 +25,7 @@ Button::~Button(void) {
 }
 
 Button	&Button::operator=(Button const &src) {
+    (void)src;
     return (*this);
 }
 

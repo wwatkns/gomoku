@@ -1,7 +1,7 @@
 #include "Analytics.hpp"
 #include "Player.hpp"
 
-Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio) : _game_engine(game_engine), _font_handler(font_handler), _res_ratio(res_ratio), _player_1(nullptr), _player_2(nullptr) {
+Analytics::Analytics(GameEngine *game_engine, FontHandler *font_handler, float res_ratio) : _game_engine(game_engine), _font_handler(font_handler), _player_1(nullptr), _player_2(nullptr), _res_ratio(res_ratio) {
     this->_chrono = new Chronometer();
     this->_chrono->start();
     this->_font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(13 * res_ratio));
@@ -18,6 +18,10 @@ Analytics::Analytics(Analytics const &src) {
 }
 
 Analytics::~Analytics(void) {
+    TTF_CloseFont(this->_font);
+    TTF_CloseFont(this->_font_title);
+    TTF_CloseFont(this->_font_small);
+    delete this->_chrono;
 }
 
 Analytics	&Analytics::operator=(Analytics const &src) {
