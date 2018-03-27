@@ -212,6 +212,7 @@ t_best          NegaScout::getmove(t_node node, int depth) {
     return (bestmove);
 }
 
+/* TODO: NegaScout relies on move ordering. Thus, this is NOT A WORKING NEGASCOUT! */
 t_best          NegaScout::negascout(t_node node, int depth, int alpha, int beta, int color, int max_depth) {
     t_best      best;
     int         value;
@@ -223,7 +224,7 @@ t_best          NegaScout::negascout(t_node node, int depth, int alpha, int beta
         return ((t_best){ (color * this->score_function(node, depth + 1)), -INF });
     }
     else {
-        best = { -INF, -INF };
+        best = { alpha, -INF };
         if (color == 1)
             moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured,
                                     node.opponent_pairs_captured);
