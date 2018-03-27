@@ -283,6 +283,9 @@ t_best          MTDf::alphabetawithmemory(t_node node, int depth, int alpha, int
     int         value;
 
     this->nbnode++; // DEBUG
+    if (this->timesup(this->start)) {
+        return ((t_best){ -INF, 0 });
+    }
     if (this->_TT.count({ node.player, node.opponent }) > 0 && this->_TT[{ node.player, node.opponent }].depth >= depth) {
         if (this->_TT[{ node.player, node.opponent }].flag == 1) { // Exact
             return (this->_TT[{ node.player, node.opponent }].value);
@@ -366,17 +369,26 @@ t_best          MTDf::mtdf(t_node node, t_best f, int depth) {
 }
 
 t_best          MTDf::iterativedeepening(t_node node, int maxdepth) {
-    // std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     t_best      g = { 0, 0 };
+    t_best      save;
+    this->start = std::chrono::steady_clock::now();
 
     for (int depth = 1; depth < maxdepth; (depth = depth + 2)) {
         g = this->mtdf(node, g, depth);
-        // if (this->timesup(start)) {
-        //     break;
-        // }
+        if (this->timesup(this->start)) {
+            break;
+        }
+        save = g;
     }
     this->_TT.clear();
-    return (g);
+    return (save);
+}
+
+bool            MTDf::timesup(std::chrono::steady_clock::time_point start) {
+    if ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - this->start)).count() >= 499) {
+        return (true);
+    }
+    return (false);
 }
 
 /* This is the negamax version for posterity.
