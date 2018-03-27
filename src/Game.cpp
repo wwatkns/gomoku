@@ -5,12 +5,13 @@ Game::Game(void)  {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
     /* start menu */
-    // this->_config = this->_gui->render_choice_menu();
-    this->_config = "p1=C,p2=C,nu=1,db=1"; // DEBUG
+    this->_config = this->_gui->render_choice_menu();
+    // this->_config = "p1=C,p2=C,nu=1,db=1"; // DEBUG
     this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, this->_gui, 1));
     this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_gui->set_db((this->_config[this->_config.find("db=")+3]=='1' ? true : false));
+    this->_gui->set_sg((this->_config[this->_config.find("sg=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
 }
@@ -91,7 +92,8 @@ void        Game::loop(void) {
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xB8, 5, 8, 0 }); // O-OOO 0x5C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xD8, 5, 8, 0 }); // OO-OO 0x6C is old
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0x68, 6, 8, 0 }); // OO-OO 0x6C is old
-            // std::cout << test << std::endl;
+
+            // test |= highlight_five_aligned(this->_c_player->board);
             // std::cout << pair_capture_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board) << std::endl;
             // std::cout << pattern_detector(this->_c_player->board, this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board, BitBoard::patterns[8]) << std::endl;
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
@@ -132,6 +134,7 @@ void        Game::restart(void) {
     this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_gui->set_db((this->_config[this->_config.find("db=")+3]=='1' ? true : false));
+    this->_gui->set_sg((this->_config[this->_config.find("sg=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
     Game::loop();
@@ -152,6 +155,7 @@ void        Game::newgame(void) {
     this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
     this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
     this->_gui->set_db((this->_config[this->_config.find("db=")+3]=='1' ? true : false));
+    this->_gui->set_sg((this->_config[this->_config.find("sg=")+3]=='1' ? true : false));
     this->_c_player = this->_player_1;
     this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
     Game::loop();

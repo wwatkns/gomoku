@@ -1,9 +1,6 @@
 #include "Computer.hpp"
-#include <cstdlib> // TMP
-#include <thread> // TMP
 
 Computer::Computer(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id), _alphaBeta(11, 500, id, verbose::debug) {
-    std::srand(std::time(nullptr));
     this->type = 1;
 }
 
@@ -31,9 +28,6 @@ bool        Computer::play(Player *other) {
     t_ret ret = this->_alphaBeta(root);
     action.pos = { range(ret.p / 19, 0, 18), range(ret.p % 19, 0, 18) };
     this->_gui->explored_moves_tmp = moves_to_explore(root.player, root.opponent, forbidden_detector(root.player, root.opponent), root.player_pairs_captured, root.opponent_pairs_captured);
-
-    // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
-   // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
     action.duration = std::chrono::steady_clock::now() - action_beg;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     action.id = this->_game_engine->get_history_size() + 1;

@@ -4,6 +4,7 @@
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_nu = false;
     this->_db = false;
+    this->_sg = false;
     this->_quit = false;
     this->_end_game = false;
     this->_mouse_action = false;
@@ -226,7 +227,7 @@ void    GraphicalInterface::update_display(void) {
     this->_render_forbidden();
     this->_render_select();
     if (this->_db) this->_render_explored();
-    this->_render_suggestion(); // TODO: condition with boolean in configuration
+    if (this->_sg) this->_render_suggestion();
     this->_render_secondary_viewport();
     this->_render_buttons();
     this->_render_pause();
@@ -263,7 +264,6 @@ void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) 
         this->_button_pause->set_state(true);
         this->_end_game = true;
     }
-    // exit(1); // DEBUG
 }
 
 void    GraphicalInterface::_render_board(void) {
@@ -434,7 +434,6 @@ void    GraphicalInterface::_render_pause(void) {
 void    GraphicalInterface::_render_winning_screen(void) {
     if (this->_end_game) {
         /* draw line alignment */
-        // Eigen::Array22i line = this->_game_engine->get_end_line(this->_analytics->get_c_player()->board); // TODO: win is not always current player
         Eigen::Array2i  p1 = this->grid_to_screen(this->_win_alignment.row(0));
         Eigen::Array2i  p2 = this->grid_to_screen(this->_win_alignment.row(1));
         SDL_Color       color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_white : this->_color_black);
@@ -483,11 +482,15 @@ std::string GraphicalInterface::render_choice_menu(void) {
     Button *p2 = new Button(this->_renderer, "Player 2:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40+29}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
     Button *go = new Button(this->_renderer, "Start", this->_handle_ratio((Eigen::Array2i){this->_win_w/2+108, this->_win_h/2+70}), button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
     Button *ng = new Button(this->_renderer, "New Game", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2-93}), button_padding, font, this->_color_header, this->_color_font, this->_color_white, this->_color_header);
+    /* move suggestion switch */
+    Button *t_sg = new Button(this->_renderer, "Suggest :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-148, this->_win_h/2+24}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    ButtonSwitch *sg = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+25}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
+    sg->set_state(true);
     /* debug switch */
-    Button *db = new Button(this->_renderer, "  Debug :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-145, this->_win_h/2+47}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    Button *t_sd = new Button(this->_renderer, "  Debug :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-145, this->_win_h/2+47}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
     ButtonSwitch *sd = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+48}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
     /* numbers switch */
-    Button *nu = new Button(this->_renderer, "Numbers :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    Button *t_sn = new Button(this->_renderer, "Numbers :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
     ButtonSwitch *sn = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+71}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
 
     SDL_Rect    rect;
@@ -514,15 +517,18 @@ std::string GraphicalInterface::render_choice_menu(void) {
         this->_menu_button_player_1->update_state(&this->_mouse_pos, this->_mouse_action);
         this->_menu_button_player_2->update_state(&this->_mouse_pos, this->_mouse_action);
         go->update_state(&this->_mouse_pos, this->_mouse_action);
+        sg->update_state(&this->_mouse_pos, this->_mouse_action);
         sn->update_state(&this->_mouse_pos, this->_mouse_action);
         sd->update_state(&this->_mouse_pos, this->_mouse_action);
 
         this->_menu_button_player_1->render(this->_renderer, &this->_mouse_pos);
         this->_menu_button_player_2->render(this->_renderer, &this->_mouse_pos);
+        sg->render(this->_renderer, &this->_mouse_pos);
+        t_sg->render(this->_renderer, &this->_mouse_pos);
         sd->render(this->_renderer, &this->_mouse_pos);
-        db->render(this->_renderer, &this->_mouse_pos);
+        t_sd->render(this->_renderer, &this->_mouse_pos);
         sn->render(this->_renderer, &this->_mouse_pos);
-        nu->render(this->_renderer, &this->_mouse_pos);
+        t_sn->render(this->_renderer, &this->_mouse_pos);
         ng->render(this->_renderer, &this->_mouse_pos);
         go->render(this->_renderer, &this->_mouse_pos);
         p1->render(this->_renderer, &this->_mouse_pos);
@@ -533,6 +539,7 @@ std::string GraphicalInterface::render_choice_menu(void) {
             out += std::string(",p2=")+std::string((this->_menu_button_player_2->get_activated_button() == 0?"H":"C"));
             out += std::string(",nu=")+std::string((sn->get_state()?"1":"0"));
             out += std::string(",db=")+std::string((sd->get_state()?"1":"0"));
+            out += std::string(",sg=")+std::string((sg->get_state()?"1":"0"));
             break;
         }
         SDL_RenderPresent(this->_renderer);
@@ -541,9 +548,11 @@ std::string GraphicalInterface::render_choice_menu(void) {
     TTF_CloseFont(font_bold);
     delete p1;
     delete p2;
+    delete t_sg;
+    delete sg;
+    delete t_sd;
     delete sd;
-    delete db;
-    delete nu;
+    delete t_sn;
     delete sn;
     delete ng;
     delete go;

@@ -55,8 +55,10 @@ public:
 
     bool            get_nu(void) const { return _nu; };
     bool            get_db(void) const { return _db; };
+    bool            get_sg(void) const { return _sg; };
     void            set_nu(bool const &val) { _nu = val; };
     void            set_db(bool const &val) { _db = val; };
+    void            set_sg(bool const &val) { _sg = val; };
 
     std::string     render_choice_menu(void);
     BitBoard        explored_moves_tmp;
@@ -152,6 +154,7 @@ private:
     /* misc */
     bool            _nu;
     bool            _db;
+    bool            _sg;
     bool            _end_game;
 
     Eigen::Array22i _win_alignment;

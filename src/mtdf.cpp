@@ -24,15 +24,14 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
         return (moves & ~player & ~opponent);
     }
 
-    /* if player has instant win moves, we return only those */
-    moves |= win_by_capture_detector(player, opponent, player_pairs_captured);
-    moves |= win_by_alignment_detector(player, opponent, player_forbidden, opponent_pairs_captured);
+    /* if player can win this turn, return this */
+    moves = get_winning_moves(player, opponent, player_pairs_captured, opponent_pairs_captured);
     if (!moves.is_empty())
-        return (moves & ~player & ~opponent & ~player_forbidden);
+        return (moves);
 
     /* if opponent can win next turn, only explore the moves that will try to prevent that */
-    moves  = future_pattern_detector(opponent, player, { 0xF8, 5, 8, 0 });
-    if (!moves.is_empty() && !detect_five_aligned(opponent | moves))
+    moves = get_winning_moves(opponent, player, opponent_pairs_captured, player_pairs_captured);
+    if (!moves.is_empty())
         return (moves);
 
     /* if opponent has five aligned, we want to play the counter move */
@@ -885,19 +884,104 @@ int32_t        evaluation_function(t_node const &node, uint8_t depth) {
 }
 
 
+// static inline const int64_t player_score(t_node const &node, uint8_t depth) {
+//     BitBoard    board;
+//     int64_t     score = 0;
+//
+//     /* detect if current board has an unbreakable five */
+//     board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
+//     if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
+//         return (500000 * depth); // 50000000
+//     if (node.player_pairs_captured >= 5)
+//         return (500000 * depth); // 50,000,000pts / depth for win
+//     for (int i = 0; i < 11; ++i) {
+//         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
+//         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+//     }
+//     score += pair_capture_detector(node.player, node.opponent).set_count() * 50;//  5,000pts / pairs capture threatening
+//     score += node.player_pairs_captured * node.player_pairs_captured * 100;     // 10,000pts 40,000pts 90,000pts 160,000pts
+//     return (score);
+// }
+//
+// static inline const int64_t opponent_score(t_node const &node, uint8_t depth) {
+//     BitBoard    board;
+//     int64_t     score = 0;
+//
+//     /* detect if current board has an unbreakable five */
+//     board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
+//     if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
+//         return (500000 * depth);
+//     if (node.opponent_pairs_captured >= 5)
+//         return (500000 * depth);
+//     for (int i = 0; i < 11; ++i) {
+//         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
+//         score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+//     }
+//     score += pair_capture_detector(node.opponent, node.player).set_count() * 50;//  5,000pts / pairs capture threatening
+//     score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100; // 10,000pts 40,000pts 90,000pts 160,000pts
+//     return (score);
+// }
+//
+// int32_t        score_function(t_node const &node, uint8_t depth) {
+//     int64_t     score = 0;
+//
+//     // BitBoard board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
+//     // if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
+//     //     return (INF); // 50000000
+//     // if (node.player_pairs_captured >= 5)
+//     //     return (INF); // 50,000,000pts / depth for win
+//     //
+//     // board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
+//     // if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
+//     //     return (-INF);
+//     // if (node.opponent_pairs_captured >= 5)
+//     //     return (-INF);
+//     /* we give more weight to the player whose turn is next, the correct verified order is [1, 2] */
+//     score += player_score(node, depth) * (node.cid == 1 ? 2:1);
+//     score -= opponent_score(node, depth) * (node.cid == 2 ? 2:1);
+//     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
+// }
+
+
+/*
+    we evaluate the board with pattern detection, considering both sides. The
+    patterns and their values are as follow :
+      +-Patterns-+------+-----+------+-------+--------------------+
+      |   repr   |  hex | len | dirs | score |        names       |
+      +----------+------+-----+------+-------+--------------------+
+      |   OOOOO  | 0xF8 |  5  |   4  | 5000  |  five              |
+      |  -OOOO-  | 0x78 |  6  |   4  | 2000  |  open four         |
+      |   -OOO-  | 0x70 |  5  |   4  | 1000  |  open three        |
+      |  -OO-O-  | 0x68 |  6  |   8  |  700  |  open split three  |
+      |   OOOO-  | 0xF0 |  5  |   8  |  200  |  close four        |
+      |   O-OOO  | 0xB8 |  5  |   8  |  200  |  split four        |
+      |   OO-OO  | 0xD8 |  5  |   8  |  200  |  split four        |
+      |   OOO-O  | 0xE8 |  5  |   8  |  200  |  split four        |
+      |    OOO-  | 0xE0 |  4  |   8  |   10  |  close three       |
+      |   OO-O-  | 0xD0 |  5  |   8  |   10  |  close split three |
+      |   O-OO-  | 0xB0 |  5  |   8  |   10  |  close split three |
+      +----------+------+-----+------+-------+--------------------+
+    We consider also the threat of capture by the opponent on the pattern,
+    indeed a open-four threatened by capture should be worth less than a
+    regular one.
+
+    pattern score = (a - b) * w * z + b * w
+
+    with 'a' being the number of patterns found, 'b' being the number of
+    non-threatened patterns found, 'w' being the weight of the pattern and
+    'z' the penalty for threatened patterns (defaults to 0.5)
+*/
 static inline const int64_t player_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
+    BitBoard    captb;
     int64_t     score = 0;
+    int64_t     count;
 
-    /* detect if current board has an unbreakable five */
-    board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
-    if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
-        return (500000 * depth); // 50000000
-    if (node.player_pairs_captured >= 5)
-        return (500000 * depth); // 50,000,000pts / depth for win
-    for (int i = 0; i < 11; ++i) {
+    for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
-        score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+        captb = pattern_detector(pair_capture_detector_highlight(node.opponent, node.player) ^ node.player, node.opponent, BitBoard::patterns[i]);
+        count  = (captb.is_empty() == false ? captb.set_count() : 0);
+        score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
     }
     score += pair_capture_detector(node.player, node.opponent).set_count() * 50;//  5,000pts / pairs capture threatening
     score += node.player_pairs_captured * node.player_pairs_captured * 100;     // 10,000pts 40,000pts 90,000pts 160,000pts
@@ -906,17 +990,15 @@ static inline const int64_t player_score(t_node const &node, uint8_t depth) {
 
 static inline const int64_t opponent_score(t_node const &node, uint8_t depth) {
     BitBoard    board;
+    BitBoard    captb;
     int64_t     score = 0;
+    int64_t     count;
 
-    /* detect if current board has an unbreakable five */
-    board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
-    if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
-        return (500000 * depth);
-    if (node.opponent_pairs_captured >= 5)
-        return (500000 * depth);
-    for (int i = 0; i < 11; ++i) {
+    for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
-        score += (board.is_empty() == false ? board.set_count() * BitBoard::patterns[i].value : 0);
+        captb = pattern_detector(pair_capture_detector_highlight(node.player, node.opponent) ^ node.opponent, node.player, BitBoard::patterns[i]);
+        count  = (captb.is_empty() == false ? captb.set_count() : 0);
+        score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
     }
     score += pair_capture_detector(node.opponent, node.player).set_count() * 50;//  5,000pts / pairs capture threatening
     score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100; // 10,000pts 40,000pts 90,000pts 160,000pts
@@ -926,22 +1008,13 @@ static inline const int64_t opponent_score(t_node const &node, uint8_t depth) {
 int32_t        score_function(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    // BitBoard board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
-    // if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
-    //     return (INF); // 50000000
-    // if (node.player_pairs_captured >= 5)
-    //     return (INF); // 50,000,000pts / depth for win
-    //
-    // board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
-    // if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
-    //     return (-INF);
-    // if (node.opponent_pairs_captured >= 5)
-    //     return (-INF);
     /* we give more weight to the player whose turn is next, the correct verified order is [1, 2] */
     score += player_score(node, depth) * (node.cid == 1 ? 2:1);
     score -= opponent_score(node, depth) * (node.cid == 2 ? 2:1);
     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
 }
+
+
 
 t_ret           max(t_ret const& a, t_ret const& b) { return (a.score > b.score ? a : b); };
 t_ret           min(t_ret const& a, t_ret const& b) { return (a.score < b.score ? a : b); };

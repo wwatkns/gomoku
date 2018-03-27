@@ -1,8 +1,8 @@
 #include "Human.hpp"
 
 Human::Human(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id) : Player(game_engine, gui, id), _alphaBeta(11, 250, id, verbose::quiet) {
-    this->type = 0;
     this->_action_duration = std::chrono::steady_clock::duration::zero();
+    this->type = 0;
 }
 
 Human::Human(Human const &src) : Player(src), _alphaBeta(src.get_alphaBeta()) {
@@ -21,7 +21,7 @@ Human	&Human::operator=(Human const &src) {
 bool    Human::play(Player *other) {
     t_action    action;
 
-    if (this->suggested_move(0) == -1) {
+    if (this->_gui->get_sg() && this->suggested_move(0) == -1) {
         t_node  root = create_node(*this, *other);
         t_ret   ret = this->_alphaBeta(root);
         this->suggested_move = { range(ret.p / 19, 0, 18), range(ret.p % 19, 0, 18) };
@@ -36,7 +36,6 @@ bool    Human::play(Player *other) {
         action.id = this->_game_engine->get_history_size() + 1;
         action.p1_last = this->board;
         action.p2_last = other->board;
-
         action.pid = this->_id;
         action.ppc = this->_pairs_captured;
         if (this->_game_engine->check_action(action, *this, *other)) {

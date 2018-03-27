@@ -31,17 +31,16 @@ bool    GameEngine::check_action(t_action const &action, Player const &p1, Playe
 uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint8_t const& pid) {
     static bool dp[2] = { false, false };
     bool *d = (pid == 1 ? &dp[0] : &dp[1]);
-    bool five_aligned = detect_five_aligned(p1);
 
     /* if player has 5 or more pairs captured, player wins */
     if (p1_pairs_captured >= 5)
         return (end::player_win);
-    /* if player had a five alignment last turn and it's still here, player wins */
-    if (*d && five_aligned)
-        return (end::player_win);
 
-    if (five_aligned) {
-        /* if opponent had a five alignment and we try to do a five alignment, he wins, it's not a valid end condition */
+    if (detect_five_aligned(p1)) {
+        /* if player had a five alignment last turn and it's still here, player wins */
+        if (*d == true)
+            return (end::player_win);
+        /* if opponent had a five alignment and we try to do a five alignment, he wins, it's not a valid win condition for us */
         if (pid == 1 ? dp[1] : dp[0])
             return (end::opponent_win);
         /* if opponent can total 5 pairs captured in one move next turn, we continue */

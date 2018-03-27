@@ -80,7 +80,7 @@ public:
 
     std::array<uint64_t, N>                 values;
     static const std::array<int16_t, D>     shifts;
-    static const std::array<t_pattern,11>   patterns;
+    static const std::array<t_pattern,8>    patterns;
     static const BitBoard                   full;
     static const BitBoard                   empty;
     static const BitBoard                   border_right;
