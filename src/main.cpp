@@ -107,8 +107,6 @@ int             main(int argc, char **argv) {
             std::cerr << "Error: " << e.what() << std::endl << desc << std::endl;
             return (1);
         }
-        std::cout << "options::g_optionsp1.depth: " << options::g_optionsp1.depth << " options::g_optionsp1.algo_type " << options::g_optionsp1.algo_type << std::endl;
-        std::cout << "options::g_optionsp2.depth: " << options::g_optionsp2.depth << " options::g_optionsp2.algo_type " << options::g_optionsp2.algo_type << std::endl;
         Game    *game = new Game();        
         game->loop(); // Start the game
     }
