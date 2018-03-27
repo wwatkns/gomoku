@@ -45,36 +45,13 @@ bool        Computer::play(Player *other) {
 
     action_beg = std::chrono::steady_clock::now();
 
-    /* AIPlayer test */
-    ai_algorithm->nbnode = 0;
-    ai_algorithm->nbleaf = 0;
+    /* AIPlayer */
+    ai_algorithm->nbnode = 0; // DEBUG
+    ai_algorithm->nbleaf = 0; // DEBUG
     bestmove = ai_algorithm->getmove(node, this->depth);
-    std::cout << "node nb: " << ai_algorithm->nbnode << "; leaf nb: " << ai_algorithm->nbleaf << std::endl;
+    std::cout << "node nb: " << ai_algorithm->nbnode << "; leaf nb: " << ai_algorithm->nbleaf << std::endl; // DEBUG
+
     action.pos = (Eigen::Array2i){ bestmove.pos / 19, bestmove.pos % 19 };
-
-    // action.pos = alphabeta_pruning(&node, -INF, INF, 3);
-    // action.pos = iterative_deepening(&node, 3);
-
-    // int16_t p = mtdf(&node, 0, 3).p;
-
-    // std::cout << "--- player " << std::to_string(other->get_id()) << std::endl;
-    // action.pos = iterative_deepening(&node, 10);
-    // action.pos = mtdf();
-    // action.pos = ft_alphaBetaWithMemory(&node, -INF, INF, 3).p;
-
-
-    // t_ret g = { 0, 0 };
-    // g = mtdf(&node, g, 5);
-    // std::cout << "--- score: " << g.score << ", pos: (" << g.p / 19 << ", " << g.p % 19 << ")\n";
-    // action.pos = { g.p / 19, g.p % 19 };
-    
-    // AlphaBeta   alphabeta(4, false, 500);
-    // int16_t p = alphabeta(node, -INF, INF, 5).p;
-
-    // int16_t p = alphaBetaWithMemory(node, -INF, INF, 4).p;
-    // action.pos = { p / 19, p % 19 };
-    // std::this_thread::sleep_for(std::chrono::milliseconds(100 + std::rand() % 900));
-   // action.pos = {std::rand() % 19, std::rand() % 19}; // TMP
     action.duration = std::chrono::steady_clock::now() - action_beg;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
 

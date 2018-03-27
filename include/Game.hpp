@@ -21,7 +21,8 @@ namespace options {
         int                 algo_type;
     }                   t_options;
 
-    extern t_options       g_options;
+    extern t_options       g_optionsp1;
+    extern t_options       g_optionsp2;
 }
 
 class Game {
