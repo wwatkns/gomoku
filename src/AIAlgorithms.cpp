@@ -12,7 +12,7 @@ MinMax::MinMax(MinMax const &src) {
 MinMax::~MinMax(void) {
 }
 
-MinMax          &MinMax::operator=(MinMax const&rhs) {
+MinMax          &MinMax::operator=(MinMax const&) {
     return(*this);
 }
 
@@ -101,7 +101,7 @@ AlphaBeta::AlphaBeta(AlphaBeta const &src) {
 AlphaBeta::~AlphaBeta(void) {
 }
 
-AlphaBeta        &AlphaBeta::operator=(AlphaBeta const&rhs) {
+AlphaBeta        &AlphaBeta::operator=(AlphaBeta const&) {
     return(*this);
 }
 
@@ -201,7 +201,7 @@ NegaScout::NegaScout(NegaScout const &src) {
 NegaScout::~NegaScout(void) {
 }
 
-NegaScout        &NegaScout::operator=(NegaScout const&rhs) {
+NegaScout        &NegaScout::operator=(NegaScout const&) {
     return(*this);
 }
 
@@ -263,7 +263,7 @@ MTDf::MTDf(MTDf const &src) {
 MTDf::~MTDf(void) {
 }
 
-MTDf            &MTDf::operator=(MTDf const&rhs) {
+MTDf            &MTDf::operator=(MTDf const&) {
     return(*this);
 }
 

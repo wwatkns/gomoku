@@ -40,7 +40,7 @@ public:
     AIPlayer(void);
     AIPlayer(AIPlayer const &src);
     ~AIPlayer(void);
-    AIPlayer    &operator=(AIPlayer const &rhs);
+    AIPlayer    &operator=(AIPlayer const &);
 
     int             nbnode; // DEBUG
     int             nbleaf; // DEBUG

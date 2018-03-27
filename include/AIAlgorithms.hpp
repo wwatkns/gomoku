@@ -9,7 +9,7 @@ public:
     MinMax(void);
     MinMax(MinMax const &src);
     ~MinMax(void);
-    MinMax    &operator=(MinMax const &rhs);
+    MinMax    &operator=(MinMax const &);
 
     virtual t_best  getmove(t_node node, int depth);
 
@@ -24,7 +24,7 @@ public:
     AlphaBeta(void);
     AlphaBeta(AlphaBeta const &src);
     ~AlphaBeta(void);
-    AlphaBeta    &operator=(AlphaBeta const &rhs);
+    AlphaBeta    &operator=(AlphaBeta const &);
 
     virtual t_best  getmove(t_node node, int depth);
 
@@ -39,7 +39,7 @@ public:
     NegaScout(void);
     NegaScout(NegaScout const &src);
     ~NegaScout(void);
-    NegaScout    &operator=(NegaScout const &rhs);
+    NegaScout    &operator=(NegaScout const &);
 
     virtual t_best  getmove(t_node node, int depth);
 
@@ -55,7 +55,7 @@ public:
     MTDf(void);
     MTDf(MTDf const &src);
     ~MTDf(void);
-    MTDf    &operator=(MTDf const &rhs);
+    MTDf    &operator=(MTDf const &);
 
     virtual t_best  getmove(t_node node, int depth);
 

@@ -13,7 +13,7 @@ AIPlayer::AIPlayer(AIPlayer const &src) {
 AIPlayer::~AIPlayer(void) {
 }
 
-AIPlayer        &AIPlayer::operator=(AIPlayer const&rhs) {
+AIPlayer        &AIPlayer::operator=(AIPlayer const&) {
     return(*this);
 }
 
