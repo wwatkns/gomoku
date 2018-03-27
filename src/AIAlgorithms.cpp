@@ -189,6 +189,68 @@ t_best          AlphaBeta::alphabetanegamax(t_node node, int depth, int alpha, i
 }
 */
 
+/***************************************************** NEGASCOUT ******************************************************/
+
+NegaScout::NegaScout(void) {
+}
+
+NegaScout::NegaScout(NegaScout const &src) {
+    *this = src;
+}
+
+NegaScout::~NegaScout(void) {
+}
+
+NegaScout        &NegaScout::operator=(NegaScout const&rhs) {
+    return(*this);
+}
+
+t_best          NegaScout::getmove(t_node node, int depth) {
+    t_best      bestmove;
+
+    bestmove = this->negascout(node, depth, -INF, INF, 1, depth);
+    return (bestmove);
+}
+
+t_best          NegaScout::negascout(t_node node, int depth, int alpha, int beta, int color, int max_depth) {
+    t_best      best;
+    int         value;
+    BitBoard    moves;    
+
+    this->nbnode++; // DEBUG
+    if (depth == 0 || check_end(node)) {
+        this->nbleaf++; // DEBUG
+        return ((t_best){ (color * this->score_function(node, depth + 1)), -INF });
+    }
+    else {
+        best = { -INF, -INF };
+        if (color == 1)
+            moves = this->get_moves(node.player, node.opponent, node.player_forbidden, node.player_pairs_captured,
+                                    node.opponent_pairs_captured);
+        if (color == -1)
+            moves = this->get_moves(node.opponent, node.player, node.opponent_forbidden, node.opponent_pairs_captured,
+                                    node.player_pairs_captured);
+        for (int i = 0; i < 361; ++i) {
+            if (moves.check_bit(i)) {
+                if (depth == max_depth) {
+                    value = -this->negascout(this->simulate_move(node, i), depth - 1, -beta, -alpha, -color, max_depth).score;
+                }
+                else {
+                    value = -this->negascout(this->simulate_move(node, i), depth - 1, -alpha - 1, -beta, -color, max_depth).score;
+                    if (alpha < value && value < beta) {
+                        value = -this->negascout(this->simulate_move(node, i), depth - 1, -beta, -value, -color, max_depth).score;
+                    }
+                }
+                alpha = this->max(alpha, value);
+                best = value > best.score ? (t_best){ value, i } : best;
+                if (alpha >= beta)
+                    break;
+            }
+        }
+    }
+    return (best);
+}
+
 /******************************************************** MTDF ********************************************************/
 
 MTDf::MTDf(void) {

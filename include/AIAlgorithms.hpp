@@ -33,6 +33,22 @@ private:
 
 };
 
+class NegaScout: public AIPlayer {
+
+public:
+    NegaScout(void);
+    NegaScout(NegaScout const &src);
+    ~NegaScout(void);
+    NegaScout    &operator=(NegaScout const &rhs);
+
+    virtual t_best  getmove(t_node node, int depth);
+
+private:
+    t_best          negascout(t_node, int depth, int alpha, int beta, int color, int maxdepth);
+
+};
+
+
 class MTDf: public AIPlayer {
 
 public:
