@@ -4,15 +4,8 @@
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
-    /* start menu */
     this->_config = this->_gui->render_choice_menu();
-    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, this->_gui, 1));
-    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
-    this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
-    this->_gui->set_db((this->_config[this->_config.find("db=")+3]=='1' ? true : false));
-    this->_gui->set_sg((this->_config[this->_config.find("sg=")+3]=='1' ? true : false));
-    this->_c_player = this->_player_1;
-    this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+    this->_configure();
 }
 
 Game::Game(Game const &src) {
@@ -26,7 +19,7 @@ Game::~Game(void) {
     delete this->_gui;
 }
 
-Game	&Game::operator=(Game const &src) {
+Game    &Game::operator=(Game const &src) {
     this->_player_1 = src.get_player_1();
     this->_player_2 = src.get_player_2();
     this->_game_engine = src.get_game_engine();
@@ -34,7 +27,17 @@ Game	&Game::operator=(Game const &src) {
     return (*this);
 }
 
-void        Game::_debug_fps(void) {
+void    Game::_configure(void) {
+    this->_player_1 = ( this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, this->_gui, 1) );
+    this->_player_2 = ( this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2) );
+    this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
+    this->_gui->set_db((this->_config[this->_config.find("db=")+3]=='1' ? true : false));
+    this->_gui->set_sg((this->_config[this->_config.find("sg=")+3]=='1' ? true : false));
+    this->_c_player = this->_player_1;
+    this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+}
+
+void    Game::_debug_fps(void) {
     static int32_t frames = -1;
     static uint32_t ms = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
 
@@ -46,7 +49,7 @@ void        Game::_debug_fps(void) {
     }
 }
 
-void        Game::_cap_framerate(uint32_t const &framerate) {
+void    Game::_cap_framerate(uint32_t const &framerate) {
     static double last = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
     double delta;
 
@@ -56,7 +59,7 @@ void        Game::_cap_framerate(uint32_t const &framerate) {
     last = this->_gui->get_analytics()->get_chronometer()->get_elapsed_ms();
 }
 
-void        Game::loop(void) {
+void    Game::loop(void) {
     bool    action_performed;
     bool    action_undo;
 
@@ -97,7 +100,7 @@ void        Game::loop(void) {
     }
 }
 
-bool        Game::undo(void) {
+bool    Game::undo(void) {
     bool    last = (this->_game_engine->get_history_size() == 0);
     this->_game_engine->delete_last_action(this->_player_1, this->_player_2);
     this->_gui->explored_moves_tmp = moves_to_explore(
@@ -113,7 +116,7 @@ bool        Game::undo(void) {
 /*  Restart only reset the game to 0 with the same configuration, while
     New Game displays the new game menu to configure the game.
 */
-void        Game::restart(void) {
+void    Game::restart(void) {
     delete this->_gui;
     delete this->_game_engine;
     delete this->_player_1;
@@ -121,18 +124,11 @@ void        Game::restart(void) {
 
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
-
-    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, this->_gui, 1));
-    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
-    this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
-    this->_gui->set_db((this->_config[this->_config.find("db=")+3]=='1' ? true : false));
-    this->_gui->set_sg((this->_config[this->_config.find("sg=")+3]=='1' ? true : false));
-    this->_c_player = this->_player_1;
-    this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+    this->_configure();
     Game::loop();
 }
 
-void        Game::newgame(void) {
+void    Game::newgame(void) {
     delete this->_gui;
     delete this->_game_engine;
     delete this->_player_1;
@@ -140,15 +136,7 @@ void        Game::newgame(void) {
 
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
-
     this->_config = this->_gui->render_choice_menu();
-
-    this->_player_1 = (this->_config[this->_config.find("p1=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 1) : (Player*)new Computer(this->_game_engine, this->_gui, 1));
-    this->_player_2 = (this->_config[this->_config.find("p2=")+3]=='H' ? (Player*)new Human(this->_game_engine, this->_gui, 2) : (Player*)new Computer(this->_game_engine, this->_gui, 2));
-    this->_gui->set_nu((this->_config[this->_config.find("nu=")+3]=='1' ? true : false));
-    this->_gui->set_db((this->_config[this->_config.find("db=")+3]=='1' ? true : false));
-    this->_gui->set_sg((this->_config[this->_config.find("sg=")+3]=='1' ? true : false));
-    this->_c_player = this->_player_1;
-    this->_gui->get_analytics()->set_players(this->_c_player, this->_player_1, this->_player_2);
+    this->_configure();
     Game::loop();
 }

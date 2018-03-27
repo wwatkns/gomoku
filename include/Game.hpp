@@ -41,6 +41,7 @@ private:
 
     void                _debug_fps(void);
     void                _cap_framerate(uint32_t const &framerate);
+    void                _configure(void);
 };
 
 #endif
