@@ -51,6 +51,8 @@ public:
 private:
     std::list<t_action>                     _history;
     std::chrono::steady_clock::time_point   _initial_timepoint;
+    bool                                    _end_p1;
+    bool                                    _end_p2;
 
     /* the possible states of the board cells */
     struct state {

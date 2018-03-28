@@ -4,7 +4,8 @@
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
-    this->_config = this->_gui->render_choice_menu();
+    // this->_config = this->_gui->render_choice_menu();
+    this->_config = "p1=C,p2=C,nu=1,db=1,sg=1";
     this->_configure();
 }
 

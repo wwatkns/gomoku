@@ -1,9 +1,14 @@
 #include "GameEngine.hpp"
 #include "Player.hpp"
 
+bool _end_p1 = false;
+bool _end_p2 = false;
+
 GameEngine::GameEngine(void) {
     this->grid = Eigen::ArrayXXi::Constant(BOARD_COLS, BOARD_ROWS, state::free);
     this->_initial_timepoint = std::chrono::steady_clock::now();
+    this->_end_p1 = false;
+    this->_end_p2 = false;
 }
 
 GameEngine::GameEngine(GameEngine const &src) {
@@ -27,41 +32,52 @@ bool    GameEngine::check_action(t_action const &action, Player const &p1, Playe
     return (false);
 }
 
-// doen't work as intended
+/* TODO: verify that everything is working properly */
 uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint8_t const& pid) {
-    static bool dp[2] = { false, false };
-    bool *d = (pid == 1 ? &dp[0] : &dp[1]);
+    static bool end[2] = { false, false };
+    int player = pid - 1;
 
-    /* if player has 5 or more pairs captured, player wins */
+    /* if player captured 5 pairs, he wins */
     if (p1_pairs_captured >= 5)
         return (end::player_win);
-
     if (detect_five_aligned(p1)) {
-        /* if player had a five alignment last turn and it's still here, player wins */
-        if (*d == true)
+        /* if player had a five alignment and it's still here, he wins */
+        if (end[player] == true)
             return (end::player_win);
-        /* if opponent had a five alignment and we try to do a five alignment, he wins, it's not a valid win condition for us */
-        if (pid == 1 ? dp[1] : dp[0])
-            return (end::opponent_win);
         /* if opponent can total 5 pairs captured in one move next turn, we continue */
-        if (!win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty() && !*d) {
-            *d = true;
+        if (!win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty() && end[player] == false) {
+            end[player] = true;
             return (end::none);
         }
         /* if opponent can break the player's five alignment next turn, we continue */
         if (!pair_capture_breaking_five_detector(p2, p1).is_empty()) {
-            *d = true;
+            end[player] = true;
             return (end::none);
         }
         return (end::player_win);
     }
     else
-        *d = (*d ? false : *d);
+        end[player] = (end[player] ? false : end[player]);
     /* draw game */
     if (((p1 | p2) ^ BitBoard::full).is_empty())
         return (end::draw);
     return (end::none);
 }
+
+/*
+    we play a move,
+    if last turn opponent had a
+
+    if player has 5 pairs captured                                          -> player wins
+
+    if player has 5 aligned
+      - and he already had it last turn                                     -> player wins
+      - and opponent has a 5 aligned                                        -> opponent wins
+      - and opponent can play a move to capture at least 5 total pairs      -> nothing
+      - and opponent can play a move to capture a stone of the alignment    -> nothing
+
+    if the board is full                                                    -> draw
+*/
 
 void    GameEngine::update_game_state(t_action &action, Player *p1, Player *p2) {
     p1->board.write(action.pos[1], action.pos[0]);

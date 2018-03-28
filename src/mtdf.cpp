@@ -1,6 +1,12 @@
 #include "mtdf.hpp"
 #include "Player.hpp"
 
+static int popcount64(uint64_t x) {
+    x = x - ((x >> 1) & 0x5555555555555555);
+    x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
+    return (((x + (x >> 4)) & 0x0F0F0F0F0F0F0F0F) * 0x0101010101010101) >> 56;
+}
+
 t_node          create_node(Player const& player, Player const& opponent) {
     t_node  node;
 
@@ -23,7 +29,14 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
             moves.write(9, 9);
         return (moves & ~player & ~opponent);
     }
-
+    /* if opponent has five aligned, we want to play the counter move */
+    if (detect_five_aligned(opponent)) {
+        moves = pair_capture_breaking_five_detector(player, opponent);
+        if (moves.is_empty())
+            moves = win_by_capture_detector(player, opponent, player_pairs_captured);
+        if (!moves.is_empty())
+            return (moves & ~player & ~opponent);
+    }
     /* if player can win this turn, return this */
     moves = get_winning_moves(player, opponent, player_pairs_captured, opponent_pairs_captured);
     if (!moves.is_empty())
@@ -34,33 +47,24 @@ BitBoard     moves_to_explore(BitBoard const& player, BitBoard const& opponent, 
     if (!moves.is_empty())
         return (moves);
 
-    /* if opponent has five aligned, we want to play the counter move */
-    if (detect_five_aligned(opponent)) {
-        moves = pair_capture_breaking_five_detector(player, opponent);
-        if (moves.is_empty())
-            moves = win_by_capture_detector(player, opponent, player_pairs_captured);
-        if (!moves.is_empty())
-            return (moves & ~player & ~opponent);
-    }
-
     /* opponent threats of open-threes, five-alignments and captures */
     moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
     moves |= pair_capture_detector(opponent, player);
 
     /* explore building fives (non-instant win), open-fours, pair captures and opponent stone capture threats */
     moves |= future_pattern_detector(player, opponent, { 0xF8, 5, 8, 0 }); // OOOOO
-    moves |= future_pattern_detector(player, opponent, { 0x78, 6, 4, 0 }); // -OOOO-
+    moves |= future_pattern_detector(player, opponent, { 0x78, 6, 8, 0 }); // -OOOO-
     moves |= pair_capture_detector(player, opponent);
-    moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
+    // moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
 
     /* explore building open-threes */
-    if (moves.set_count() <= EXPLORATION_THRESHOLD) {
-        // moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
-        moves |= future_pattern_detector(player, opponent, { 0x70, 5, 4, 0 }); // -OOO-
+    if (moves.set_count() <= 3) {
+        moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
+        moves |= future_pattern_detector(player, opponent, { 0x70, 5, 8, 0 }); // -OOO-
         moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0 }); // -OO-O-
 
         /* explore building close-four (to delay by one turn), is it necessary ? seems a bit like a bitch move */
-        if (moves.set_count() <= EXPLORATION_THRESHOLD) {
+        if (moves.set_count() <= 3) {
             moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0 }); // |OOOO-
             if (moves.is_empty())
                 moves |= player.dilated() & ~opponent; /* dilate around player */
@@ -513,12 +517,6 @@ t_ret   AlphaBetaWithIterativeDeepening::_root_max(t_node node, int alpha, int b
     }
     std::sort(this->_root_moves.begin(), this->_root_moves.end(), cmpMax);
     return (best);
-}
-
-static int popcount64(uint64_t x) {
-    x = x - ((x >> 1) & 0x5555555555555555);
-    x = (x & 0x3333333333333333) + ((x >> 2) & 0x3333333333333333);
-    return (((x + (x >> 4)) & 0x0F0F0F0F0F0F0F0F) * 0x0101010101010101) >> 56;
 }
 
 // this will also take into account the estimation of the node at previous iterative deepening loop
@@ -977,15 +975,22 @@ static inline int64_t player_score(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
     int64_t     count;
 
-    (void)depth; // TODO
+    /* return a score for a win by alignment (unbreakable) */
+    board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
+    if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
+        return (500000 * depth);
+    /* return a score for a win by capture, weighted with the depth at which the win is found */
+    if (node.player_pairs_captured >= 5)
+        return (500000 * depth);
+    /* count the score for all the patterns we find, and apply penalty for those that are threatened by capture */
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.opponent, node.player) ^ node.player, node.opponent, BitBoard::patterns[i]);
         count  = (captb.is_empty() == false ? captb.set_count() : 0);
         score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
     }
-    score += pair_capture_detector(node.player, node.opponent).set_count() * 50;//  5,000pts / pairs capture threatening
-    score += node.player_pairs_captured * node.player_pairs_captured * 100;     // 10,000pts 40,000pts 90,000pts 160,000pts
+    score += pair_capture_detector(node.player, node.opponent).set_count() * 50;/* evaluate opponent pair threatening */
+    score += node.player_pairs_captured * node.player_pairs_captured * 100;     /* evaluate the pairs captured */
     return (score);
 }
 
@@ -995,22 +1000,29 @@ static inline int64_t opponent_score(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
     int64_t     count;
 
-    (void)depth; // TODO
+    /* return a score for a win by alignment (unbreakable) */
+    board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
+    if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
+        return (500000 * depth);
+    /* return a score for a win by capture, weighted with the depth at which the win is found */
+    if (node.opponent_pairs_captured >= 5)
+        return (500000 * depth);
+    /* count the score for all the patterns we find, and apply penalty for those that are threatened by capture */
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.player, node.opponent) ^ node.opponent, node.player, BitBoard::patterns[i]);
         count  = (captb.is_empty() == false ? captb.set_count() : 0);
         score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
     }
-    score += pair_capture_detector(node.opponent, node.player).set_count() * 50;//  5,000pts / pairs capture threatening
-    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100; // 10,000pts 40,000pts 90,000pts 160,000pts
+    score += pair_capture_detector(node.opponent, node.player).set_count() * 50;/* evaluate opponent pair threatening */
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100; /* evaluate the pairs captured */
     return (score);
 }
 
 int32_t        score_function(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    /* we give more weight to the player whose turn is next, the correct verified order is [1, 2] */
+    /* we give more weight to the player whose turn is next */
     score += player_score(node, depth) * (node.cid == 1 ? 2:1);
     score -= opponent_score(node, depth) * (node.cid == 2 ? 2:1);
     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));

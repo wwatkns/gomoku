@@ -397,7 +397,7 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
 
 /* return the moves that instant win (no possible counter by opponent) */
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured) {
-    BitBoard    res = future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 });
+    BitBoard    res = future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 }); // OOOOO
     /* if there is no possibility of breaking the alignment and no winning pair capture either */
     if (pair_capture_breaking_five_detector(p2, (p1 | res)).is_empty() && win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty())
         return (res & ~p1 & ~p2);
