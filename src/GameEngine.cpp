@@ -1,14 +1,9 @@
 #include "GameEngine.hpp"
 #include "Player.hpp"
 
-bool _end_p1 = false;
-bool _end_p2 = false;
-
 GameEngine::GameEngine(void) {
     this->grid = Eigen::ArrayXXi::Constant(BOARD_COLS, BOARD_ROWS, state::free);
     this->_initial_timepoint = std::chrono::steady_clock::now();
-    this->_end_p1 = false;
-    this->_end_p2 = false;
 }
 
 GameEngine::GameEngine(GameEngine const &src) {
@@ -63,21 +58,6 @@ uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pair
         return (end::draw);
     return (end::none);
 }
-
-/*
-    we play a move,
-    if last turn opponent had a
-
-    if player has 5 pairs captured                                          -> player wins
-
-    if player has 5 aligned
-      - and he already had it last turn                                     -> player wins
-      - and opponent has a 5 aligned                                        -> opponent wins
-      - and opponent can play a move to capture at least 5 total pairs      -> nothing
-      - and opponent can play a move to capture a stone of the alignment    -> nothing
-
-    if the board is full                                                    -> draw
-*/
 
 void    GameEngine::update_game_state(t_action &action, Player *p1, Player *p2) {
     p1->board.write(action.pos[1], action.pos[0]);
