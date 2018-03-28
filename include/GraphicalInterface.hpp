@@ -15,8 +15,6 @@
 # include "Button.hpp"
 # include "ButtonSwitch.hpp"
 # include "ButtonSelect.hpp"
-// # include "MinMax.hpp"
-// # include "SDL2_gfxPrimitives.h"
 
 # define COLS 19
 # define ROWS 19
@@ -52,10 +50,16 @@ public:
     Eigen::Array2i  get_mouse_pos(void) const { return _mouse_pos; };
     bool            get_mouse_action(void) const { return _mouse_action; };
     bool            get_end_game(void) const { return _end_game; };
+
     bool            get_nu(void) const { return _nu; };
+    bool            get_db(void) const { return _db; };
+    bool            get_sg(void) const { return _sg; };
     void            set_nu(bool const &val) { _nu = val; };
+    void            set_db(bool const &val) { _db = val; };
+    void            set_sg(bool const &val) { _sg = val; };
 
     std::string     render_choice_menu(void);
+    BitBoard        explored_moves_tmp;
 
 private:
     void            _init_sdl(void);
@@ -69,6 +73,8 @@ private:
     void            _render_stones_number(void);
     void            _render_forbidden(void);
     void            _render_select(void);
+    void            _render_explored(void);
+    void            _render_suggestion(void);
     void            _render_secondary_viewport(void);
     void            _render_buttons(void);
     void            _render_pause(void);
@@ -106,6 +112,8 @@ private:
     SDL_Texture     *_white_stone_tex;
     SDL_Texture     *_black_stone_tex;
     SDL_Texture     *_select_stone_tex;
+    SDL_Texture     *_explored_move_tex;
+    SDL_Texture     *_suggested_move_tex;
     SDL_Texture     *_forbidden_tex;
     SDL_Rect        _forbidden_rect;
     /* Computed textures */
@@ -120,9 +128,6 @@ private:
     Button          *_button_restart;
     ButtonSwitch    *_button_pause;
     Button          *_button_undo;
-    /* start menu buttons */
-    ButtonSelect    *_menu_button_player_1;
-    ButtonSelect    *_menu_button_player_2;
 
     /* gui colors */
     SDL_Color         _color_board_bg = { 215, 168,  84, 255 };
@@ -130,7 +135,7 @@ private:
     SDL_Color               _color_bg = {  15,  15,  15, 255 };
     SDL_Color              _color_win = {  45,  45,  45, 255 };
     SDL_Color           _color_header = {  35,  35,  35, 255 };
-    SDL_Color           _color_button = {  53,  53,  53, 255 };
+    // SDL_Color           _color_button = {  53,  53,  53, 255 };
     SDL_Color             _color_font = { 160, 160, 160, 255 };
     SDL_Color           _color_font_2 = { 180, 180, 180, 255 };
     SDL_Color          _color_onhover = { 150, 150, 150, 255 };
@@ -143,7 +148,11 @@ private:
 
     /* misc */
     bool            _nu;
+    bool            _db;
+    bool            _sg;
     bool            _end_game;
+
+    Eigen::Array22i _win_alignment;
 
     std::string     _stone_num_text;
     SDL_Color       _stone_num_color;

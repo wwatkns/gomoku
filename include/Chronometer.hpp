@@ -29,8 +29,7 @@ private:
     std::chrono::steady_clock::time_point       _initial_timepoint;
     std::chrono::steady_clock::time_point       _last_timepoint;
     std::chrono::duration<double, std::milli>   _elapsed;
-
-    bool    _running;
+    bool                                        _running;
 };
 
 #endif

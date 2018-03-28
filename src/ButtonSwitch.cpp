@@ -1,6 +1,6 @@
 #include "ButtonSwitch.hpp"
 
-ButtonSwitch::ButtonSwitch(SDL_Renderer *renderer, std::string text_idle, std::string text_active, Eigen::Array2i pos, Eigen::Array2i padding, TTF_Font *font, SDL_Color bg_color, SDL_Color font_color, SDL_Color active_color, SDL_Color outline_color) : _renderer(renderer), _text_idle(text_idle), _text_active(text_active), _font(font), _box_color(bg_color), _txt_color(font_color), _active_color(active_color), _outline_color(outline_color) {
+ButtonSwitch::ButtonSwitch(SDL_Renderer *renderer, std::string text_idle, std::string text_active, Eigen::Array2i pos, Eigen::Array2i padding, TTF_Font *font, SDL_Color bg_color, SDL_Color font_color, SDL_Color active_color, SDL_Color outline_color) : _text_idle(text_idle), _text_active(text_active), _box_color(bg_color), _txt_color(font_color), _active_color(active_color), _outline_color(outline_color), _font(font), _renderer(renderer) {
     this->_pad_w = padding[0];
     this->_pad_h = padding[1];
     this->_state = false;
@@ -33,6 +33,7 @@ ButtonSwitch::~ButtonSwitch(void) {
 }
 
 ButtonSwitch	&ButtonSwitch::operator=(ButtonSwitch const &src) {
+    (void)src;
     return (*this);
 }
 

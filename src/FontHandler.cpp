@@ -1,7 +1,6 @@
 #include "FontHandler.hpp"
 
 FontHandler::FontHandler(SDL_Renderer *renderer, float const res_ratio) : _renderer(renderer) {
-    TTF_Init();
     this->default_font = this->load_font("./resources/fonts/Roboto-Regular.ttf", (int32_t)(14 * res_ratio));
     this->default_color = new (SDL_Color){ 0, 0, 0, 255 };
 }
@@ -12,7 +11,6 @@ FontHandler::FontHandler(FontHandler const &src) {
 
 FontHandler::~FontHandler(void) {
     TTF_CloseFont(this->default_font);
-    TTF_Quit();
 }
 
 FontHandler	&FontHandler::operator=(FontHandler const &src) {
@@ -22,9 +20,7 @@ FontHandler	&FontHandler::operator=(FontHandler const &src) {
 }
 
 TTF_Font    *FontHandler::load_font(std::string path, uint32_t size) {
-    TTF_Font    *font;
-    font = TTF_OpenFont(path.c_str(), size);
-    return font;
+    return (TTF_OpenFont(path.c_str(), size));
 }
 
 void        FontHandler::create_text(std::string *text, Eigen::Array2i pos) {

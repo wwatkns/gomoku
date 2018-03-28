@@ -9,20 +9,20 @@ ButtonSelect::ButtonSelect(std::vector<Button*> buttons, Eigen::Array2i pos, int
     if (this->_buttons.size() > 0)
         this->_buttons[0]->set_state(true);
 
-    uint32_t    max = 0;
+    int max = 0;
     if (adapt_width == true) {
-        for (uint32_t i = 0; i < this->_buttons.size(); i++) {
+        for (size_t i = 0; i < this->_buttons.size(); i++) {
             if (this->_buttons[i]->get_rect().w > max)
                 max = this->_buttons[i]->get_rect().w;
         }
-        for (uint32_t i = 0; i < this->_buttons.size(); i++) {
+        for (size_t i = 0; i < this->_buttons.size(); i++) {
             this->_buttons[i]->set_padding(max-this->_buttons[i]->get_rect().w+this->_buttons[i]->get_padding()[0], this->_buttons[i]->get_padding()[1]);
         }
     }
     Eigen::Array2i  tmp = pos;
     if (center_pos == true)
         tmp[0] -= (alignment == 'h' ? (int32_t)(max * (this->_buttons.size() / 2.)) : max / 2);
-    for (uint32_t i = 0; i < this->_buttons.size(); i++) {
+    for (size_t i = 0; i < this->_buttons.size(); i++) {
         this->_buttons[i]->set_pos(tmp);
         tmp[0] += (alignment == 'h' ? this->_buttons[i]->get_rect().w + padding : 0);
         tmp[1] += (alignment == 'v' ? this->_buttons[i]->get_rect().h + padding : 0);
@@ -34,9 +34,12 @@ ButtonSelect::ButtonSelect(ButtonSelect const &src) {
 }
 
 ButtonSelect::~ButtonSelect(void) {
+    for (size_t i = 0; i < this->_buttons.size(); ++i)
+        delete this->_buttons[i];
 }
 
 ButtonSelect	&ButtonSelect::operator=(ButtonSelect const &src) {
+    (void)src;
     return (*this);
 }
 

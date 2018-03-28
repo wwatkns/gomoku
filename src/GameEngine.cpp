@@ -1,10 +1,9 @@
 #include "GameEngine.hpp"
 #include "Player.hpp"
 
-GameEngine::GameEngine(void) : _game_turn(0) {
+GameEngine::GameEngine(void) {
     this->grid = Eigen::ArrayXXi::Constant(BOARD_COLS, BOARD_ROWS, state::free);
     this->_initial_timepoint = std::chrono::steady_clock::now();
-    // this->minmax = new MinMax(this, 2); // TODO : should put MinMax again in makefile
 }
 
 GameEngine::GameEngine(GameEngine const &src) {
@@ -28,43 +27,44 @@ bool    GameEngine::check_action(t_action const &action, Player const &p1, Playe
     return (false);
 }
 
-// uint8_t GameEngine::check_end(Player const &p1, Player const &p2) {
-//     if (p1.get_pairs_captured() >= 5)
-//         return (1);
-//     BitBoard    pairs = pair_capture_detector(p2.board, p1.board);
-//     if ((detect_five_aligned(p1.board) && !pairs.is_empty() && p2.get_pairs_captured() == 4) ||
-//         (!(highlight_five_aligned(p1.board) & highlight_captured_stones(p2.board, p1.board, pairs)).is_empty()))
-//         return (0);
-//     if (((p1.board | p2.board) ^ BitBoard::full).is_empty() == true)
-//         return (2);
-//     return (0);
-// }
+/* TODO: verify that everything is working properly */
+uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint8_t const& pid) {
+    static bool end[2] = { false, false };
+    int player = pid - 1;
 
-uint8_t GameEngine::check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured) {
+    /* if player captured 5 pairs, he wins */
     if (p1_pairs_captured >= 5)
-        return (1);
+        return (end::player_win);
     if (detect_five_aligned(p1)) {
-        BitBoard    pairs = pair_capture_detector(p2, p1); // good
-        /* p2 wins next turn by capturing a fifth pair even though p1 has 5 aligned */
-        if (!pairs.is_empty() && p2_pairs_captured == 4)
-            return (0);
-        /* game continue by capturing stones forming the 5 alignment */
-        if ( detect_five_aligned(highlight_five_aligned(p1) ^ highlight_captured_stones(p1, p2 ^ pairs, pairs)) == false )
-            return (0);
-        return (1);
+        /* if player had a five alignment and it's still here, he wins */
+        if (end[player] == true)
+            return (end::player_win);
+        /* if opponent can total 5 pairs captured in one move next turn, we continue */
+        if (!win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty() && end[player] == false) {
+            end[player] = true;
+            return (end::none);
+        }
+        /* if opponent can break the player's five alignment next turn, we continue */
+        if (!pair_capture_breaking_five_detector(p2, p1).is_empty()) {
+            end[player] = true;
+            return (end::none);
+        }
+        return (end::player_win);
     }
-    if (((p1 | p2) ^ BitBoard::full).is_empty() == true)
-        return (2);
-    return (0);
+    else
+        end[player] = (end[player] ? false : end[player]);
+    /* draw game */
+    if (((p1 | p2) ^ BitBoard::full).is_empty())
+        return (end::draw);
+    return (end::none);
 }
 
 void    GameEngine::update_game_state(t_action &action, Player *p1, Player *p2) {
-    BitBoard pairs = pair_capture_detector(p1->board, p2->board);
     p1->board.write(action.pos[1], action.pos[0]);
-    if ((pairs & p1->board).is_empty() == false) {
-        pairs = highlight_captured_stones(p2->board, p1->board, pairs);
-        p1->set_pairs_captured(p1->get_pairs_captured() + pairs.set_count()/2);
-        p2->board &= ~pairs;
+    BitBoard captured = highlight_captured_stones(p1->board, p2->board, (action.pos[0] * 19 + action.pos[1]) );
+    if (!captured.is_empty()) {
+        p1->set_pairs_captured(p1->get_pairs_captured() + captured.set_count() / 2);
+        p2->board &= ~captured;
     }
     p1->board_forbidden = forbidden_detector(p1->board, p2->board);
     p2->board_forbidden = forbidden_detector(p2->board, p1->board);
@@ -121,25 +121,25 @@ Eigen::Array22i GameEngine::get_end_line(BitBoard const &bitboard) {
     uint64_t off;
 
     pos << 0, 0, 0, 0;
-    for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t d = 0; d < 8; d++) {
         tmp = bitboard;
-        for(uint8_t n = 1; (tmp &= tmp.shifted(i)).is_empty() == false; ++n)
-            if (n >= 4)
-                for (uint8_t v = 0; v < 6; v++)
+        for (int n = 1; !tmp.is_empty(); ++n) {
+            tmp = (d > 0 && d < 4 ? tmp & ~BitBoard::border_right : (d > 4 && d < 8 ? tmp & ~BitBoard::border_left : tmp));
+            tmp &= tmp.shifted(d);
+            if (n >= 4) {
+                for (uint8_t v = 0; v < 6; v++) {
                     if (tmp.values[v]) {
                         while (p++ < BITS) if (0x8000000000000000 & (tmp.values[v] << p)) break;
-                        off = BitBoard::shifts[(i < 4 ? i + 4 : i - 4)] * n;
+                        off = BitBoard::shifts[(d < 4 ? d + 4 : d - 4)] * n;
                         pos << (BITS * v + p + off) % 19,
                                (BITS * v + p + off) / 19,
                                (BITS * v + p) % 19,
                                (BITS * v + p) / 19;
                         return (pos);
                     }
+                }
+            }
+        }
     }
     return (pos);
-}
-
-/* Setters */
-void    GameEngine::inc_game_turn(void) {
-    this->_game_turn++;
 }

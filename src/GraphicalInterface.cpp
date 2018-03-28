@@ -3,7 +3,10 @@
 
 GraphicalInterface::GraphicalInterface(GameEngine *game_engine) : _game_engine(game_engine) {
     this->_nu = false;
+    this->_db = false;
+    this->_sg = false;
     this->_quit = false;
+    this->_end_game = false;
     this->_mouse_action = false;
     this->_init_sdl();
 
@@ -39,18 +42,21 @@ GraphicalInterface::GraphicalInterface(GraphicalInterface const &src) : _game_en
 }
 
 GraphicalInterface::~GraphicalInterface(void) {
-    delete this->_font_handler;
     delete this->_analytics;
+    delete this->_font_handler;
     delete this->_button_newgame;
     delete this->_button_restart;
     delete this->_button_pause;
     delete this->_button_undo;
     delete this->_stone_num_font_text;
     delete this->_winning_font_text;
+    TTF_CloseFont(this->_default_font);
+    TTF_CloseFont(this->_winning_font);
     this->_close_sdl();
 }
 
 GraphicalInterface	&GraphicalInterface::operator=(GraphicalInterface const &src) {
+    (void)src;
     return (*this);
 }
 
@@ -92,6 +98,8 @@ void    GraphicalInterface::_load_images(void) {
     this->_white_stone_tex = this->load_texture("./resources/circle_white_outlined.png");
     this->_black_stone_tex = this->load_texture("./resources/circle_black.png");
     this->_select_stone_tex = this->load_texture("./resources/circle_select.png");
+    this->_explored_move_tex = this->load_texture("./resources/open_circle.png");
+    this->_suggested_move_tex = this->load_texture("./resources/diamond.png");
 }
 
 void    GraphicalInterface::_init_sdl(void) {
@@ -100,6 +108,7 @@ void    GraphicalInterface::_init_sdl(void) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
     IMG_Init(IMG_INIT_PNG);
+    TTF_Init();
 
     /* get the screen dimensions */
     SDL_DisplayMode DM;
@@ -218,10 +227,11 @@ void    GraphicalInterface::update_events(void) {
 void    GraphicalInterface::update_display(void) {
     this->_render_board();
     this->_render_stones();
-    if (this->_nu)
-        this->_render_stones_number();
+    if (this->_nu) this->_render_stones_number();
     this->_render_forbidden();
     this->_render_select();
+    if (this->_db) this->_render_explored();
+    if (this->_sg) this->_render_suggestion();
     this->_render_secondary_viewport();
     this->_render_buttons();
     this->_render_pause();
@@ -230,17 +240,33 @@ void    GraphicalInterface::update_display(void) {
 }
 
 void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) {
-    if (this->_game_engine->check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured()) == 1) { // TODO : implement draw condition (check_end() == 2)
+    uint8_t end = check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured(), p1.get_id());
+
+    if (end == end::none) {
+        this->_winning_text = "";
+        this->_end_game = false;
+    }
+    else if (end == end::player_win) {
         std::string type = (p1.type == 0 ? "human" : "computer");
         this->_winning_color = (p1.type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
         this->_winning_text = std::string("Player ")+std::to_string(p1.get_id())+std::string(" (")+type+std::string(") wins");
         this->_button_pause->set_state(true);
         this->_end_game = true;
-    } else {
-        this->_winning_text = "";
-        if (this->_end_game)
-            this->_button_pause->set_state(false);
-        this->_end_game = false;
+        this->_win_alignment = this->_game_engine->get_end_line(this->_analytics->get_c_player()->board);
+    }
+    else if (end == end::opponent_win) {
+        std::string type = (p2.type == 0 ? "human" : "computer");
+        this->_winning_color = (p2.type == 0 ? (SDL_Color){255, 255, 255, 255} : (SDL_Color){219, 15, 59, 255});
+        this->_winning_text = std::string("Player ")+std::to_string(p2.get_id())+std::string(" (")+type+std::string(") wins");
+        this->_button_pause->set_state(true);
+        this->_end_game = true;
+        this->_win_alignment = this->_game_engine->get_end_line((this->_analytics->get_c_player()->get_id() == 1 ? this->_analytics->get_player_2()->board : this->_analytics->get_player_1()->board));
+    }
+    else if (end == end::draw) {
+        this->_winning_color = (SDL_Color){255, 255, 255, 255};
+        this->_winning_text = std::string("Draw game");
+        this->_button_pause->set_state(true);
+        this->_end_game = true;
     }
 }
 
@@ -266,7 +292,7 @@ void    GraphicalInterface::_render_stones(void) {
         }
     }
     /* look for the last action and display an indicator on it */
-    if (!this->_nu && this->_game_engine->get_history()->size() > 0 and !this->_end_game) {
+    if (!this->_nu && this->_game_engine->get_history()->size() > 0 && !this->_end_game) {
         t_action    last = this->_game_engine->get_history()->back();
         int32_t     size = (int32_t)(this->_stone_size * 0.1);
 
@@ -336,6 +362,32 @@ void    GraphicalInterface::_render_select(void) {
     }
 }
 
+void    GraphicalInterface::_render_explored(void) {
+    Eigen::Array2i  s_pos;
+    Eigen::Array2i  g_pos;
+    SDL_Rect        rect;
+
+    for (int i = 0; i < 361; ++i) {
+        if (this->explored_moves_tmp.check_bit(i)) {
+            g_pos = { i / 19, i % 19 };
+            s_pos = this->grid_to_screen(g_pos);
+            rect = {s_pos[1] - (this->_stone_size-10) / 2, s_pos[0] - (this->_stone_size-10) / 2, this->_stone_size-10, this->_stone_size-10};
+            SDL_RenderCopy(this->_renderer, this->_explored_move_tex, NULL, &rect);
+        }
+    }
+}
+
+void    GraphicalInterface::_render_suggestion(void) {
+    Eigen::Array2i  s_pos;
+    SDL_Rect        rect;
+
+    if (this->_analytics->get_c_player()->type == 0 && this->_analytics->get_c_player()->suggested_move(0) != -1) {
+        s_pos = this->grid_to_screen(this->_analytics->get_c_player()->suggested_move);
+        rect = {s_pos[1] - (this->_stone_size-10) / 2, s_pos[0] - (this->_stone_size-10) / 2, this->_stone_size-10, this->_stone_size-10};
+        SDL_RenderCopy(this->_renderer, this->_suggested_move_tex, NULL, &rect);
+    }
+}
+
 void    GraphicalInterface::_render_secondary_viewport(void) {
     SDL_RenderSetViewport(this->_renderer, &this->_secondary_viewport);
     /* draw background */
@@ -347,9 +399,9 @@ void    GraphicalInterface::_render_secondary_viewport(void) {
     int8_t width = (int8_t)(1 * this->_res_ratio);
     rect = { 0, (int32_t)( 90 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width };
     SDL_RenderFillRect(this->_renderer, &rect);
-    rect = { 0, (int32_t)(200 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width }; // 180
+    rect = { 0, (int32_t)(200 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width };
     SDL_RenderFillRect(this->_renderer, &rect);
-    rect = { 0, (int32_t)(310 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width }; // 270
+    rect = { 0, (int32_t)(310 * this->_res_ratio)-(width-1), this->_secondary_viewport.w, width };
     SDL_RenderFillRect(this->_renderer, &rect);
     /* draw depth line */
     SDL_SetRenderDrawColor(this->_renderer, this->_color_outline.r, this->_color_outline.g, this->_color_outline.b, this->_color_outline.a);
@@ -375,7 +427,7 @@ void    GraphicalInterface::_render_pause(void) {
     if (this->check_pause()) {
         if (this->_analytics->get_chronometer()->is_running() == true)
             this->_analytics->get_chronometer()->stop();
-        SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 150);
+        SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 90);
         SDL_RenderFillRect(this->_renderer, &this->_main_viewport);
     }
     if (!this->check_pause() and this->_analytics->get_chronometer()->is_running() == false)
@@ -385,9 +437,8 @@ void    GraphicalInterface::_render_pause(void) {
 void    GraphicalInterface::_render_winning_screen(void) {
     if (this->_end_game) {
         /* draw line alignment */
-        Eigen::Array22i line = this->_game_engine->get_end_line(this->_analytics->get_c_player()->board);
-        Eigen::Array2i  p1 = this->grid_to_screen(line.row(0));
-        Eigen::Array2i  p2 = this->grid_to_screen(line.row(1));
+        Eigen::Array2i  p1 = this->grid_to_screen(this->_win_alignment.row(0));
+        Eigen::Array2i  p2 = this->grid_to_screen(this->_win_alignment.row(1));
         SDL_Color       color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_white : this->_color_black);
         SDL_SetRenderDrawColor(this->_renderer, color.r, color.g, color.b, color.a);
         SDL_RenderDrawLine(this->_renderer, p1(0), p1(1), p2(0), p2(1));
@@ -395,9 +446,9 @@ void    GraphicalInterface::_render_winning_screen(void) {
         if (!(p1(0) == p2(0) && p1(1) == p2(1))) {
             int32_t     size = (int32_t)(this->_stone_size * 0.1);
             SDL_Rect    rect2 = { p1(0)-size/2, p1(1)-size/2, size, size };
-            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(line(0,1),line(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
+            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(this->_win_alignment(0,1),this->_win_alignment(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
             rect2 = { p2(0)-size/2, p2(1)-size/2, size, size };
-            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(line(0,1),line(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
+            SDL_RenderCopy(this->_renderer, (this->_game_engine->grid(this->_win_alignment(0,1),this->_win_alignment(0,0)) == 1 ? this->_black_stone_tex : this->_white_tex), NULL, &rect2);
         }
         /* draw winning text */
         SDL_Rect    rect = { this->_winning_font_text->get_pos()[0], this->_winning_font_text->get_pos()[1], 0, 0 };
@@ -417,25 +468,32 @@ void    GraphicalInterface::_render_winning_screen(void) {
 std::string GraphicalInterface::render_choice_menu(void) {
     TTF_Font    *font_small = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(12 * this->_res_ratio));
     TTF_Font    *font = this->_font_handler->load_font("./resources/fonts/Montserrat-Light.ttf", (int32_t)(14 * this->_res_ratio));
-    TTF_Font    *font_bold = this->_font_handler->load_font("./resources/fonts/Montserrat-Regular.ttf", (int32_t)(16 * this->_res_ratio));
     SDL_RenderSetViewport(this->_renderer, &this->_global_viewport);
 
     Eigen::Array2i  button_padding = this->_handle_ratio((Eigen::Array2i){ 12, 5 });
 
-    Button *p1_human = new Button(this->_renderer, "human", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
-    Button *p1_computer = new Button(this->_renderer, "computer", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
-    this->_menu_button_player_1 = new ButtonSelect({p1_human, p1_computer}, this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82/3, this->_win_h/2-40}), 0, 'h', true);
+    Button          *p1_human = new Button(this->_renderer, "human", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
+    Button          *p1_computer = new Button(this->_renderer, "computer", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
+    ButtonSelect    menu_button_player_1({p1_human, p1_computer}, this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82/3, this->_win_h/2-40}), 0, 'h', true);
 
-    Button *p2_human = new Button(this->_renderer, "human", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
-    Button *p2_computer = new Button(this->_renderer, "computer", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
-    this->_menu_button_player_2 = new ButtonSelect({p2_human, p2_computer}, this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82/3, this->_win_h/2-40 + 29}), 0, 'h', true);
+    Button          *p2_human = new Button(this->_renderer, "human", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
+    Button          *p2_computer = new Button(this->_renderer, "computer", {0,0}, button_padding, font, this->_color_win, this->_color_font, this->_color_onhover, this->_color_outline);
+    ButtonSelect    menu_button_player_2({p2_human, p2_computer}, this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82/3, this->_win_h/2-40 + 29}), 0, 'h', true);
 
-    Button *p1 = new Button(this->_renderer, "Player 1:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
-    Button *p2 = new Button(this->_renderer, "Player 2:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40+29}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
-    Button *go = new Button(this->_renderer, "Start", this->_handle_ratio((Eigen::Array2i){this->_win_w/2+108, this->_win_h/2+70}), button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
-    Button *ng = new Button(this->_renderer, "New Game", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2-93}), button_padding, font, this->_color_header, this->_color_font, this->_color_white, this->_color_header);
-    Button *nu = new Button(this->_renderer, "Numbers :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
-    ButtonSwitch *sn = new ButtonSwitch(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+71}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_font_2, this->_color_onhover, this->_color_font_2);
+    Button p1(this->_renderer, "Player 1:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    Button p2(this->_renderer, "Player 2:", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-82-50, this->_win_h/2-40+29}), button_padding, font, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    Button go(this->_renderer, "Start", this->_handle_ratio((Eigen::Array2i){this->_win_w/2+108, this->_win_h/2+70}), button_padding, font, this->_color_win, this->_color_gold, this->_color_onhover, this->_color_gold);
+    Button ng(this->_renderer, "New Game", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2-93}), button_padding, font, this->_color_header, this->_color_font, this->_color_white, this->_color_header);
+    /* move suggestion switch */
+    Button t_sg(this->_renderer, "Suggest :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-148, this->_win_h/2+24}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    ButtonSwitch sg(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+25}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
+    sg.set_state(true);
+    /* debug switch */
+    Button t_sd(this->_renderer, "  Debug :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-145, this->_win_h/2+47}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    ButtonSwitch sd(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+48}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
+    /* numbers switch */
+    Button t_sn(this->_renderer, "Numbers :", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-155, this->_win_h/2+70}), button_padding, font_small, this->_color_win, this->_color_font, this->_color_white, this->_color_win);
+    ButtonSwitch sn(this->_renderer, "show", "hide", this->_handle_ratio((Eigen::Array2i){this->_win_w/2-80, this->_win_h/2+71}), this->_handle_ratio((Eigen::Array2i){ 8, 3 }), font_small, this->_color_win, this->_color_onhover, this->_color_onhover, this->_color_outline);
 
     SDL_Rect    rect;
     std::string out = "";
@@ -458,40 +516,38 @@ std::string GraphicalInterface::render_choice_menu(void) {
         this->update_events();
         if (this->check_close())
             break;
-        this->_menu_button_player_1->update_state(&this->_mouse_pos, this->_mouse_action);
-        this->_menu_button_player_2->update_state(&this->_mouse_pos, this->_mouse_action);
-        go->update_state(&this->_mouse_pos, this->_mouse_action);
-        sn->update_state(&this->_mouse_pos, this->_mouse_action);
+        menu_button_player_1.update_state(&this->_mouse_pos, this->_mouse_action);
+        menu_button_player_2.update_state(&this->_mouse_pos, this->_mouse_action);
+        go.update_state(&this->_mouse_pos, this->_mouse_action);
+        sg.update_state(&this->_mouse_pos, this->_mouse_action);
+        sn.update_state(&this->_mouse_pos, this->_mouse_action);
+        sd.update_state(&this->_mouse_pos, this->_mouse_action);
 
-        this->_menu_button_player_1->render(this->_renderer, &this->_mouse_pos);
-        this->_menu_button_player_2->render(this->_renderer, &this->_mouse_pos);
-        sn->render(this->_renderer, &this->_mouse_pos);
-        nu->render(this->_renderer, &this->_mouse_pos);
-        ng->render(this->_renderer, &this->_mouse_pos);
-        go->render(this->_renderer, &this->_mouse_pos);
-        p1->render(this->_renderer, &this->_mouse_pos);
-        p2->render(this->_renderer, &this->_mouse_pos);
+        menu_button_player_1.render(this->_renderer, &this->_mouse_pos);
+        menu_button_player_2.render(this->_renderer, &this->_mouse_pos);
+        sg.render(this->_renderer, &this->_mouse_pos);
+        t_sg.render(this->_renderer, &this->_mouse_pos);
+        sd.render(this->_renderer, &this->_mouse_pos);
+        t_sd.render(this->_renderer, &this->_mouse_pos);
+        sn.render(this->_renderer, &this->_mouse_pos);
+        t_sn.render(this->_renderer, &this->_mouse_pos);
+        ng.render(this->_renderer, &this->_mouse_pos);
+        go.render(this->_renderer, &this->_mouse_pos);
+        p1.render(this->_renderer, &this->_mouse_pos);
+        p2.render(this->_renderer, &this->_mouse_pos);
 
-        if (go->get_state() == true) {
-            out += std::string( "p1=")+std::string((this->_menu_button_player_1->get_activated_button() == 0?"H":"C"));
-            out += std::string(",p2=")+std::string((this->_menu_button_player_2->get_activated_button() == 0?"H":"C"));
-            out += std::string(",nu=")+std::string((sn->get_state()?"1":"0"));
+        if (go.get_state() == true) {
+            out += std::string( "p1=")+std::string((menu_button_player_1.get_activated_button() == 0?"H":"C"));
+            out += std::string(",p2=")+std::string((menu_button_player_2.get_activated_button() == 0?"H":"C"));
+            out += std::string(",nu=")+std::string((sn.get_state()?"1":"0"));
+            out += std::string(",db=")+std::string((sd.get_state()?"1":"0"));
+            out += std::string(",sg=")+std::string((sg.get_state()?"1":"0"));
             break;
         }
         SDL_RenderPresent(this->_renderer);
     }
+    TTF_CloseFont(font_small);
     TTF_CloseFont(font);
-    TTF_CloseFont(font_bold);
-    delete p1;
-    delete p2;
-    delete sn;
-    delete ng;
-    delete go;
-    delete p1_human;
-    delete p1_computer;
-    delete p2_human;
-    delete p2_computer;
-
     return (out);
 }
 
@@ -516,12 +572,16 @@ void    GraphicalInterface::_close_sdl(void) {
     SDL_DestroyTexture(this->_white_stone_tex);
     SDL_DestroyTexture(this->_black_stone_tex);
     SDL_DestroyTexture(this->_select_stone_tex);
+    SDL_DestroyTexture(this->_explored_move_tex);
+    SDL_DestroyTexture(this->_suggested_move_tex);
     SDL_DestroyTexture(this->_forbidden_tex);
     SDL_DestroyTexture(this->_board_grid_tex);
     this->_white_tex = NULL;
     this->_white_stone_tex = NULL;
     this->_black_stone_tex = NULL;
     this->_select_stone_tex = NULL;
+    this->_explored_move_tex = NULL;
+    this->_suggested_move_tex = NULL;
     this->_forbidden_tex = NULL;
     this->_board_grid_tex = NULL;
     SDL_DestroyWindow(this->_window);
@@ -530,4 +590,5 @@ void    GraphicalInterface::_close_sdl(void) {
     this->_renderer = NULL;
     IMG_Quit();
     SDL_Quit();
+    TTF_Quit();
 }

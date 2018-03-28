@@ -1,18 +1,18 @@
 #include "FontText.hpp"
 
-FontText::FontText(std::string *text, Eigen::Array2i pos, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer) : _renderer(renderer), _text(text), _pos(pos), _font(font), _color(color), _renderer_texture(NULL) {
+FontText::FontText(std::string *text, Eigen::Array2i pos, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer) : _renderer(renderer), _renderer_texture(NULL), _text(text), _pos(pos), _font(font), _color(color) {
     this->_previous_text = "";
     this->_justify_h = 0;
     this->_justify_v = 0;
 }
 
-FontText::FontText(std::string *text, Eigen::Array2i pos, std::string justify_h, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer) : _renderer(renderer), _text(text), _pos(pos), _font(font), _color(color), _renderer_texture(NULL) {
+FontText::FontText(std::string *text, Eigen::Array2i pos, std::string justify_h, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer) : _renderer(renderer), _renderer_texture(NULL), _text(text), _pos(pos), _font(font), _color(color) {
     this->_previous_text = "";
     this->_justify_h = (justify_h.compare("right") == 0 ? 2 : (justify_h.compare("center") == 0 ? 1 : 0));
     this->_justify_v = 0;
 }
 
-FontText::FontText(std::string *text, Eigen::Array2i pos, std::string justify_h, std::string justify_v, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer) : _renderer(renderer), _text(text), _pos(pos), _font(font), _color(color), _renderer_texture(NULL) {
+FontText::FontText(std::string *text, Eigen::Array2i pos, std::string justify_h, std::string justify_v, TTF_Font *font, SDL_Color *color, SDL_Renderer *renderer) : _renderer(renderer), _renderer_texture(NULL), _text(text), _pos(pos), _font(font), _color(color) {
     this->_previous_text = "";
     this->_justify_h = (justify_h.compare("right")  == 0 ? 2 : (justify_h.compare("center") == 0 ? 1 : 0));
     this->_justify_v = (justify_v.compare("bottom") == 0 ? 2 : (justify_v.compare("center") == 0 ? 1 : 0));

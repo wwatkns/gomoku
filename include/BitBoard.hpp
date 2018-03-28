@@ -2,22 +2,21 @@
 # define BITBOARD_HPP
 
 # include <iostream>
-# include <cstdlib>
 # include <array>
 /* includes for debug purposes */
 # include <bitset>
 # include <string>
 # include <sstream>
 
-# define N 6
-# define D 8
-# define BITS 64
+# define NICB 6  /* number of int64 composing the bitboard */
+# define DIRS 8  /* number of directions */
+# define BITS 64 /* number of bits in a int64 */
 
 typedef struct  s_pattern {
-    uint8_t repr;   /* the pattern encoded in big-endian (ex : 01011000 for -O-OO-) */
-    uint8_t size;   /* the size of the pattern */
-    uint8_t dirs;   /* the number of directions (symmetric pattern like -OOO- need only 4 directions computed) */
-    uint8_t value;  /* the value associated with the pattern */
+    uint8_t     repr;   /* the pattern encoded in big-endian (ex : 01011000 for -O-OO-) */
+    uint8_t     size;   /* the size of the pattern */
+    uint8_t     dirs;   /* the number of directions (symmetric pattern like -OOO- need only 4 directions computed) */
+    uint16_t    value;  /* the value associated with the pattern */
 }               t_pattern;
 
 /*  Implementation of a bitboard representation of a square board of 19*19 using
@@ -27,31 +26,34 @@ class BitBoard {
 
 public:
     BitBoard(void);
-    BitBoard(std::array<uint64_t, N> values);
+    BitBoard(std::array<uint64_t, NICB> values);
     BitBoard(BitBoard const &src);
     ~BitBoard(void);
     BitBoard	&operator=(BitBoard const &rhs);
     BitBoard	&operator=(uint64_t const &val);
 
-    uint64_t    row(uint8_t i) const;                   // access row at index
+    uint64_t    row(uint8_t i) const;                                       // access row at index
 
-    void        zeros(void);                            // set the bitboard values to zeros
-    void        write(uint16_t i);
-    void        remove(uint16_t i);
-    void        write(uint8_t x, uint8_t y);            // set a bit to 1 on the bitboard at position x, y
-    void        remove(uint8_t x, uint8_t y);           // set a bit to 0 on the bitboard at position x, y
-    uint16_t    set_count(void) const;                  // return the number of bits set to 1 in bitboard
-    bool        check_bit(uint8_t x, uint8_t y) const;  // check if the bit a position x, y is set to 1
-    bool        is_empty(void) const;                   // check if all bits in the bitboard are set to 0
-    void        broadcast_row(uint64_t line);           // copy the given row (first 19 bits) to all other rows
-    BitBoard    neighbours(void) const;                 // returns the neighbouring cells
+    void        zeros(void);                                                // set the bitboard values to zeros
+    void        write(const uint64_t i);                                    // set a bit to 1 on the bitboard at position i
+    void        remove(const uint64_t i);                                   // set a bit to 1 on the bitboard at position i
+    void        write(const uint64_t x, const uint64_t y);                  // set a bit to 1 on the bitboard at position x, y
+    void        remove(const uint64_t x, const uint64_t y);                 // set a bit to 0 on the bitboard at position x, y
+    int         set_count(void) const;                                      // return the number of bits set to 1 in bitboard
+    bool        check_bit(const uint64_t i) const;                          // check if the bit a position i is set to 1
+    bool        check_bit(const uint64_t x, const uint64_t y) const;        // check if the bit a position x, y is set to 1
+    bool        is_empty(void) const;                                       // check if all bits in the bitboard are set to 0
+    void        broadcast_row(uint64_t line);                               // copy the given row (first 19 bits) to all other rows
+    BitBoard    neighbours(void) const;                                     // returns the neighbouring cells
 
-    BitBoard    shifted(uint8_t dir, uint8_t n = 1) const;
-    BitBoard    shifted_inv(uint8_t dir, uint8_t n = 1) const;
-    BitBoard    dilated(void) const;
-    BitBoard    eroded(void) const;
+    int         leftmost_bit(void) const;                                   // return the positiont of the leftmost set bit
+    int         rightmost_bit(void) const;                                  // return the positiont of the rightmost set bit
 
-    BitBoard    rotated_315(void);
+    BitBoard    shifted(const uint8_t dir, const uint8_t n = 1) const;      // return the board shifted by 'n' in the direction 'dir'
+    BitBoard    shifted_inv(const uint8_t dir, const uint8_t n = 1) const;  // return the board shifted by 'n' in the opposite direction of 'dir'
+    BitBoard    dilated(void) const;                                        // return the board dilated
+    BitBoard    eroded(void) const;                                         // return the board eroded
+
     BitBoard    rotated_45(void);
 
     /* arithmetic (bitwise) operator overload */
@@ -59,53 +61,55 @@ public:
     BitBoard    operator&(BitBoard const &rhs) const; // bitwise intersection
     BitBoard    operator^(BitBoard const &rhs) const; // bitwise exclusive or
     BitBoard    operator~(void) const;                // bitwise complement
-    BitBoard    operator>>(int32_t shift) const;      // bitwise right shift
-    BitBoard    operator<<(int32_t shift) const;      // bitwise left shift
+    BitBoard    operator>>(const int32_t shift) const;// bitwise right shift
+    BitBoard    operator<<(const int32_t shift) const;// bitwise left shift
 
     /* assignment operator overload */
     BitBoard    &operator|=(BitBoard const &rhs);
     BitBoard    &operator&=(BitBoard const &rhs);
     BitBoard    &operator^=(BitBoard const &rhs);
-    BitBoard    &operator<<=(int32_t shift);
-    BitBoard    &operator>>=(int32_t shift);
+    BitBoard    &operator<<=(const int32_t shift);
+    BitBoard    &operator>>=(const int32_t shift);
 
     /* member access operator overload */
-    uint64_t    operator[](uint16_t i) const; // will return the i-th bit
+    uint64_t    operator[](const int i) const; // will return the i-th bit
 
     /* comparison operator overload */
     bool        operator==(BitBoard const &rhs) const;
     bool        operator!=(BitBoard const &rhs) const;
 
-    std::array<uint64_t, N>         values;
-    static std::array<int16_t, D>   shifts;
-    static std::array<t_pattern,11> patterns;
-    static BitBoard                 full;
-    static BitBoard                 empty;
-    static BitBoard                 border_right;
-    static BitBoard                 border_left;
-    static BitBoard                 border_top;
-    static BitBoard                 border_bottom;
+    std::array<uint64_t, NICB>                 values;
+    static const std::array<int16_t, DIRS>     shifts;
+    static const std::array<t_pattern,8>    patterns;
+    static const BitBoard                   full;
+    static const BitBoard                   empty;
+    static const BitBoard                   border_right;
+    static const BitBoard                   border_left;
+    static const BitBoard                   border_top;
+    static const BitBoard                   border_bottom;
 
 };
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
-BitBoard    get_all_neighbours(BitBoard const &p1, BitBoard const &p2);
-BitBoard    get_all_open_cells(BitBoard const &p1, BitBoard const &p2);
-BitBoard    get_all_occupied_cells(BitBoard const &p1, BitBoard const &p2);
-
-BitBoard    get_player_open_adjacent_positions(BitBoard const &p1, BitBoard const &p2);
-BitBoard    get_player_open_pairs_captures_positions(BitBoard const &p1, BitBoard const &p2);
+BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured);
+BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured);
 
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
+BitBoard    future_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
-BitBoard    double_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern1, t_pattern const &pattern2);
+BitBoard    pattern_detector_highlight_open(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
 
 bool        detect_five_aligned(BitBoard const &bitboard);
 BitBoard    highlight_five_aligned(BitBoard const &bitboard);
 
 BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);      /* detect the positions leading to one or multiple captures */
-BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, BitBoard const &pairs);
+BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, int move);  /* return the board showing the stones captured */
+BitBoard    pair_capture_detector_highlight(BitBoard const &p1, BitBoard const &p2); /* detect the positions leading to one or multiple captures but highlights the stones that will be captured */
+BitBoard    pair_capture_breaking_five_detector(BitBoard const &p1, BitBoard const &p2);
+
+BitBoard    win_by_capture_detector(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured); /* detect the positions that lead to an instant win by capture */
+BitBoard    win_by_alignment_detector(BitBoard const &p1, BitBoard const &p2, BitBoard const& p1_forbidden, int p2_pairs_captured); /* detect the positions that lead to an instant win by five alignment (unbreakable) */
 
 namespace direction {
     enum direction {
