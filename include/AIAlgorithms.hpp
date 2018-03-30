@@ -2,6 +2,7 @@
 # define AIALGORITHM_HPP
 
 # include <math.h>
+# include <random>
 # include <iostream>
 # include "AIPlayer.hpp"
 
@@ -104,6 +105,48 @@ private:
     int                                     _elapsed_ms(void);
 };
 
+// namespace MCTS {
+
+// MAX_ROLLOUT = 50;
+
+// struct  simple_random {
+//     double operator()() {
+//         return (static_cast<double>(rand() % RAND_MAX) / RAND_MAX)
+//     }
+// }
+
+// // template<int N_ACTIONS, class URand = simple_random> class MCTSTreeNode {
+// class MCTSTreeNode {
+
+// private:
+//     bool                is_leaf;
+//     int                 visited;
+//     int                 wins;
+//     int                 total_value;
+//     std::vector<t_move> child_nodes;
+
+//     int                 select(void);
+
+// }
+
+// }
+
+
+// class MCTSNode: {
+
+// public:
+//     MCTSNode(int depth, uint8_t verbose = verbose::quiet, int time_max = 500);
+//     MCTSNode(MCTSNode const &src);
+//     ~MCTSNode(void);
+//     MCTSNode	&operator=(MCTSNode const &rhs);
+
+//     int         win;
+//     int         visit;
+//     int         move;
+//     MCTSNode    *parent;
+//     std::vector<MCTSNode> childs;
+
+// };
 
 class MCTSNode {
 
@@ -120,12 +163,17 @@ public:
     MCTSNode                *get_parent(void) const { return (this->_parent); };
     std::vector<MCTSNode>   get_childs(void) const { return (this->_childs); };
 
+    void                    set_wins(int value) { this->_wins = value; return ; };
+
+    void                    add_child(MCTSNode node);
+
 private:
     t_node                  _node;    // state
     MCTSNode                *_parent; // parent node
     int                     _move;    // position played to reach the state contained in node
     int                     _wins;    // number of wins
     int                     _visit;   // number of visitation
+    // int                     _depth;   // actual depth of the node
     std::vector<MCTSNode>   _childs;  // vector of childs nodes
 
 };
@@ -135,7 +183,7 @@ std::ostream &operator<<(std::ostream &o, const MCTSNode &rhs);
 class MCTS: public AIPlayer {
 
 public:
-    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 500);
+    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 1000);
     MCTS(MCTS const &src);
     ~MCTS(void);
     MCTS	&operator=(MCTS const &rhs);
@@ -145,7 +193,20 @@ public:
 private:
     t_ret       mtcs(t_node root); // Enchaine les 4 phases de MCTS
 
-    MCTSNode      select_promising_node(MCTSNode root); // Select phase
+    MCTSNode    select_promising_node(MCTSNode root); // Select phase
+    void        expand_node(MCTSNode root); // Expand phase
+    MCTSNode    get_random_node(MCTSNode node); // Roll out or simulation phase
+    int         rollout(MCTSNode node); // Roll out
+    // t_node      randomize_and_apply(std::vector<t_move> moves);
+
+    std::random_device  _random_device;
+    std::mt19937        _engine{_random_device()};
+
+
+    // double      uct_value(int totalvisits, int nodevisit, double nodewin);
+    // void        expand(t_node node);
+    // void        backpropagation();
+    // int         simulate_random_playout();
 
     std::chrono::steady_clock::time_point _start;
     int         _time_max;
