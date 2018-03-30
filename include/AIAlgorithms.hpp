@@ -104,6 +104,34 @@ private:
     int                                     _elapsed_ms(void);
 };
 
+
+class MCTSNode {
+
+public:
+    MCTSNode(t_node node, MCTSNode *parent, int move, int wins, int visit);
+    MCTSNode(MCTSNode const &src);
+    ~MCTSNode(void);
+    MCTSNode	&operator=(MCTSNode const &rhs);
+
+    int                     get_visit(void) const { return (this->_visit); };
+    int                     get_wins(void) const { return (this->_wins); };
+    int                     get_move(void) const { return (this->_move); };
+    t_node                  get_node(void) const { return (this->_node); };
+    MCTSNode                *get_parent(void) const { return (this->_parent); };
+    std::vector<MCTSNode>   get_childs(void) const { return (this->_childs); };
+
+private:
+    t_node                  _node;    // state
+    MCTSNode                *_parent; // parent node
+    int                     _move;    // position played to reach the state contained in node
+    int                     _wins;    // number of wins
+    int                     _visit;   // number of visitation
+    std::vector<MCTSNode>   _childs;  // vector of childs nodes
+
+};
+
+std::ostream &operator<<(std::ostream &o, const MCTSNode &rhs);
+
 class MCTS: public AIPlayer {
 
 public:

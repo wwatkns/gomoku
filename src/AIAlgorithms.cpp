@@ -315,50 +315,6 @@ bool            MTDf::timesup(void) {
 
 /************************************************** AlphaBetaCustom ***************************************************/
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 AlphaBetaCustom::AlphaBetaCustom(int depth, uint8_t verbose, int time_limit) :  AIPlayer(depth, verbose), _current_max_depth(0), _search_limit_ms(time_limit) {
     this->search_stopped = false;
 }
@@ -558,3 +514,41 @@ bool            MCTS::timesup(void) {
     return (false);
 }
 
+
+
+
+
+
+
+MCTSNode::MCTSNode(t_node node, MCTSNode *parent, int move, int wins, int visit): _node(node), _parent(parent), _move(move), _wins(wins), _visit(visit) {
+}
+
+MCTSNode::MCTSNode(MCTSNode const &src) {
+    *this = src;
+}
+
+MCTSNode::~MCTSNode(void) {
+}
+
+MCTSNode	&MCTSNode::operator=(MCTSNode const &) {
+    // this->node = rhs.get_node();
+    // this->parent = rhs.get_parent();
+    // this->move = rhs.get_move();
+    // this->wins = rhs.get_wins();
+    // this->visit = rhs.get_visit();
+    return (*this);
+}
+
+std::ostream &operator<<(std::ostream &o, const MCTSNode &rhs) {
+    std::stringstream   ss;
+
+    if (rhs.get_parent() != NULL)
+        ss << "Node [ parent\t= " << std::to_string(rhs.get_parent()->get_move()) << "\t]\n";
+    else
+        ss << "Node [ root node ]\n";
+    ss << "     [ move\t= " << std::to_string(rhs.get_move()) << "\t]\n";
+    ss << "     [ wins\t= " << std::to_string(rhs.get_wins()) << "\t]\n";
+    ss << "     [ visit\t= " << std::to_string(rhs.get_visit()) << "\t]";
+    o << ss.str();
+	return o;
+}
