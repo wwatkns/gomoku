@@ -475,3 +475,86 @@ bool        AlphaBetaCustom::_times_up(void) {
 int         AlphaBetaCustom::_elapsed_ms(void) {
     return (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - this->_search_start).count());
 }
+
+/******************************************************** MCTS ********************************************************/
+
+MCTS::MCTS(int depth, uint8_t verbose, int time_max) : AIPlayer(depth, verbose), _time_max(time_max) {
+}
+
+MCTS::MCTS(MCTS const &src) : AIPlayer(src.get_depth(), src.get_verbose()) {
+    *this = src;
+}
+
+MCTS::~MCTS(void) {
+}
+
+MCTS   &MCTS::operator=(MCTS const&) {
+    return(*this);
+}
+
+t_ret const MCTS::operator()(t_node root) {
+    return (this->mtcs(root));
+}
+
+t_ret       MCTS::mtcs(t_node root) {
+    MCTSNode  root_node(root, NULL, 0, 0, 0);
+    this->_start = std::chrono::steady_clock::now();    
+
+    std::cout << "--- MCTS ---" << std::endl;
+    while (this->timesup()) {
+        /* Select */
+        MCTSNode    promising_node = this->select_promising_node(root_node);
+        std::cout << promising_node << std::endl;
+        /* Expand */
+        // if (promising_node.get_childs().empty()) {
+            // expand_node(node);
+        // }
+        // /* Simulate */
+        // while (node.get_moves()) { // tant que je peux dérouler les mouvs (pas un terminal)
+        //     apply_move(); // itère sur les mouvs
+        // }
+        /* Backpropagate */
+
+    }
+    return ((t_ret){ 0, 0 });
+}
+
+static double       get_value(int total_visit, double node_wins, int node_visit) {
+    if (node_visit == 0)
+        return (std::numeric_limits<double>::max());
+    return ((node_wins / (double)node_visit) + 1.41 * sqrt(log(total_visit) / node_visit));
+}
+
+static MCTSNode     get_best_node_with_uct(MCTSNode node) {
+    MCTSNode        *best_node;
+    MCTSNode        *current_node;
+    int             parent_total_visit = node.get_visit();
+    double          temp_uct;
+    double          best_uct = std::numeric_limits<double>::min();
+
+    for (size_t i = 0; i < node.get_childs().size(); ++i) {
+        current_node = &(node.get_childs()[i]);
+        temp_uct = get_value(parent_total_visit, (*current_node).get_wins(), (*current_node).get_visit());
+        if (temp_uct > best_uct) {
+            best_uct = temp_uct;
+            best_node = &node;
+        }
+    }
+    return (*best_node);
+}
+
+MCTSNode        MCTS::select_promising_node(MCTSNode root) {
+    MCTSNode    node = root;
+    while (!node.get_childs().empty()) { // While node is not a leaf (because a leaf is a non-developped node, thus no childs yet)
+        node = get_best_node_with_uct(node);
+    }
+    return (node);
+}
+
+bool            MCTS::timesup(void) {
+    if ((std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - this->_start)).count() <= this->_time_max) {
+        return (true);
+    }
+    return (false);
+}
+

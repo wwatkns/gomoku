@@ -1,6 +1,8 @@
 #ifndef AIALGORITHM_HPP
 # define AIALGORITHM_HPP
 
+# include <math.h>
+# include <iostream>
 # include "AIPlayer.hpp"
 
 class MinMax: public AIPlayer {
@@ -100,6 +102,27 @@ private:
 
     bool                                    _times_up(void);
     int                                     _elapsed_ms(void);
+};
+
+class MCTS: public AIPlayer {
+
+public:
+    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 500);
+    MCTS(MCTS const &src);
+    ~MCTS(void);
+    MCTS	&operator=(MCTS const &rhs);
+
+    virtual t_ret const operator()(t_node root);
+
+private:
+    t_ret       mtcs(t_node root); // Enchaine les 4 phases de MCTS
+
+    MCTSNode      select_promising_node(MCTSNode root); // Select phase
+
+    std::chrono::steady_clock::time_point _start;
+    int         _time_max;
+    bool        timesup(void);
+
 };
 
 #endif
