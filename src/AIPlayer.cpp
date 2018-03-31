@@ -143,6 +143,12 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
     /* return a score for a win by capture, weighted with the depth at which the win is found */
     if (node.player_pairs_captured >= 5)
         return (500000 * depth);
+    /* three-four if they are not threatened by a capture are sure win in 2 extra moves */
+    board = three_four_detector(node.player, node.opponent);
+    score += (board.is_empty() == false ? board.set_count() * 15000 : 0);
+    /* four-four if they are not threatened by a capture are sure win in 1 extra move */
+    board = four_four_detector(node.player, node.opponent);
+    score += (board.is_empty() == false ? board.set_count() * 30000 : 0);
     /* count the score for all the patterns we find, and apply penalty for those that are threatened by capture */
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
@@ -168,6 +174,12 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
     /* return a score for a win by capture, weighted with the depth at which the win is found */
     if (node.opponent_pairs_captured >= 5)
         return (500000 * depth);
+    /* three-four if they are not threatened by a capture are sure win in 2 extra moves */
+    board = three_four_detector(node.opponent, node.player);
+    score += (board.is_empty() == false ? board.set_count() * 15000 : 0);
+    /* four-four if they are not threatened by a capture are sure win in 1 extra move */
+    board = four_four_detector(node.opponent, node.player);
+    score += (board.is_empty() == false ? board.set_count() * 30000 : 0);
     /* count the score for all the patterns we find, and apply penalty for those that are threatened by capture */
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);

@@ -92,6 +92,7 @@ void    Game::loop(void) {
             // test |= future_pattern_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xF8, 5, 8, 0 });
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0x68, 6, 8, 0 }); // OO-OO 0x6C is old
             // test |= highlight_five_aligned(this->_c_player->board);
+            // std::cout << three_four_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board)) << std::endl;
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);

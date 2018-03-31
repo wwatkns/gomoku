@@ -427,7 +427,7 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
     const uint8_t   patterns[3] = { 0x58, 0x68, 0x70 }; // -O-OO- , -OO-O- , -OOO-
     const uint8_t    lengths[3] = {    6,    6,    5 };
     BitBoard        res;
-    BitBoard        tmp[4]; // 4 is number of directions
+    BitBoard        tmp[4]; // 4 is number of directions, use 2 instead of 4 ? for the num of mirror
     uint8_t         sub;
 
     for (int p = 0; p < 3; ++p) { // iterate through patterns
@@ -442,6 +442,50 @@ BitBoard        forbidden_detector(BitBoard const &p1, BitBoard const &p2) {
                     }
                 }
             }
+        }
+    }
+    return (res & ~p1 & ~p2);
+}
+
+BitBoard    four_four_detector(BitBoard const &p1, BitBoard const &p2) {
+    const uint8_t   patterns[4] = { 0x78, 0xF0, 0xE8, 0xB8 }; // -OOOO~, ~OOOO-, ~OOO-O~, ~O-OOO~
+    const uint8_t    lengths[4] = {    5,    5,    5,    5 };
+    BitBoard        res;
+    BitBoard        tmp[4];
+    uint8_t         sub;
+
+    for (int p = 0; p < 4; ++p) { // iterate through patterns
+        for (int s = 0; s < lengths[p]; ++s) { // iterate through sub patterns
+            sub = patterns[p] & ~(0x80 >> s);
+            if (sub != patterns[p])
+                for (int d = direction::north; d < 4; ++d) { // iterate through directions
+                    tmp[d] |= single_direction_pattern_detector(p1, p2, sub, lengths[p], lengths[p]-s-1, 0, d);
+                    if (!tmp[d].is_empty())
+                        for (int n = d-1; n >= 0; --n)
+                            res |= (tmp[d] & tmp[n]);
+                }
+        }
+    }
+    return (res & ~p1 & ~p2);
+}
+
+BitBoard    three_four_detector(BitBoard const &p1, BitBoard const &p2) {
+    const uint8_t   patterns[7] = { 0x58, 0x68, 0x70, 0x78, 0xF0, 0xE8, 0xB8 }; // -O-OO-, -OO-O-, -OOO-, -OOOO~, ~OOOO-, ~OOO-O~, ~O-OOO~
+    const uint8_t    lengths[7] = {    6,    6,    5,    5,    5,    5,    5 };
+    BitBoard        res;
+    BitBoard        tmp[8];
+    uint8_t         sub;
+
+    for (int p = 0; p < 7; ++p) { // iterate through patterns
+        for (int s = 0; s < lengths[p]; ++s) { // iterate through sub patterns
+            sub = patterns[p] & ~(0x80 >> s);
+            if (sub != patterns[p])
+                for (int d = direction::north; d < 4; ++d) { // iterate through directions
+                    tmp[d+(p>=3?4:0)] |= single_direction_pattern_detector(p1, p2, sub, lengths[p], lengths[p]-s-1, 0, d);
+                    if (!tmp[d].is_empty())
+                        for (int n = d-1; n >= 0; --n)
+                            res |= (tmp[d] & tmp[n+4]);
+                }
         }
     }
     return (res & ~p1 & ~p2);

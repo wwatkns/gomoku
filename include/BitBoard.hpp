@@ -111,6 +111,9 @@ BitBoard    pair_capture_breaking_five_detector(BitBoard const &p1, BitBoard con
 BitBoard    win_by_capture_detector(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured); /* detect the positions that lead to an instant win by capture */
 BitBoard    win_by_alignment_detector(BitBoard const &p1, BitBoard const &p2, BitBoard const& p1_forbidden, int p2_pairs_captured); /* detect the positions that lead to an instant win by five alignment (unbreakable) */
 
+BitBoard    three_four_detector(BitBoard const &p1, BitBoard const &p2);
+BitBoard    four_four_detector(BitBoard const &p1, BitBoard const &p2);
+
 namespace direction {
     enum direction {
         north,
