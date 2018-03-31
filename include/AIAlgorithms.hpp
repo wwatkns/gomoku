@@ -162,10 +162,15 @@ public:
     t_node                  get_node(void) const { return (this->_node); };
     MCTSNode                *get_parent(void) const { return (this->_parent); };
     std::vector<MCTSNode>   get_childs(void) const { return (this->_childs); };
+    std::vector<t_move>     get_untried_actions(void) const { return (this->_untried_actions); };
 
     void                    set_wins(int value) { this->_wins = value; return ; };
+    void                    set_untried_actions(std::vector<t_move> moves) { this->_untried_actions = moves; return ;};
+    void                    inc_wins(int score) { this->_wins += score; return ; };
+    void                    inc_visit(void) { this->_visit++; return ; };
 
     void                    add_child(MCTSNode node);
+    void                    remove_action(int index);
 
 private:
     t_node                  _node;    // state
@@ -173,8 +178,8 @@ private:
     int                     _move;    // position played to reach the state contained in node
     int                     _wins;    // number of wins
     int                     _visit;   // number of visitation
-    // int                     _depth;   // actual depth of the node
     std::vector<MCTSNode>   _childs;  // vector of childs nodes
+    std::vector<t_move>     _untried_actions;
 
 };
 
@@ -198,6 +203,8 @@ private:
     MCTSNode    get_random_node(MCTSNode node); // Roll out or simulation phase
     int         rollout(MCTSNode node); // Roll out
     // t_node      randomize_and_apply(std::vector<t_move> moves);
+    void        backpropagate(MCTSNode leaf, int winner);
+    t_ret       get_best_move(MCTSNode root_node);
 
     std::random_device  _random_device;
     std::mt19937        _engine{_random_device()};
