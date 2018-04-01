@@ -10,7 +10,7 @@
 # include "ZobristTable.hpp"
 
 # define INF 2147483647
-# define EXPLORATION_THRESHOLD 5
+# define EXPLORATION_THRESHOLD 3
 
 class Player;
 

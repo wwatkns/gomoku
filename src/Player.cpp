@@ -9,7 +9,7 @@ Player::Player(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id, int
     else if (algo_type == 4)
         this->_ai_algorithm = (AIPlayer*)new MTDf(depth, verbose::quiet);
     else
-        this->_ai_algorithm = (AIPlayer*)new AlphaBetaCustom(depth, verbose::quiet);
+        this->_ai_algorithm = (AIPlayer*)new AlphaBetaCustom(depth, verbose::debug);
 }
 
 Player::Player(Player const &src) : _game_engine(src.get_game_engine()), _id(src.get_id()) {

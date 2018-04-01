@@ -80,11 +80,9 @@ public:
     ~AlphaBetaCustom(void);
     AlphaBetaCustom	&operator=(AlphaBetaCustom const &rhs);
 
-    // int         get_max_depth(void) const { return (_max_depth); };
     int         get_search_limit_ms(void) const { return (_search_limit_ms); };
 
     virtual t_ret const operator()(t_node root);
-    // t_ret const operator()(t_node root);
 
     bool    search_stopped;
 
@@ -97,6 +95,9 @@ private:
     t_ret                                   _root_max(t_node node, int alpha, int beta, int depth);
     t_ret                                   _max(t_node node, int alpha, int beta, int depth);
     t_ret                                   _min(t_node node, int alpha, int beta, int depth);
+
+    void                                    _debug_append_explored(int score, int i, int depth);
+    void                                    _debug_search(t_ret const& ret);
 
     bool                                    _times_up(void);
     int                                     _elapsed_ms(void);

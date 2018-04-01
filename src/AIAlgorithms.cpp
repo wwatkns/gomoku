@@ -313,51 +313,7 @@ bool            MTDf::timesup(void) {
     return (false);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/* Default algorithm */
 AlphaBetaCustom::AlphaBetaCustom(int depth, uint8_t verbose, int time_limit) :  AIPlayer(depth, verbose), _current_max_depth(0), _search_limit_ms(time_limit) {
     this->search_stopped = false;
 }
@@ -382,9 +338,9 @@ t_ret const     AlphaBetaCustom::operator()(t_node root) { /* iterative deepenin
     this->_search_start = std::chrono::steady_clock::now();
     this->_root_moves.clear();
 
-    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_depth; this->_current_max_depth += 2) {
+    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_depth; this->_current_max_depth += 1) {
         current = _root_max(root, -INF, INF, this->_current_max_depth);
-        // _debug_search(current);
+        _debug_search(current);
         if (this->search_stopped)
             break;
         ret = current;
@@ -430,7 +386,7 @@ t_ret       AlphaBetaCustom::_max(t_node node, int alpha, int beta, int depth) {
 
     for (std::vector<t_move>::const_iterator move = moves.begin(); move != moves.end(); ++move) {
         current = this->_min(move->node, alpha, beta, depth-1);
-        // _debug_append_explored(current.score, move->p, depth);
+        _debug_append_explored(current.score, move->p, depth);
         if (current > best) {
             best = { current.score, move->p };
             alpha = this->max(alpha, best.score);
@@ -453,7 +409,7 @@ t_ret       AlphaBetaCustom::_root_max(t_node node, int alpha, int beta, int dep
     for (std::vector<t_move>::iterator move = this->_root_moves.begin(); move != this->_root_moves.end(); ++move) {
         current = this->_min(move->node, alpha, beta, depth-1);
         move->eval = current.score;
-        // _debug_append_explored(current.score, move->p, depth);
+        _debug_append_explored(current.score, move->p, depth);
         if (current > best) {
             best = { current.score, move->p };
             alpha = this->max(alpha, best.score);
@@ -461,6 +417,31 @@ t_ret       AlphaBetaCustom::_root_max(t_node node, int alpha, int beta, int dep
     }
     std::sort(this->_root_moves.begin(), this->_root_moves.end(), sort_descending);
     return (best);
+}
+
+void    AlphaBetaCustom::_debug_append_explored(int score, int i, int depth) {
+    if (this->_verbose >= verbose::normal && depth == this->_current_max_depth) {
+        char    tmp[256];
+        std::sprintf(tmp, "  | %2d-%c : %11d pts\n", 19-(i/19), "ABCDEFGHJKLMNOPQRST"[i%19], score);
+        this->_debug_string.append(tmp);
+    }
+}
+
+void    AlphaBetaCustom::_debug_search(t_ret const& ret) {
+    if (this->_verbose >= verbose::normal) {
+        // if (this->_current_max_depth == 1)
+            // std::printf("\n[player %d - %s]\n", this->_pid, (this->_pid == 1 ? "black" : "white"));
+
+        std::printf("[%c] Depth %d: %2d-%c, %11d pts in %3dms\n%s",
+            (this->search_stopped ? 'x' : 'o'),
+            this->_current_max_depth, 19-(ret.p/19),
+            "ABCDEFGHJKLMNOPQRST"[ret.p%19],
+            ret.score,
+            _elapsed_ms(),
+            (this->_verbose == verbose::debug ? (this->search_stopped ? "" : this->_debug_string.c_str()) : "")
+        );
+        this->_debug_string.clear();
+    }
 }
 
 bool        AlphaBetaCustom::_times_up(void) {

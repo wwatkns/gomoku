@@ -43,14 +43,14 @@ const std::array<t_pattern,8> BitBoard::patterns = {{
     // (t_pattern){ 0xE8, 5, 8,  200 },  //   OOO-O  :  split four #3  |
     // (t_pattern){ 0xF8, 5, 4,  400 },  //   OOOOO  :  five
 
-    (t_pattern){0xF8, 5, 4, 10000},  //   OOOOO  :  five
-    (t_pattern){0x78, 6, 4,  1000},  //  -OOOO-  :  open four
-    (t_pattern){0x70, 5, 4,   100},  //   -OOO-  :  open three
-    (t_pattern){0x68, 6, 8,    90},  //  -OO-O-  :  open split three
-    (t_pattern){0xF0, 5, 8,    20},  //  |OOOO-  :  close four
-    (t_pattern){0xB8, 5, 8,    20},  //   O-OOO  :  split four #1
-    (t_pattern){0xD8, 5, 8,    20},  //   OO-OO  :  split four #2
-    (t_pattern){0xE8, 5, 8,    20}  //   OOO-O  :  split four #3
+    (t_pattern){0xF8, 5, 4, 5000},  //   OOOOO  :  five
+    (t_pattern){0x78, 6, 4, 1000},  //  -OOOO-  :  open four
+    (t_pattern){0x70, 5, 4,  500},  //   -OOO-  :  open three
+    (t_pattern){0x68, 6, 8,  450},  //  -OO-O-  :  open split three
+    (t_pattern){0xF0, 5, 8,   20},  //  |OOOO-  :  close four
+    (t_pattern){0xB8, 5, 8,   20},  //   O-OOO  :  split four #1
+    (t_pattern){0xD8, 5, 8,   20},  //   OO-OO  :  split four #2
+    (t_pattern){0xE8, 5, 8,   20}   //   OOO-O  :  split four #3
     // (t_pattern){ 0xE0, 4, 8,   10 },  //  |OOO-   :  close three
     // (t_pattern){ 0xD0, 5, 8,   10 },  //  |OO-O-  :  close split three #1
     // (t_pattern){ 0xB0, 5, 8,   10 },  //  |O-OO-  :  close split three #2
@@ -399,11 +399,21 @@ BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pair
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured) {
     BitBoard    res = future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 }); // OOOOO
     /* if there is no possibility of breaking the alignment and no winning pair capture either */
-    if (pair_capture_breaking_five_detector(p2, (p1 | res)).is_empty() && win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty())
+    res = highlight_five_aligned((p1 | res) ^ pair_capture_detector_highlight(p2, (p1 | res)));
+    if (!res.is_empty() && win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty())
         return (res & ~p1 & ~p2);
     res = win_by_capture_detector(p1, p2, p1_pairs_captured);
     return (res & ~p1 & ~p2);
 }
+
+// BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured) {
+//     BitBoard    res = future_pattern_detector(p1, p2, { 0xF8, 5, 8, 0 }); // OOOOO
+//     /* if there is no possibility of breaking the alignment and no winning pair capture either */
+//     if (pair_capture_breaking_five_detector(p2, (p1 | res)).is_empty() && win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty())
+//         return (res & ~p1 & ~p2);
+//     res = win_by_capture_detector(p1, p2, p1_pairs_captured);
+//     return (res & ~p1 & ~p2);
+// }
 
 /* detect a sub-pattern in a single direction */
 static BitBoard single_direction_pattern_detector(BitBoard const &p1, BitBoard const &p2, uint8_t const &pattern, uint8_t const &length, uint8_t const &s, uint8_t const &type, uint8_t const &dir) {
