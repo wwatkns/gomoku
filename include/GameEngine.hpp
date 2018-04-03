@@ -5,7 +5,6 @@
 # include <chrono>
 # include <list>
 # include <Eigen/Dense>
-# include "AlphaBeta.hpp"
 # include "BitBoard.hpp"
 
 # define BOARD_COLS 19

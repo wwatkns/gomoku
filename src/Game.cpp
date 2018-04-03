@@ -93,7 +93,7 @@ void    Game::loop(void) {
             // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0x68, 6, 8, 0 }); // OO-OO 0x6C is old
             // test |= highlight_five_aligned(this->_c_player->board);
             // std::cout << three_four_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board)) << std::endl;
-            std::cout << get_winning_moves(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured())) << std::endl;
+            // std::cout << get_winning_moves(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured())) << std::endl;
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);

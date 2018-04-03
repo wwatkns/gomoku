@@ -58,20 +58,19 @@ BitBoard    get_moves(BitBoard const& player, BitBoard const& opponent, BitBoard
     moves |= pair_capture_detector(opponent, player);
 
     /* explore building fives (non-instant win), open-fours, pair captures and opponent stone capture threats */
-    moves |= future_pattern_detector(player, opponent, { 0xF8, 5, 8, 0 }); // OOOOO
-    moves |= future_pattern_detector(player, opponent, { 0x78, 6, 8, 0 }); // -OOOO-
+    moves |= future_pattern_detector(player, opponent, { 0xF8, 5, 8, 0, 0 }); // OOOOO
+    moves |= future_pattern_detector(player, opponent, { 0x78, 6, 8, 0, 0 }); // -OOOO-
     moves |= pair_capture_detector(player, opponent);
-    // moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
 
     /* explore building open-threes */
     if (moves.set_count() <= 4) {
-        moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0 }); // -OO-, threatening capture of opponent stones
-        moves |= future_pattern_detector(player, opponent, { 0x70, 5, 8, 0 }); // -OOO-
-        moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0 }); // -OO-O-
+        moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0, 0 }); // -OO-, threatening capture of opponent stones
+        moves |= future_pattern_detector(player, opponent, { 0x70, 5, 8, 0, 0 }); // -OOO-
+        moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0, 0 }); // -OO-O-
 
         /* explore building close-four (to delay by one turn), is it necessary ? seems a bit like a bitch move */
         if (moves.set_count() <= 4) {
-            moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0 }); // |OOOO-
+            moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0, 0 }); // |OOOO-
             if (moves.is_empty())
                 moves |= player.dilated() & ~opponent; /* dilate around player */
         }
@@ -153,7 +152,7 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.opponent, node.player) ^ node.player, node.opponent, BitBoard::patterns[i]);
-        count  = (captb.is_empty() == false ? captb.set_count() : 0);
+        count = (captb.is_empty() == false ? captb.set_count() : 0);
         score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
     }
     score += pair_capture_detector(node.player, node.opponent).set_count() * 30;/* evaluate opponent pair threatening */
@@ -184,7 +183,7 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
     for (int i = 0; i < 8; ++i) {
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.player, node.opponent) ^ node.opponent, node.player, BitBoard::patterns[i]);
-        count  = (captb.is_empty() == false ? captb.set_count() : 0);
+        count = (captb.is_empty() == false ? captb.set_count() : 0);
         score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
     }
     score += pair_capture_detector(node.opponent, node.player).set_count() * 30;/* evaluate opponent pair threatening */
@@ -204,7 +203,7 @@ int32_t         AIPlayer::score_function(t_node const &node, uint8_t depth) {
 static inline int64_t   player_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    if (!pattern_detector(node.player, node.opponent, BitBoard::patterns[10]).is_empty())
+    if (!pattern_detector(node.player, node.opponent, BitBoard::patterns[0]).is_empty())
         return (500000 * depth);
     if (node.player_pairs_captured >= 5)
         return (500000 * depth);
@@ -216,7 +215,7 @@ static inline int64_t   player_evaluation(t_node const &node, uint8_t depth) {
 static inline int64_t   opponent_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    if (!pattern_detector(node.opponent, node.player, BitBoard::patterns[10]).is_empty())
+    if (!pattern_detector(node.opponent, node.player, BitBoard::patterns[0]).is_empty())
         return (500000 * depth);
     if (node.opponent_pairs_captured >= 5)
         return (500000 * depth);

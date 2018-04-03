@@ -338,7 +338,7 @@ t_ret const     AlphaBetaCustom::operator()(t_node root) { /* iterative deepenin
     this->_search_start = std::chrono::steady_clock::now();
     this->_root_moves.clear();
 
-    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_depth; this->_current_max_depth += 1) {
+    for (this->_current_max_depth = 1; this->_current_max_depth <= this->_depth; this->_current_max_depth += 2) {
         current = _root_max(root, -INF, INF, this->_current_max_depth);
         _debug_search(current);
         if (this->search_stopped)
