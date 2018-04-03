@@ -153,6 +153,7 @@ private:
     bool            _end_game;
 
     Eigen::Array22i _win_alignment;
+    SDL_Color       _win_alignment_color;
 
     std::string     _stone_num_text;
     SDL_Color       _stone_num_color;

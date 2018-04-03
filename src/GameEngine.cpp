@@ -27,33 +27,38 @@ bool    GameEngine::check_action(t_action const &action, Player const &p1, Playe
     return (false);
 }
 
-/* TODO: verify that everything is working properly */
-uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint8_t const& pid) {
-    static bool end[2] = { false, false };
-    int player = pid - 1;
+uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint16_t const& p) {
+    BitBoard    move;
+    move.write(p);
 
-    /* if player captured 5 pairs, he wins */
+    /* if player captured 5 pairs */
     if (p1_pairs_captured >= 5)
         return (end::player_win);
+    /* if opponent has a 5 alignment and move is not responsible (ex : white has breakable 5 aligned and black doesn't play the capture) */
+    if (detect_five_aligned(p2) && (highlight_five_aligned(p2) & move).is_empty())
+        return (end::opponent_win);
+
+    /* if player has a 5 alignment */
     if (detect_five_aligned(p1)) {
-        /* if player had a five alignment and it's still here, he wins */
-        if (end[player] == true)
+        /* and move is not responsible */
+        if ((highlight_five_aligned(p1) & move).is_empty())
             return (end::player_win);
-        /* if opponent can total 5 pairs captured in one move next turn, we continue */
-        if (!win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty() && end[player] == false) {
-            end[player] = true;
-            return (end::none);
+        /* and move is responsible */
+        else {
+            /* and opponent already have a 5 alignment */
+            if (detect_five_aligned(p2))
+                return (end::opponent_win);
+            /* and opponent can break the player's alignment next turn, continue */
+            if (!pair_capture_breaking_five_detector(p2, p1).is_empty())
+                return (end::none);
+            /* and opponent can total 5 pairs captured next turn, continue */
+            if (!win_by_capture_detector(p2, p1, p2_pairs_captured).is_empty())
+                return (end::none);
+            /* and opponent can't touch this */
+            return (end::player_win);
         }
-        /* if opponent can break the player's five alignment next turn, we continue */
-        if (!pair_capture_breaking_five_detector(p2, p1).is_empty()) {
-            end[player] = true;
-            return (end::none);
-        }
-        return (end::player_win);
     }
-    else
-        end[player] = (end[player] ? false : end[player]);
-    /* draw game */
+    /* if there is no more room to play */
     if (((p1 | p2) ^ BitBoard::full).is_empty())
         return (end::draw);
     return (end::none);

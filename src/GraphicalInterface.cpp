@@ -240,7 +240,8 @@ void    GraphicalInterface::update_display(void) {
 }
 
 void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) {
-    uint8_t end = check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured(), p1.get_id());
+    const Eigen::Array2i    move = (this->_game_engine->get_history_size() == 0 ? (Eigen::Array2i){ 0, 0 } : this->_game_engine->get_history()->back().pos);
+    uint8_t end = check_end(p1.board, p2.board, p1.get_pairs_captured(), p2.get_pairs_captured(), move[0] * 19 + move[1]);
 
     if (end == end::none) {
         this->_winning_text = "";
@@ -253,6 +254,7 @@ void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) 
         this->_button_pause->set_state(true);
         this->_end_game = true;
         this->_win_alignment = this->_game_engine->get_end_line(this->_analytics->get_c_player()->board);
+        this->_win_alignment_color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_white : this->_color_black);
     }
     else if (end == end::opponent_win) {
         std::string type = (p2.type == 0 ? "human" : "computer");
@@ -261,6 +263,7 @@ void    GraphicalInterface::update_end_game(Player const &p1, Player const &p2) 
         this->_button_pause->set_state(true);
         this->_end_game = true;
         this->_win_alignment = this->_game_engine->get_end_line((this->_analytics->get_c_player()->get_id() == 1 ? this->_analytics->get_player_2()->board : this->_analytics->get_player_1()->board));
+        this->_win_alignment_color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_black : this->_color_white);
     }
     else if (end == end::draw) {
         this->_winning_color = (SDL_Color){255, 255, 255, 255};
@@ -430,7 +433,7 @@ void    GraphicalInterface::_render_pause(void) {
         SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 90);
         SDL_RenderFillRect(this->_renderer, &this->_main_viewport);
     }
-    if (!this->check_pause() and this->_analytics->get_chronometer()->is_running() == false)
+    if (!this->check_pause() && this->_analytics->get_chronometer()->is_running() == false)
         this->_analytics->get_chronometer()->resume();
 }
 
@@ -439,8 +442,7 @@ void    GraphicalInterface::_render_winning_screen(void) {
         /* draw line alignment */
         Eigen::Array2i  p1 = this->grid_to_screen(this->_win_alignment.row(0));
         Eigen::Array2i  p2 = this->grid_to_screen(this->_win_alignment.row(1));
-        SDL_Color       color = (this->_analytics->get_c_player()->get_id() == 1 ? this->_color_white : this->_color_black);
-        SDL_SetRenderDrawColor(this->_renderer, color.r, color.g, color.b, color.a);
+        SDL_SetRenderDrawColor(this->_renderer, this->_win_alignment_color.r, this->_win_alignment_color.g, this->_win_alignment_color.b, this->_win_alignment_color.a);
         SDL_RenderDrawLine(this->_renderer, p1(0), p1(1), p2(0), p2(1));
         /* draw stones indicators */
         if (!(p1(0) == p2(0) && p1(1) == p2(1))) {

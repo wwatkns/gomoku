@@ -20,6 +20,7 @@ typedef struct  s_node {
     uint8_t         cid;
     uint8_t         player_pairs_captured;
     uint8_t         opponent_pairs_captured;
+    uint16_t        move; // NEW
 }               t_node;
 
 typedef struct  s_ret {

@@ -4,7 +4,6 @@
 # include <Eigen/Dense>
 # include "GraphicalInterface.hpp"
 # include "BitBoard.hpp"
-// # include "mtdf.hpp"
 # include "AIAlgorithms.hpp"
 
 class           GameEngine;

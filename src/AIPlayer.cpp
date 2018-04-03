@@ -80,6 +80,7 @@ BitBoard    get_moves(BitBoard const& player, BitBoard const& opponent, BitBoard
 
 t_node          AIPlayer::create_child(t_node const &parent, int i) {
     t_node  child = parent;
+    child.move = i;
     /* simulate player move */
     if (child.cid == 1) {
         child.player.write(i);
@@ -202,12 +203,6 @@ int32_t         AIPlayer::score_function(t_node const &node, uint8_t depth) {
     score -= opponent_score(node, depth);
     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
 }
-/*
-    Score Function :
-
-
-*/
-
 
 static inline int64_t   player_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
@@ -244,8 +239,8 @@ int32_t AIPlayer::evaluation_function(t_node const &node, uint8_t depth) {
 
 bool    AIPlayer::checkEnd(t_node const& node) {
     if (node.cid == 1)
-        return (check_end(node.player, node.opponent, node.player_pairs_captured, node.opponent_pairs_captured, 1));
-    return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, 2));
+        return (check_end(node.player, node.opponent, node.player_pairs_captured, node.opponent_pairs_captured, node.move));
+    return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, node.move));
 }
 
 // void    AIPlayer::debug_append_explored(int score, int i, int depth) {
