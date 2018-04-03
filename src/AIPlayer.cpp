@@ -51,7 +51,7 @@ BitBoard    get_moves(BitBoard const& player, BitBoard const& opponent, BitBoard
     /* if opponent can win next turn, only explore the moves that will try to prevent that */
     moves = get_winning_moves(opponent, player, opponent_pairs_captured, player_pairs_captured);
     if (!moves.is_empty())
-        return (moves);
+        return (moves | future_pattern_detector(player, opponent, { 0xF8, 5, 8, 0, 0 })); // OOOOO
 
     /* opponent threats of open-threes, five-alignments and captures */
     moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
@@ -157,8 +157,8 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
         count = (captb.is_empty() == false ? captb.set_count() : 0);
         score += (int64_t)((board.set_count() - count) * value * 0.25 + count * value);
     }
-    score += pair_capture_detector(node.player, node.opponent).set_count() * 30;/* evaluate opponent pair threatening */
-    score += node.player_pairs_captured * node.player_pairs_captured * 50;      /* evaluate the pairs captured [0, 50, 200, 450, 800, 1250] */
+    score += pair_capture_detector(node.player, node.opponent).set_count() * (node.cid == 2 ? 30 : 100);/* evaluate opponent pair threatening */
+    score += node.player_pairs_captured * node.player_pairs_captured * 100;      /* evaluate the pairs captured [0, 100, 400, 900, 1600, 2500] */
     return (score);
 }
 
@@ -190,8 +190,8 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
         count = (captb.is_empty() == false ? captb.set_count() : 0);
         score += (int64_t)((board.set_count() - count) * value * 0.25 + count * value);
     }
-    score += pair_capture_detector(node.opponent, node.player).set_count() * 30;/* evaluate opponent pair threatening */
-    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 50;  /* evaluate the pairs captured */
+    score += pair_capture_detector(node.opponent, node.player).set_count() * (node.cid == 1 ? 30 : 100);/* evaluate opponent pair threatening */
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100;  /* evaluate the pairs captured */
     return (score);
 }
 
@@ -202,6 +202,12 @@ int32_t         AIPlayer::score_function(t_node const &node, uint8_t depth) {
     score -= opponent_score(node, depth);
     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
 }
+/*
+    Score Function :
+
+
+*/
+
 
 static inline int64_t   player_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
