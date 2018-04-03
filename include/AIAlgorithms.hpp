@@ -156,32 +156,30 @@ public:
     ~MCTSNode(void);
     MCTSNode	&operator=(MCTSNode const &rhs);
 
-    int                     get_visit(void) const { return (this->_visit); };
-    int                     get_wins(void) const { return (this->_wins); };
-    int                     get_move(void) const { return (this->_move); };
-    int                     get_playerid(void) const { return (this->_playerid); };
-    // t_node                  get_node(void) const { return (this->_node); };
     MCTSNode                *get_parent(void) const { return (this->_parent); };
+    int                     get_playerid(void) const { return (this->_playerid); };
+    int                     get_move(void) const { return (this->_move); };
+    int                     get_wins(void) const { return (this->_wins); };
+    int                     get_visit(void) const { return (this->_visit); };
     std::vector<MCTSNode>   get_childs(void) const { return (this->_childs); };
     std::vector<t_move>     get_untried_actions(void) const { return (this->_untried_actions); };
 
     void                    set_wins(int value) { this->_wins = value; return ; };
-    void                    set_untried_actions(std::vector<t_move> moves) { this->_untried_actions = moves; return ;};
     void                    inc_wins(int score) { this->_wins += score; return ; };
     void                    inc_visit(void) { this->_visit++; return ; };
+    void                    set_untried_actions(std::vector<t_move> moves) { this->_untried_actions = moves; return ;};
 
     void                    add_child(MCTSNode node);
     void                    remove_action(int index);
 
 private:
-    // t_node                  _node;    // state
-    MCTSNode                *_parent; // parent node
-    int                     _playerid;// player ID
-    int                     _move;    // position played to reach the state contained in node
-    int                     _wins;    // number of wins
-    int                     _visit;   // number of visitation
-    std::vector<MCTSNode>   _childs;  // vector of childs nodes
-    std::vector<t_move>     _untried_actions;
+    MCTSNode                *_parent;           // parent node
+    int                     _playerid;          // player ID
+    int                     _move;              // position played to reach the state contained in node
+    int                     _wins;              // number of wins
+    int                     _visit;             // number of visitation
+    std::vector<MCTSNode>   _childs;            // vector of childs nodes
+    std::vector<t_move>     _untried_actions;   // moves available at that state
 
 };
 
@@ -190,7 +188,7 @@ std::ostream &operator<<(std::ostream &o, const MCTSNode &rhs);
 class MCTS: public AIPlayer {
 
 public:
-    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 1000);
+    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 5000);
     MCTS(MCTS const &src);
     ~MCTS(void);
     MCTS	&operator=(MCTS const &rhs);
@@ -198,14 +196,14 @@ public:
     virtual t_ret const operator()(t_node root);
 
 private:
-    t_ret       mtcs(t_node root_state); // Enchaine les 4 phases de MCTS
+    t_ret       mcts(t_node root_state); // Enchaine les 4 phases de MCTS
 
     MCTSNode    select_promising_node(MCTSNode &root, t_node &state); // Select phase
     void        expand_node(MCTSNode &root, t_node &state); // Expand phase
-    MCTSNode    get_random_node(MCTSNode node); // Roll out or simulation phase
-    int         rollout(MCTSNode node, t_node state); // Roll out
+    MCTSNode    get_random_node(MCTSNode &node); // Roll out or simulation phase
+    int         rollout(MCTSNode &node, t_node state); // Roll out
     // t_node      randomize_and_apply(std::vector<t_move> moves);
-    MCTSNode    backpropagate(MCTSNode leaf, int winner);
+    MCTSNode    backpropagate(MCTSNode &leaf, int winner);
     t_ret       get_best_move(MCTSNode root_node);
 
     // std::random_device  _random_device;
