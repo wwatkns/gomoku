@@ -43,14 +43,14 @@ const std::array<t_pattern,8> BitBoard::patterns = {{
     // (t_pattern){ 0xE8, 5, 8,  200 },  //   OOO-O  :  split four #3  |
     // (t_pattern){ 0xF8, 5, 4,  400 },  //   OOOOO  :  five
 
-    (t_pattern){0xF8, 5, 4, 5000, 0},  //   OOOOO  :  five
-    (t_pattern){0x78, 6, 4, 1000, 0},  //  -OOOO-  :  open four
-    (t_pattern){0x70, 5, 4,  800, 0},  //   -OOO-  :  open three
-    (t_pattern){0x68, 6, 8,  790, 0},  //  -OO-O-  :  open split three
-    (t_pattern){0xF0, 5, 8,   20, 0},  //  |OOOO-  :  close four
-    (t_pattern){0xB8, 5, 8,   20, 0},  //   O-OOO  :  split four #1
-    (t_pattern){0xD8, 5, 8,   20, 0},  //   OO-OO  :  split four #2
-    (t_pattern){0xE8, 5, 8,   20, 0}   //   OOO-O  :  split four #3
+    (t_pattern){0xF8, 5, 4, 5000, 50000},  //   OOOOO  :  five
+    (t_pattern){0x78, 6, 4, 1000, 10000},  //  -OOOO-  :  open four
+    (t_pattern){0x70, 5, 4,  500,  1000},  //   -OOO-  :  open three
+    (t_pattern){0x68, 6, 8,  490,   990},  //  -OO-O-  :  open split three
+    (t_pattern){0xF0, 5, 8,   50, 10000},  //  |OOOO-  :  close four
+    (t_pattern){0xB8, 5, 8,   50, 10000},  //   O-OOO  :  split four #1
+    (t_pattern){0xD8, 5, 8,   50, 10000},  //   OO-OO  :  split four #2
+    (t_pattern){0xE8, 5, 8,   50, 10000}   //   OOO-O  :  split four #3
     // (t_pattern){ 0xE0, 4, 8,   10 },  //  |OOO-   :  close three
     // (t_pattern){ 0xD0, 5, 8,   10 },  //  |OO-O-  :  close split three #1
     // (t_pattern){ 0xB0, 5, 8,   10 },  //  |O-OO-  :  close split three #2

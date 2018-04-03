@@ -134,6 +134,7 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
     BitBoard    captb;
     int64_t     score = 0;
     int64_t     count;
+    int         value;
 
     /* return a score for a win by alignment (unbreakable) */
     board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
@@ -150,10 +151,11 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
     score += (board.is_empty() == false ? board.set_count() * 10000 : 0);
     /* count the score for all the patterns we find, and apply penalty for those that are threatened by capture */
     for (int i = 0; i < 8; ++i) {
+        value = (node.cid == 2 ? BitBoard::patterns[i].value_0 : BitBoard::patterns[i].value_1);
         board = pattern_detector(node.player, node.opponent, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.opponent, node.player) ^ node.player, node.opponent, BitBoard::patterns[i]);
         count = (captb.is_empty() == false ? captb.set_count() : 0);
-        score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
+        score += (int64_t)((board.set_count() - count) * value * 0.25 + count * value);
     }
     score += pair_capture_detector(node.player, node.opponent).set_count() * 30;/* evaluate opponent pair threatening */
     score += node.player_pairs_captured * node.player_pairs_captured * 50;      /* evaluate the pairs captured [0, 50, 200, 450, 800, 1250] */
@@ -165,6 +167,7 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
     BitBoard    captb;
     int64_t     score = 0;
     int64_t     count;
+    int         value;
 
     /* return a score for a win by alignment (unbreakable) */
     board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
@@ -181,10 +184,11 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
     score += (board.is_empty() == false ? board.set_count() * 10000 : 0);
     /* count the score for all the patterns we find, and apply penalty for those that are threatened by capture */
     for (int i = 0; i < 8; ++i) {
+        value = (node.cid == 1 ? BitBoard::patterns[i].value_0 : BitBoard::patterns[i].value_1);
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.player, node.opponent) ^ node.opponent, node.player, BitBoard::patterns[i]);
         count = (captb.is_empty() == false ? captb.set_count() : 0);
-        score += (int64_t)((board.set_count() - count) * BitBoard::patterns[i].value * 0.25 + count * BitBoard::patterns[i].value);
+        score += (int64_t)((board.set_count() - count) * value * 0.25 + count * value);
     }
     score += pair_capture_detector(node.opponent, node.player).set_count() * 30;/* evaluate opponent pair threatening */
     score += node.opponent_pairs_captured * node.opponent_pairs_captured * 50;  /* evaluate the pairs captured */
@@ -194,9 +198,8 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
 int32_t         AIPlayer::score_function(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    /* we give more weight to the player whose turn is next */
-    score += (int64_t)(player_score(node, depth) * (node.cid == 1 ? 1.5 : 1));
-    score -= (int64_t)(opponent_score(node, depth) * (node.cid == 2 ? 1.5 : 1));
+    score += player_score(node, depth);
+    score -= opponent_score(node, depth);
     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
 }
 

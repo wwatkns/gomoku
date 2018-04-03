@@ -16,8 +16,8 @@ typedef struct  s_pattern {
     uint8_t     repr;       /* the pattern encoded in big-endian (ex : 01011000 for -O-OO-) */
     uint8_t     size;       /* the size of the pattern */
     uint8_t     dirs;       /* the number of directions (symmetric pattern like -OOO- need only 4 directions computed) */
-    uint16_t    value;    /* the value associated with the pattern if next turn is player */
-    uint16_t    value_b;    /* the value associated with the pattern if next turn is player */
+    uint16_t    value_0;    /* the value associated with the pattern if next turn is player */
+    uint16_t    value_1;    /* the value associated with the pattern if next turn is player */
 }               t_pattern;
 
 /*  Implementation of a bitboard representation of a square board of 19*19 using
