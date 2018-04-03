@@ -159,7 +159,7 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
         score += (int64_t)((board.set_count() - count) * value * 0.25 + count * value);
     }
     score += pair_capture_detector(node.player, node.opponent).set_count() * (node.cid == 2 ? 30 : 100);/* evaluate opponent pair threatening */
-    score += node.player_pairs_captured * node.player_pairs_captured * 100;      /* evaluate the pairs captured [0, 100, 400, 900, 1600, 2500] */
+    score += node.player_pairs_captured * node.player_pairs_captured * 200;      /* evaluate the pairs captured [0, 100, 400, 900, 1600, 2500] */
     return (score);
 }
 
@@ -192,7 +192,7 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
         score += (int64_t)((board.set_count() - count) * value * 0.25 + count * value);
     }
     score += pair_capture_detector(node.opponent, node.player).set_count() * (node.cid == 1 ? 30 : 100);/* evaluate opponent pair threatening */
-    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100;  /* evaluate the pairs captured */
+    score += node.opponent_pairs_captured * node.opponent_pairs_captured * 200;  /* evaluate the pairs captured */
     return (score);
 }
 
@@ -200,7 +200,7 @@ int32_t         AIPlayer::score_function(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
     score += player_score(node, depth);
-    score -= opponent_score(node, depth);
+    score -= opponent_score(node, depth) * 2;
     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
 }
 
