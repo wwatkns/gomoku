@@ -459,43 +459,50 @@ t_ret const MCTS::operator()(t_node root) {
     return (this->mcts(root));
 }
 
-// static void debugchilds(MCTSNode node, int level) {
-//     std::vector<MCTSNode>   childs = node.get_childs();
-//     for (std::vector<MCTSNode>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
-//         for (int i = 0; i < level; ++i) {
-//             std::cout << "--";
-//         }
-//         std::cout << *child << std::endl;
-//         if (child->get_childs().size() != 0) {
-//             debugchilds(*child, level + 1);
-//         }
-//     }
-//     return ;
-// }
+static void debugchilds(MCTSNode node, int level) {
+    if (node.get_parent() == NULL)
+         std::cout << node << std::endl;
+    std::vector<MCTSNode>   childs = node.get_childs();
+    for (std::vector<MCTSNode>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
+        for (int i = 0; i < level; ++i) {
+            std::cout << "--";
+        }
+        std::cout << *child << std::endl;
+        if (child->get_childs().size() != 0) {
+            debugchilds(*child, level + 1);
+        }
+    }
+    return ;
+}
 
 t_ret       MCTS::mcts(t_node root_state) {
     MCTSNode    root_node(NULL, 0, 0, 0);
     root_node.set_untried_actions(this->move_generation(root_state, 1));
     MCTSNode    &node_to_explore = root_node;
+    MCTSNode    promising_node;
     t_ret       best_move;
     t_node      state;
     int         winner;
     this->_start = std::chrono::steady_clock::now();
 
     while (this->timesup()) {
+        std::cout << "--- MCTS ---" << std::endl;mak
         state = root_state;
+        // std::cout << "node_to_explore: \n" << node_to_explore << std::endl;
+        debugchilds(node_to_explore, 1);
         /* Tree Policy starts here: */
         /* Select */
-        this->select_promising_node(node_to_explore, state);
+        promising_node = this->select_promising_node(node_to_explore, state);
+
         /* Expand */
-        if (!(node_to_explore.get_untried_actions().empty())) {
-            this->expand_node(node_to_explore, state);
+        if (!(promising_node.get_untried_actions().empty())) {
+            this->expand_node(promising_node, state);
         }
         /* Default Policy: */
         /* Simulate */
         winner = this->rollout(node_to_explore, state);
         /* Backpropagate */
-        this->backpropagate(node_to_explore, winner);
+        node_to_explore = this->backpropagate(node_to_explore, winner);
     }
     best_move = this->get_best_move(root_node);
     return (best_move);
