@@ -161,7 +161,7 @@ public:
     int                     get_move(void) const { return (this->_move); };
     int                     get_wins(void) const { return (this->_wins); };
     int                     get_visit(void) const { return (this->_visit); };
-    std::vector<MCTSNode>   get_childs(void) const { return (this->_childs); };
+    std::vector<MCTSNode *> get_childs(void) const { return (this->_childs); };
     std::vector<t_move>     get_untried_actions(void) const { return (this->_untried_actions); };
 
     void                    set_wins(int value) { this->_wins = value; return ; };
@@ -169,7 +169,7 @@ public:
     void                    inc_visit(void) { this->_visit++; return ; };
     void                    set_untried_actions(std::vector<t_move> moves) { this->_untried_actions = moves; return ;};
 
-    void                    add_child(MCTSNode node);
+    void                    add_child(MCTSNode *node);
     void                    remove_action(int index);
 
 private:
@@ -178,7 +178,7 @@ private:
     int                     _move;              // position played to reach the state contained in node
     int                     _wins;              // number of wins
     int                     _visit;             // number of visitation
-    std::vector<MCTSNode>   _childs;            // vector of childs nodes
+    std::vector<MCTSNode *> _childs;            // vector of childs nodes
     std::vector<t_move>     _untried_actions;   // moves available at that state
 
 };
