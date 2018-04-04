@@ -305,6 +305,8 @@ bool            MTDf::timesup(void) {
     return (false);
 }
 
+/************************************************** AlphaBetaCustom ***************************************************/
+
 /* Default algorithm */
 AlphaBetaCustom::AlphaBetaCustom(int depth, uint8_t pid, uint8_t verbose, int time_limit) :  AIPlayer(depth, pid, verbose), _current_max_depth(0), _search_limit_ms(time_limit) {
     this->search_stopped = false;
