@@ -83,11 +83,9 @@ public:
     ~AlphaBetaCustom(void);
     AlphaBetaCustom	&operator=(AlphaBetaCustom const &rhs);
 
-    // int         get_max_depth(void) const { return (_max_depth); };
     int         get_search_limit_ms(void) const { return (_search_limit_ms); };
 
     virtual t_ret const operator()(t_node root);
-    // t_ret const operator()(t_node root);
 
     bool    search_stopped;
 
@@ -104,49 +102,6 @@ private:
     bool                                    _times_up(void);
     int                                     _elapsed_ms(void);
 };
-
-// namespace MCTS {
-
-// MAX_ROLLOUT = 50;
-
-// struct  simple_random {
-//     double operator()() {
-//         return (static_cast<double>(rand() % RAND_MAX) / RAND_MAX)
-//     }
-// }
-
-// // template<int N_ACTIONS, class URand = simple_random> class MCTSTreeNode {
-// class MCTSTreeNode {
-
-// private:
-//     bool                is_leaf;
-//     int                 visited;
-//     int                 wins;
-//     int                 total_value;
-//     std::vector<t_move> child_nodes;
-
-//     int                 select(void);
-
-// }
-
-// }
-
-
-// class MCTSNode: {
-
-// public:
-//     MCTSNode(int depth, uint8_t verbose = verbose::quiet, int time_max = 500);
-//     MCTSNode(MCTSNode const &src);
-//     ~MCTSNode(void);
-//     MCTSNode	&operator=(MCTSNode const &rhs);
-
-//     int         win;
-//     int         visit;
-//     int         move;
-//     MCTSNode    *parent;
-//     std::vector<MCTSNode> childs;
-
-// };
 
 class MCTSNode {
 
@@ -167,7 +122,6 @@ public:
     void                    set_wins(int value) { this->_wins = value; return ; };
     void                    inc_wins(int score) { this->_wins += score; return ; };
     void                    inc_visit(void) { this->_visit++; return ; };
-    // void                    set_untried_actions(std::vector<t_move> moves) { this->_untried_actions = moves; return ;};
 
     void                    add_child(MCTSNode *node);
     void                    remove_action(int index);
@@ -188,32 +142,23 @@ std::ostream &operator<<(std::ostream &o, const MCTSNode &rhs);
 class MCTS: public AIPlayer {
 
 public:
-    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 5000);
+    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 500);
     MCTS(MCTS const &src);
     ~MCTS(void);
     MCTS	&operator=(MCTS const &rhs);
 
     virtual t_ret const operator()(t_node root);
+    void        debugchilds(MCTSNode node, int level);                  // Display the tree for bebug purpose
 
 private:
-    t_ret       mcts(t_node root_state); // Enchaine les 4 phases de MCTS
+    t_ret       mcts(t_node root_state);                                // MCTS
 
-    MCTSNode    *select_promising_node(MCTSNode *root, t_node &state); // Select phase
-    void        expand_node(MCTSNode &root, t_node &state); // Expand phase
-    MCTSNode    *get_random_node(MCTSNode &node); // Roll out or simulation phase
-    int         rollout(MCTSNode &node, t_node state); // Roll out
-    // t_node      randomize_and_apply(std::vector<t_move> moves);
-    MCTSNode    *backpropagate(MCTSNode *leaf, int winner);
-    t_ret       get_best_move(MCTSNode root_node);
-
-    // std::random_device  _random_device;
-    // std::mt19937        _engine{_random_device()};
-
-
-    // double      uct_value(int totalvisits, int nodevisit, double nodewin);
-    // void        expand(t_node node);
-    // void        backpropagation();
-    // int         simulate_random_playout();
+    MCTSNode    *select_promising_node(MCTSNode *root, t_node &state);  // Select phase
+    void        expand_node(MCTSNode &root, t_node &state);             // Expand phase
+    MCTSNode    *get_random_node(MCTSNode &node);                       // Roll out or simulation phase
+    int         rollout(MCTSNode &node, t_node state);                  // Roll out or simulation phase
+    MCTSNode    *backpropagate(MCTSNode *leaf, int winner);             // Backpropagate phase
+    t_ret       get_best_move(MCTSNode root_node);                      // Select the best move according to MCTS
 
     std::chrono::steady_clock::time_point _start;
     int         _time_max;
