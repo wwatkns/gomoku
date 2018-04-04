@@ -509,7 +509,7 @@ t_ret       MCTS::mcts(t_node root_state) {
 static double       get_value(int total_visit, double node_wins, int node_visit) {
     if (node_visit == 0)
         return (std::numeric_limits<double>::max());
-    return ((node_wins / (double)node_visit) + 0.2 * sqrt(2 * log(total_visit) / node_visit));
+    return ((double)(node_wins / (double)node_visit) + 1.41 * sqrt(2 * log(total_visit) / node_visit));
 }
 
 static MCTSNode     *get_best_node_with_uct(std::vector<MCTSNode *> childs, int parent_total_visit) {
@@ -618,7 +618,7 @@ t_ret           MCTS::get_best_move(MCTSNode &root_node) {
     double                  best_score = -1;
     double                  expect_success;
     for (std::vector<MCTSNode *>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
-        expect_success = ((*child)->get_wins() + 1) / ((*child)->get_visit() + 2);
+        expect_success = (double)((*child)->get_wins() + 1) / ((*child)->get_visit() + 2);
         if (expect_success > best_score) {
             best_score = expect_success;
             best_node = *child;
