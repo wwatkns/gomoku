@@ -211,7 +211,7 @@ void    GraphicalInterface::update_events(void) {
             case SDL_MOUSEMOTION: SDL_GetMouseState(&this->_mouse_pos[1], &this->_mouse_pos[0]);
                 this->_mouse_pos *= this->_res_ratio;
                 break;
-            case SDL_MOUSEBUTTONUP: this->_mouse_action = true; break;
+            case SDL_MOUSEBUTTONDOWN: this->_mouse_action = true; break;
         }
     }
     this->_key_states = SDL_GetKeyboardState(NULL);
