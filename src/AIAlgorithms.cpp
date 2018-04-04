@@ -459,17 +459,18 @@ t_ret const MCTS::operator()(t_node root) {
     return (this->mcts(root));
 }
 
-void        MCTS::debugchilds(MCTSNode node, int level) {
-    if (node.get_parent() == NULL)
-        std::cout << node << std::endl;
-    std::vector<MCTSNode *>   childs = node.get_childs();
+void        MCTS::debugchilds(MCTSNode *root, int level) {
+    MCTSNode    *node = root;
+    if (node->get_parent() == NULL)
+        std::cout << *node << std::endl;
+    std::vector<MCTSNode *>   childs = node->get_childs();
     for (std::vector<MCTSNode *>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
         for (int i = 0; i < level; ++i) {
             std::cout << "--";
         }
         std::cout << **child << std::endl;
         if ((*child)->get_childs().size() != 0) {
-            debugchilds(**child, level + 1);
+            debugchilds(*child, level + 1);
         }
     }
     return ;

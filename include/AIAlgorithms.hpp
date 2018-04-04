@@ -148,7 +148,7 @@ public:
     MCTS	&operator=(MCTS const &rhs);
 
     virtual t_ret const operator()(t_node root);
-    void        debugchilds(MCTSNode node, int level);                  // Display the tree for bebug purpose
+    void        debugchilds(MCTSNode *node, int level);                 // Display the tree for bebug purpose
 
 private:
     t_ret       mcts(t_node root_state);                                // MCTS
