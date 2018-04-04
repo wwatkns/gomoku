@@ -562,30 +562,44 @@ MCTSNode         *MCTS::get_random_node(MCTSNode &node) {
     return (childs[dist(engine)]);
 }
 
+int             MCTS::MCTS_check_end(t_node *state) {
+    /* Check if one state give and end game and return 0 for none, 1 for player 1 win, 2 for player 2 win */
+    if (state->cid == 1 && this->checkEnd(*state)) {
+        return (1);
+    }
+    else if (state->cid == 2 && this->checkEnd(*state)) {
+        return (2);
+    }
+    else {
+        return (0);
+    }
+}
+
+// uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint8_t const& pid)
 int             MCTS::rollout(MCTSNode &node, t_node state) {
+    t_node      tmp_state = state;
     /* Check if the state is final or not */
-    int         game_status = this->checkEnd(state);
+    int         game_status = MCTS_check_end(&tmp_state);
     /* If the opponent win then never play this! */
-    if (node.get_parent() != NULL && game_status == end::opponent_win) {
+    if (node.get_parent() != NULL && game_status == 2) {
         node.get_parent()->set_wins(std::numeric_limits<int>::min());
         return (game_status);
     }
+    /* Generate random move */
     std::random_device  random_device;
     std::mt19937        engine{random_device()};
-    std::vector<t_move> moves = this->move_generation(state, 1);
-    std::uniform_int_distribution<int>  dist(0, moves.size() - 1);
-    t_node select_move = moves[dist(engine)].node;
+    std::vector<t_move> moves;
+    t_move              select_move;
 
-    game_status = this->checkEnd(select_move);
-
-    while (game_status == end::none) {
+    while (game_status == 0) {
         /* Generate all legal moves from one node/state */
-        moves = this->move_generation(select_move, 1);
+        moves = this->move_generation(tmp_state, 1);
         /* Select one random move from this vector list */
         std::uniform_int_distribution<int>  dist(0, moves.size() - 1);
-        select_move = moves[dist(engine)].node;
+        select_move = moves[dist(engine)];
+        tmp_state = this->create_child(tmp_state, select_move.p);
         /* Check if this move terminate the play */
-        game_status = this->checkEnd(select_move);
+        game_status = MCTS_check_end(&tmp_state);
     }
     return (game_status);
 }
@@ -605,15 +619,15 @@ MCTSNode        *MCTS::backpropagate(MCTSNode *leaf, int winner) {
     return (node_tmp);
 }
 
-t_ret           MCTS::get_best_move(MCTSNode root_node) {
+t_ret           MCTS::get_best_move(MCTSNode &root_node) {
     std::vector<MCTSNode *>  childs = root_node.get_childs();
-    MCTSNode                &best_node = *(childs[0]);
+    MCTSNode                 *best_node = childs[0];
     for (std::vector<MCTSNode *>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
-        if ((*child)->get_visit() > best_node.get_visit()) {
-            best_node = **child;
+        if ((*child)->get_visit() > best_node->get_visit()) {
+            best_node = *child;
         }
     }
-    return ((t_ret){ 0, best_node.get_move() });
+    return ((t_ret){ 0, best_node->get_move() });
 }
 
 bool            MCTS::timesup(void) {
