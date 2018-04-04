@@ -479,7 +479,6 @@ t_ret       MCTS::mcts(t_node root_state) {
     MCTSNode    root_node(NULL, 0, 0, 0, this->move_generation(root_state, 1));
     MCTSNode    *node_to_explore = &root_node;
     MCTSNode    *promising_node;
-    t_ret       best_move;
     t_node      state;
     int         winner;
     this->_start = std::chrono::steady_clock::now();
@@ -497,20 +496,19 @@ t_ret       MCTS::mcts(t_node root_state) {
         /* Simulate */
         if (!((*promising_node).get_childs().empty())) {
             node_to_explore = this->get_random_node((*promising_node));
+            state = this->create_child(state, (*node_to_explore).get_move());
         }
-        state = this->create_child(state, (*node_to_explore).get_move());
-        winner = this->rollout((*node_to_explore), state);
+        winner = this->rollout(state);
         /* Backpropagate */
         node_to_explore = this->backpropagate(node_to_explore, winner);
     }
-    best_move = this->get_best_move(root_node);
-    return (best_move);
+    return (this->get_best_move(root_node));
 }
 
 static double       get_value(int total_visit, double node_wins, int node_visit) {
     if (node_visit == 0)
         return (std::numeric_limits<double>::max());
-    return ((node_wins / (double)node_visit) + 0.2 * sqrt(2 *log(total_visit) / node_visit));
+    return ((node_wins / (double)node_visit) + 0.2 * sqrt(2 * log(total_visit) / node_visit));
 }
 
 static MCTSNode     *get_best_node_with_uct(std::vector<MCTSNode *> childs, int parent_total_visit) {
@@ -575,16 +573,10 @@ int             MCTS::MCTS_check_end(t_node *state) {
     }
 }
 
-// uint8_t check_end(BitBoard const& p1, BitBoard const& p2, uint8_t const& p1_pairs_captured, uint8_t const& p2_pairs_captured, uint8_t const& pid)
-int             MCTS::rollout(MCTSNode &node, t_node state) {
+int             MCTS::rollout(t_node state) {
     t_node      tmp_state = state;
     /* Check if the state is final or not */
     int         game_status = MCTS_check_end(&tmp_state);
-    /* If the opponent win then never play this! */
-    if (node.get_parent() != NULL && game_status == 2) {
-        node.get_parent()->set_wins(std::numeric_limits<int>::min());
-        return (game_status);
-    }
     /* Generate random move */
     std::random_device  random_device;
     std::mt19937        engine{random_device()};
@@ -620,15 +612,13 @@ MCTSNode        *MCTS::backpropagate(MCTSNode *leaf, int winner) {
 }
 
 t_ret           MCTS::get_best_move(MCTSNode &root_node) {
-    std::vector<MCTSNode *>  childs = root_node.get_childs();
-    // MCTSNode                 *best_node = childs[0];
-    MCTSNode                 *best_node;
-    // for (std::vector<MCTSNode *>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
-    //     if ((*child)->get_visit() > best_node->get_visit()) {
-    //         best_node = *child;
-    //     }
-    // }
-    best_node = get_best_node_with_uct(childs, root_node.get_visit());
+    std::vector<MCTSNode *> childs = root_node.get_childs();
+    MCTSNode                *best_node = childs[0];
+    for (std::vector<MCTSNode *>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
+        if ((*child)->get_visit() > best_node->get_visit()) {
+            best_node = *child;
+        }
+    }
     return ((t_ret){ 0, best_node->get_move() });
 }
 

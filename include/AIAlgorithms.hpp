@@ -142,7 +142,7 @@ std::ostream &operator<<(std::ostream &o, const MCTSNode &rhs);
 class MCTS: public AIPlayer {
 
 public:
-    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 500);
+    MCTS(int depth, uint8_t verbose = verbose::quiet, int time_max = 499);
     MCTS(MCTS const &src);
     ~MCTS(void);
     MCTS	&operator=(MCTS const &rhs);
@@ -156,10 +156,10 @@ private:
     MCTSNode    *select_promising_node(MCTSNode *root, t_node &state);  // Select phase
     void        expand_node(MCTSNode &root, t_node &state);             // Expand phase
     MCTSNode    *get_random_node(MCTSNode &node);                       // Roll out or simulation phase
-    int         rollout(MCTSNode &node, t_node state);                  // Roll out or simulation phase
+    int         rollout(t_node state);                                  // Roll out or simulation phase
     int         MCTS_check_end(t_node *state);                          // Roll out or simulation phase
     MCTSNode    *backpropagate(MCTSNode *leaf, int winner);             // Backpropagate phase
-    t_ret       get_best_move(MCTSNode &root_node);                      // Select the best move according to MCTS
+    t_ret       get_best_move(MCTSNode &root_node);                     // Select the best move according to MCTS
 
     std::chrono::steady_clock::time_point _start;
     int         _time_max;
