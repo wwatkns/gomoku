@@ -4,13 +4,13 @@ Player::Player(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id, int
     this->suggested_move = { -1, -1 };
     this->current_score = 0;
     if (algo_type == 2)
-        this->_ai_algorithm = (AIPlayer*)new MinMax(depth, verbose::quiet);
+        this->_ai_algorithm = (AIPlayer*)new MinMax(depth, id, verbose::quiet);
     else if (algo_type == 3)
-        this->_ai_algorithm = (AIPlayer*)new AlphaBeta(depth, verbose::quiet);
+        this->_ai_algorithm = (AIPlayer*)new AlphaBeta(depth, id, verbose::quiet);
     else if (algo_type == 4)
-        this->_ai_algorithm = (AIPlayer*)new MTDf(depth, verbose::quiet);
+        this->_ai_algorithm = (AIPlayer*)new MTDf(depth, id, verbose::quiet);
     else
-        this->_ai_algorithm = (AIPlayer*)new AlphaBetaCustom(depth, verbose::debug);
+        this->_ai_algorithm = (AIPlayer*)new AlphaBetaCustom(depth, id, verbose::debug);
 }
 
 Player::Player(Player const &src) : _game_engine(src.get_game_engine()), _id(src.get_id()) {

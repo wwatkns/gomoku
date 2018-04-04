@@ -6,7 +6,7 @@
 class MinMax: public AIPlayer {
 
 public:
-    MinMax(int depth, uint8_t verbose = verbose::quiet);
+    MinMax(int depth, uint8_t pid, uint8_t verbose = verbose::quiet);
     MinMax(MinMax const &src);
     ~MinMax(void);
     MinMax    &operator=(MinMax const &);
@@ -21,7 +21,7 @@ private:
 class AlphaBeta: public AIPlayer {
 
 public:
-    AlphaBeta(int depth, uint8_t verbose = verbose::quiet);
+    AlphaBeta(int depth, uint8_t pid, uint8_t verbose = verbose::quiet);
     AlphaBeta(AlphaBeta const &src);
     ~AlphaBeta(void);
     AlphaBeta    &operator=(AlphaBeta const &);
@@ -36,7 +36,7 @@ private:
 class NegaScout: public AIPlayer {
 
 public:
-    NegaScout(int depth, uint8_t verbose = verbose::quiet);
+    NegaScout(int depth, uint8_t pid, uint8_t verbose = verbose::quiet);
     NegaScout(NegaScout const &src);
     ~NegaScout(void);
     NegaScout    &operator=(NegaScout const &);
@@ -52,7 +52,7 @@ private:
 class MTDf: public AIPlayer {
 
 public:
-    MTDf(int depth, uint8_t verbose = verbose::quiet);
+    MTDf(int depth, uint8_t pid, uint8_t verbose = verbose::quiet);
     MTDf(MTDf const &src);
     ~MTDf(void);
     MTDf    &operator=(MTDf const &);
@@ -75,7 +75,7 @@ private:
 class AlphaBetaCustom: public AIPlayer {
 
 public:
-    AlphaBetaCustom(int depth, uint8_t verbose = verbose::quiet, int time_limit = 500);
+    AlphaBetaCustom(int depth, uint8_t pid, uint8_t verbose = verbose::quiet, int time_limit = 500);
     AlphaBetaCustom(AlphaBetaCustom const &src);
     ~AlphaBetaCustom(void);
     AlphaBetaCustom	&operator=(AlphaBetaCustom const &rhs);

@@ -135,7 +135,6 @@ private:
     SDL_Color               _color_bg = {  15,  15,  15, 255 };
     SDL_Color              _color_win = {  45,  45,  45, 255 };
     SDL_Color           _color_header = {  35,  35,  35, 255 };
-    // SDL_Color           _color_button = {  53,  53,  53, 255 };
     SDL_Color             _color_font = { 160, 160, 160, 255 };
     SDL_Color           _color_font_2 = { 180, 180, 180, 255 };
     SDL_Color          _color_onhover = { 150, 150, 150, 255 };

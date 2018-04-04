@@ -79,9 +79,11 @@ public:
     bool        operator==(BitBoard const &rhs) const;
     bool        operator!=(BitBoard const &rhs) const;
 
-    std::array<uint64_t, NICB>                 values;
-    static const std::array<int16_t, DIRS>     shifts;
+    std::array<uint64_t, NICB>              values;
+    static const std::array<int16_t, DIRS>  shifts;
     static const std::array<t_pattern,8>    patterns;
+    static std::array<int, 8>               p1_pattern_weights; // Sorry...
+    static std::array<int, 8>               p2_pattern_weights; // Sorry...
     static const BitBoard                   full;
     static const BitBoard                   empty;
     static const BitBoard                   border_right;

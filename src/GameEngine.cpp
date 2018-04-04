@@ -98,6 +98,23 @@ void    GameEngine::update_grid(Player const &p1, Player const &p2) {
     GameEngine::update_grid_with_bitboard(p2.board_forbidden, state * -10);
 }
 
+void    GameEngine::update_dynamic_pattern_weights(void) {
+    if (this->_history.size() > 2) {
+        int         p_curr;
+        int         p_last;
+        int         delta;
+        t_action    action = this->_history.back();
+        t_action    action_prev = *std::prev(this->_history.end(), 3); // get the 3rd action from the end
+
+        for (int i = 0; i < 8; ++i) {
+            p_curr = pattern_detector(action.p1_last, action.p2_last, BitBoard::patterns[i]).set_count();
+            p_last = pattern_detector(action_prev.p1_last, action_prev.p2_last, BitBoard::patterns[i]).set_count();
+            delta = (p_curr - p_last);
+            (action.pid == 1 ? BitBoard::p1_pattern_weights[i] : BitBoard::p2_pattern_weights[i]) += (delta > 0 ? delta : 0) * 10;
+        }
+    }
+}
+
 void    GameEngine::delete_last_action(Player *p1, Player *p2) {
     t_action    last;
 

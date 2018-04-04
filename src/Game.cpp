@@ -4,8 +4,7 @@
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
     this->_gui = new GraphicalInterface(this->_game_engine);
-    // this->_config = this->_gui->render_choice_menu();
-    this->_config = "p1=C,p2=C,nu=1,db=1,sg=1";
+    this->_config = this->_gui->render_choice_menu();
     this->_configure();
 }
 
@@ -83,17 +82,18 @@ void    Game::loop(void) {
         if (action_undo == false)
             this->_gui->update_end_game(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1);
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
-            // std::cout << "________________________\n" << this->_c_player->board << std::endl;
-            // BitBoard    test;
-            // test |= highlight_captured_stones(p1_tmp, p2_tmp, p);
-            // test |= win_by_capture_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured());
-            // test |= pair_capture_breaking_five_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board));
-            // test |= get_winning_moves_debug(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured()));
-            // test |= future_pattern_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0xF8, 5, 8, 0 });
-            // test |= pattern_detector_highlight_open(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), { 0x68, 6, 8, 0 }); // OO-OO 0x6C is old
-            // test |= highlight_five_aligned(this->_c_player->board);
-            // std::cout << three_four_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board)) << std::endl;
-            // std::cout << get_winning_moves(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured())) << std::endl;
+            this->_game_engine->update_dynamic_pattern_weights();
+
+            std::cout << "p1 weights: ";
+            for (int i = 0; i < 7; ++i)
+                std::cout << BitBoard::p1_pattern_weights[i] << ", ";
+            std::cout << BitBoard::p1_pattern_weights[7] << std::endl;
+
+            std::cout << "p2 weights: ";
+            for (int i = 0; i < 7; ++i)
+                std::cout << BitBoard::p2_pattern_weights[i] << ", ";
+            std::cout << BitBoard::p2_pattern_weights[7] << std::endl;
+
             this->_c_player->current_score = this->_c_player->get_ai_algorithm()->score_function(create_node(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1), 1);
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
             this->_c_player->current_score = this->_c_player->get_ai_algorithm()->score_function(create_node(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1), 1);

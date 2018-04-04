@@ -4,6 +4,7 @@
 # include <iostream>
 # include <chrono>
 # include <list>
+# include <iterator>
 # include <Eigen/Dense>
 # include "BitBoard.hpp"
 
@@ -35,6 +36,7 @@ public:
     void                update_game_state(t_action &action, Player *p1, Player *p2);
     void                update_grid(Player const &p1, Player const &p2);
     void                update_grid_with_bitboard(BitBoard const &bitboard, int8_t const &state);
+    void                update_dynamic_pattern_weights(void);
     void                delete_last_action(Player *p1, Player *p2);
 
     Eigen::Array22i     get_end_line(BitBoard const &bitboard);

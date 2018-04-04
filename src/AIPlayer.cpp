@@ -2,7 +2,7 @@
 #include "Player.hpp"
 #include "GameEngine.hpp"
 
-AIPlayer::AIPlayer(int depth, uint8_t verbose) : _depth(depth), _verbose(verbose) {
+AIPlayer::AIPlayer(int depth, uint8_t pid, uint8_t verbose) : _depth(depth), _verbose(verbose), _pid(pid) {
 }
 
 AIPlayer::AIPlayer(AIPlayer const &src) {
@@ -47,31 +47,25 @@ BitBoard    get_moves(BitBoard const& player, BitBoard const& opponent, BitBoard
     moves = get_winning_moves(player, opponent, player_pairs_captured, opponent_pairs_captured);
     if (!moves.is_empty())
         return (moves);
-
     /* if opponent can win next turn, only explore the moves that will try to prevent that */
     moves = get_winning_moves(opponent, player, opponent_pairs_captured, player_pairs_captured);
     if (!moves.is_empty())
         return (moves | future_pattern_detector(player, opponent, { 0xF8, 5, 8, 0, 0 })); // OOOOO
-
     /* opponent threats of open-threes, five-alignments and captures */
     moves |= get_threat_moves(player, opponent, opponent_pairs_captured);
     moves |= pair_capture_detector(opponent, player);
-
     /* explore building fives (non-instant win), open-fours, pair captures and opponent stone capture threats */
     moves |= future_pattern_detector(player, opponent, { 0xF8, 5, 8, 0, 0 }); // OOOOO
     moves |= future_pattern_detector(player, opponent, { 0x78, 6, 8, 0, 0 }); // -OOOO-
     moves |= pair_capture_detector(player, opponent);
-
     /* explore building open-threes */
     if (moves.set_count() <= 4) {
         moves |= pattern_detector_highlight_open(opponent, player, { 0x60, 4, 4, 0, 0 }); // -OO-, threatening capture of opponent stones
         moves |= future_pattern_detector(player, opponent, { 0x70, 5, 8, 0, 0 }); // -OOO-
         moves |= future_pattern_detector(player, opponent, { 0x68, 6, 8, 0, 0 }); // -OO-O-
-
         /* explore building close-four (to delay by one turn), is it necessary ? seems a bit like a bitch move */
         if (moves.set_count() <= 4) {
             moves |= future_pattern_detector(player, opponent, { 0xF0, 5, 8, 0, 0 }); // |OOOO-
-            // if (moves.is_empty())
             if (moves.set_count() <= 2)
                 moves |= player.dilated() & ~opponent; /* dilate around player */
         }
@@ -138,12 +132,12 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
     int64_t     count;
     int         value;
 
+    /* return a score for a win by capture, weighted with the depth at which the win is found */
+    if (node.player_pairs_captured >= 5)
+        return (50000000 * depth);
     /* return a score for a win by alignment (unbreakable) */
     board = highlight_five_aligned(node.player ^ pair_capture_detector_highlight(node.opponent, node.player));
     if (!board.is_empty() && win_by_capture_detector(node.opponent, node.player, node.opponent_pairs_captured).is_empty())
-        return (50000000 * depth);
-    /* return a score for a win by capture, weighted with the depth at which the win is found */
-    if (node.player_pairs_captured >= 5)
         return (50000000 * depth);
     /* three-four if they are not threatened by a capture are sure win in 2 extra moves */
     board = three_four_detector(node.player, node.opponent);
@@ -164,19 +158,19 @@ static inline int32_t   player_score(t_node const &node, uint8_t depth) {
     return (score);
 }
 
-static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
+static inline int32_t   opponent_score(t_node const &node, uint8_t depth, uint8_t pid) {
     BitBoard    board;
     BitBoard    captb;
     int64_t     score = 0;
     int64_t     count;
     int         value;
 
+    /* return a score for a win by capture, weighted with the depth at which the win is found */
+    if (node.opponent_pairs_captured >= 5)
+        return (50000000 * depth);
     /* return a score for a win by alignment (unbreakable) */
     board = highlight_five_aligned(node.opponent ^ pair_capture_detector_highlight(node.player, node.opponent));
     if (!board.is_empty() && win_by_capture_detector(node.player, node.opponent, node.player_pairs_captured).is_empty())
-        return (50000000 * depth);
-    /* return a score for a win by capture, weighted with the depth at which the win is found */
-    if (node.opponent_pairs_captured >= 5)
         return (50000000 * depth);
     /* three-four if they are not threatened by a capture are sure win in 2 extra moves */
     board = three_four_detector(node.opponent, node.player);
@@ -187,6 +181,7 @@ static inline int32_t   opponent_score(t_node const &node, uint8_t depth) {
     /* count the score for all the patterns we find, and apply penalty for those that are threatened by capture */
     for (int i = 0; i < 8; ++i) {
         value = (node.cid == 1 ? BitBoard::patterns[i].value_0 : BitBoard::patterns[i].value_1);
+        value += (pid == 1 ? BitBoard::p1_pattern_weights[i] : BitBoard::p2_pattern_weights[i]); /* dynamic pattern weighing */
         board = pattern_detector(node.opponent, node.player, BitBoard::patterns[i]);
         captb = pattern_detector(pair_capture_detector_highlight(node.player, node.opponent) ^ node.opponent, node.player, BitBoard::patterns[i]);
         count = (captb.is_empty() == false ? captb.set_count() : 0);
@@ -201,16 +196,16 @@ int32_t         AIPlayer::score_function(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
     score += player_score(node, depth);
-    score -= (int64_t)(opponent_score(node, depth) * 1.5); // we give more weight to defense
+    score -= (int64_t)(opponent_score(node, depth, this->_pid) * 1.5); // we give more weight to defense
     return ((int32_t)range(score, (int64_t)-INF, (int64_t)INF));
 }
 
 static inline int64_t   player_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    if (!pattern_detector(node.player, node.opponent, BitBoard::patterns[0]).is_empty())
-        return (50000000 * depth);
     if (node.player_pairs_captured >= 5)
+        return (50000000 * depth);
+    if (!pattern_detector(node.player, node.opponent, BitBoard::patterns[0]).is_empty())
         return (50000000 * depth);
     score += pair_capture_detector(node.player, node.opponent).set_count() * 50;
     score += node.player_pairs_captured * node.player_pairs_captured * 100;
@@ -220,9 +215,9 @@ static inline int64_t   player_evaluation(t_node const &node, uint8_t depth) {
 static inline int64_t   opponent_evaluation(t_node const &node, uint8_t depth) {
     int64_t     score = 0;
 
-    if (!pattern_detector(node.opponent, node.player, BitBoard::patterns[0]).is_empty())
-        return (50000000 * depth);
     if (node.opponent_pairs_captured >= 5)
+        return (50000000 * depth);
+    if (!pattern_detector(node.opponent, node.player, BitBoard::patterns[0]).is_empty())
         return (50000000 * depth);
     score += pair_capture_detector(node.opponent, node.player).set_count() * 50;
     score += node.opponent_pairs_captured * node.opponent_pairs_captured * 100;
@@ -243,31 +238,6 @@ bool    AIPlayer::checkEnd(t_node const& node) {
         return (check_end(node.player, node.opponent, node.player_pairs_captured, node.opponent_pairs_captured, node.move));
     return (check_end(node.opponent, node.player, node.opponent_pairs_captured, node.player_pairs_captured, node.move));
 }
-
-// void    AIPlayer::debug_append_explored(int score, int i, int depth) {
-//     if (this->_verbose >= verbose::normal && depth == this->_current_max_depth) {
-//         char    tmp[256];
-//         std::sprintf(tmp, "  | %2d-%c : %11d pts\n", 19-(i/19), "ABCDEFGHJKLMNOPQRST"[i%19], score);
-//         this->_debug_string.append(tmp);
-//     }
-// }
-//
-// void    AIPlayer::debug_search(t_ret const& ret) {
-//     if (this->_verbose >= verbose::normal) {
-//         if (this->_current_max_depth == 1)
-//             std::printf("\n[player %d - %s]\n", this->_pid, (this->_pid == 1 ? "black" : "white"));
-//
-//         std::printf("[%c] Depth %d: %2d-%c, %11d pts in %3dms\n%s",
-//             (this->search_stopped ? 'x' : 'o'),
-//             this->_current_max_depth, 19-(ret.p/19),
-//             "ABCDEFGHJKLMNOPQRST"[ret.p%19],
-//             ret.score,
-//             _elapsed_ms(),
-//             (this->_verbose == verbose::debug ? (this->search_stopped ? "" : this->_debug_string.c_str()) : "")
-//         );
-//         this->_debug_string.clear();
-//     }
-// }
 
 bool    sort_ascending(t_move const& a, t_move const& b) {
     return (a.eval < b.eval);

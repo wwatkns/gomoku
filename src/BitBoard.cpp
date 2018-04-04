@@ -18,6 +18,9 @@ const std::array<t_pattern,8> BitBoard::patterns = {{
     (t_pattern){0xD8, 5, 8,  50, 1000},  //   OO-OO  :  split four #2
     (t_pattern){0xE8, 5, 8,  50, 1000}   //   OOO-O  :  split four #3
 }};
+std::array<int, 8>  BitBoard::p1_pattern_weights = {{0, 0, 0, 0, 0, 0, 0, 0}};
+std::array<int, 8>  BitBoard::p2_pattern_weights = {{0, 0, 0, 0, 0, 0, 0, 0}};
+
 
 /* population count of a 64-bit unsigned integer (count the number of set bits) */
 static int popcount64(uint64_t x) {

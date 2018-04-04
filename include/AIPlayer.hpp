@@ -10,7 +10,6 @@
 # include "ZobristTable.hpp"
 
 # define INF 2147483647
-# define EXPLORATION_THRESHOLD 3
 
 class Player;
 
@@ -20,7 +19,7 @@ typedef struct  s_node {
     uint8_t         cid;
     uint8_t         player_pairs_captured;
     uint8_t         opponent_pairs_captured;
-    uint16_t        move; // NEW
+    uint16_t        move;
 }               t_node;
 
 typedef struct  s_ret {
@@ -48,7 +47,7 @@ namespace verbose {
 class AIPlayer {
 
 public:
-    AIPlayer(int depth, uint8_t verbose = verbose::quiet);
+    AIPlayer(int depth, uint8_t pid, uint8_t verbose = verbose::quiet);
     AIPlayer(AIPlayer const &src);
     virtual ~AIPlayer() {};
     AIPlayer    &operator=(AIPlayer const &);
@@ -67,17 +66,14 @@ protected:
     int                                                                     _depth;
     uint8_t                                                                 _verbose;
     std::string                                                             _debug_string;
+    uint8_t                                                                 _pid;
 
     std::vector<t_move> move_generation(t_node const& node, int depth);
 
     t_node              create_child(t_node const &node, int i);
-    // int32_t             score_function(t_node const &node, uint8_t depth);
     int32_t             evaluation_function(t_node const &node, uint8_t depth);
 
     bool                checkEnd(t_node const& node);
-
-    // void                debug_append_explored(int score, int i, int depth);
-    // void                debug_search(t_ret const& ret);
 
     t_ret               max(t_ret const& a, t_ret const& b) { return (a.score > b.score ? a : b); };
     t_ret               min(t_ret const& a, t_ret const& b) { return (a.score < b.score ? a : b); };

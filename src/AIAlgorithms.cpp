@@ -2,7 +2,7 @@
 
 /******************************************************* MINMAX *******************************************************/
 
-MinMax::MinMax(int depth, uint8_t verbose) : AIPlayer(depth, verbose) {
+MinMax::MinMax(int depth, uint8_t pid, uint8_t verbose) : AIPlayer(depth, pid, verbose) {
 }
 
 MinMax::MinMax(MinMax const &src) : AIPlayer(src.get_depth(), src.get_verbose()) {
@@ -57,7 +57,7 @@ t_ret       MinMax::minmax(t_node node, int depth, int player) {
 
 /***************************************************** ALPHABETA ******************************************************/
 
-AlphaBeta::AlphaBeta(int depth, uint8_t verbose) : AIPlayer(depth, verbose) {
+AlphaBeta::AlphaBeta(int depth, uint8_t pid, uint8_t verbose) : AIPlayer(depth, pid, verbose) {
 }
 
 AlphaBeta::AlphaBeta(AlphaBeta const &src) : AIPlayer(src.get_depth(), src.get_verbose()) {
@@ -120,7 +120,7 @@ t_ret       AlphaBeta::alphabeta(t_node node, int depth, int alpha, int beta, in
 
 /***************************************************** NEGASCOUT ******************************************************/
 
-NegaScout::NegaScout(int depth, uint8_t verbose) : AIPlayer(depth, verbose) {
+NegaScout::NegaScout(int depth, uint8_t pid, uint8_t verbose) : AIPlayer(depth, pid, verbose) {
 }
 
 NegaScout::NegaScout(NegaScout const &src) : AIPlayer(src.get_depth(), src.get_verbose()) {
@@ -180,7 +180,7 @@ t_ret       NegaScout::negascout(t_node node, int depth, int alpha, int beta, in
 
 /******************************************************** MTDF ********************************************************/
 
-MTDf::MTDf(int depth, uint8_t verbose) : AIPlayer(depth, verbose) {
+MTDf::MTDf(int depth, uint8_t pid, uint8_t verbose) : AIPlayer(depth, pid, verbose) {
     this->_TT.reserve(409600);
 }
 
@@ -314,7 +314,7 @@ bool            MTDf::timesup(void) {
 }
 
 /* Default algorithm */
-AlphaBetaCustom::AlphaBetaCustom(int depth, uint8_t verbose, int time_limit) :  AIPlayer(depth, verbose), _current_max_depth(0), _search_limit_ms(time_limit) {
+AlphaBetaCustom::AlphaBetaCustom(int depth, uint8_t pid, uint8_t verbose, int time_limit) :  AIPlayer(depth, pid, verbose), _current_max_depth(0), _search_limit_ms(time_limit) {
     this->search_stopped = false;
     this->reached_end = false; // NEW
 }
