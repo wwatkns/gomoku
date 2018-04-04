@@ -643,6 +643,9 @@ MCTSNode::MCTSNode(MCTSNode const &src) {
 }
 
 MCTSNode::~MCTSNode(void) {
+    for (MCTSNode* child : _childs) {
+        delete child;
+    }
 }
 
 MCTSNode	&MCTSNode::operator=(MCTSNode const &rhs) {
