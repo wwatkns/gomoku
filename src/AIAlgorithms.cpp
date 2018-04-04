@@ -458,28 +458,27 @@ MCTS   &MCTS::operator=(MCTS const&) {
 t_ret const MCTS::operator()(t_node root) {
     return (this->mcts(root));
 }
-/*
+
 static void debugchilds(MCTSNode node, int level) {
     if (node.get_parent() == NULL)
-         std::cout << node << std::endl;
-    std::vector<MCTSNode>   childs = node.get_childs();
-    for (std::vector<MCTSNode>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
+        std::cout << node << std::endl;
+    std::vector<MCTSNode *>   childs = node.get_childs();
+    for (std::vector<MCTSNode *>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
         for (int i = 0; i < level; ++i) {
             std::cout << "--";
         }
-        std::cout << *child << std::endl;
-        if (child->get_childs().size() != 0) {
-            debugchilds(*child, level + 1);
+        std::cout << **child << std::endl;
+        if ((*child)->get_childs().size() != 0) {
+            debugchilds(**child, level + 1);
         }
     }
     return ;
 }
-*/
+
 t_ret       MCTS::mcts(t_node root_state) {
-    MCTSNode    root_node(NULL, 0, 0, 0);
-    root_node.set_untried_actions(this->move_generation(root_state, 1));
-    MCTSNode    &node_to_explore = root_node;
-    MCTSNode    &promising_node = root_node;
+    MCTSNode    root_node(NULL, 0, 0, 0, this->move_generation(root_state, 1));
+    MCTSNode    *node_to_explore = &root_node;
+    MCTSNode    *promising_node;
     t_ret       best_move;
     t_node      state;
     int         winner;
@@ -487,6 +486,7 @@ t_ret       MCTS::mcts(t_node root_state) {
 
     while (this->timesup()) {
         std::cout << "--- MCTS ---" << std::endl;
+        debugchilds((*node_to_explore), 1);
         state = root_state;
         /* Tree Policy starts here: */
         /* Select */
@@ -495,21 +495,21 @@ t_ret       MCTS::mcts(t_node root_state) {
 
         /* Expand */
         std::cout << "--- Expand" << std::endl;
-        if (!(promising_node.get_untried_actions().empty())) {
-            this->expand_node(promising_node, state);
+        if (!((*promising_node).get_untried_actions().empty())) {
+            this->expand_node((*promising_node), state);
         }
         /* Default Policy: */
         /* Simulate */
         std::cout << "--- Simulate" << std::endl;
-        if (!(promising_node.get_childs().empty())) {
-            std::cout << "##################################################" << std::endl;
-            std::cout << "node_to_explore 1\n" << node_to_explore << std::endl;
-            node_to_explore = this->get_random_node(promising_node);
-            std::cout << "node_to_explore 2\n" << node_to_explore << std::endl;
-            std::cout << "##################################################" << std::endl;
+        if (!((*promising_node).get_childs().empty())) {
+            // std::cout << "##################################################" << std::endl;
+            // std::cout << "node_to_explore 1\n" << node_to_explore << std::endl;
+            node_to_explore = this->get_random_node((*promising_node));
+            // std::cout << "node_to_explore 2\n" << node_to_explore << std::endl;
+            // std::cout << "##################################################" << std::endl;
         }
-        state = this->create_child(state, node_to_explore.get_move());
-        winner = this->rollout(node_to_explore, state);
+        state = this->create_child(state, (*node_to_explore).get_move());
+        winner = this->rollout((*node_to_explore), state);
         /* Backpropagate */
         std::cout << "--- Backpropagate" << std::endl;
         node_to_explore = this->backpropagate(node_to_explore, winner);
@@ -524,26 +524,26 @@ static double       get_value(int total_visit, double node_wins, int node_visit)
     return ((node_wins / (double)node_visit) + 0.2 * sqrt(2 *log(total_visit) / node_visit));
 }
 
-static MCTSNode     get_best_node_with_uct(std::vector<MCTSNode *> childs, int parent_total_visit) {
+static MCTSNode     *get_best_node_with_uct(std::vector<MCTSNode *> childs, int parent_total_visit) {
     double          temp_uct;
     double          best_uct = std::numeric_limits<double>::min();
-    MCTSNode        best_node = *(childs[0]);
+    MCTSNode        *best_node = childs[0];
         
     for (std::vector<MCTSNode *>::iterator child = childs.begin(); child != childs.end(); ++child) {
         temp_uct = get_value(parent_total_visit, (*child)->get_wins(), (*child)->get_visit());
         if (temp_uct > best_uct) {
             best_uct = temp_uct;
-            best_node = **child;
+            best_node = *child;
         }
     }
     return (best_node);
 }
 
-MCTSNode            MCTS::select_promising_node(MCTSNode &root, t_node &state) {
-    MCTSNode    &node = root;
-    while (!(node.get_childs().empty()) && node.get_untried_actions().empty()) {
-        node = get_best_node_with_uct(node.get_childs(), node.get_visit());
-        state = this->create_child(state, node.get_move());
+MCTSNode            *MCTS::select_promising_node(MCTSNode *root, t_node &state) {
+    MCTSNode        *node = root;
+    while (!(node->get_childs().empty()) && node->get_untried_actions().empty()) {
+        node = get_best_node_with_uct(node->get_childs(), node->get_visit());
+        state = this->create_child(state, node->get_move());
     }
     return (node);
 }
@@ -557,8 +557,7 @@ void            MCTS::expand_node(MCTSNode &root, t_node &state) {
     t_move move = root.get_untried_actions()[random];
     state = this->create_child(state, move.p);
 
-    MCTSNode *child = new MCTSNode(&root, move.p, 0, 0);
-    child->set_untried_actions(this->move_generation(state, 1));
+    MCTSNode *child = new MCTSNode(&root, move.p, 0, 0, this->move_generation(state, 1));
 
     root.add_child(child);
     root.remove_action(random);
@@ -566,17 +565,16 @@ void            MCTS::expand_node(MCTSNode &root, t_node &state) {
     return ;
 }
 
-
-MCTSNode         MCTS::get_random_node(MCTSNode &node) {
+MCTSNode         *MCTS::get_random_node(MCTSNode &node) {
     std::random_device  random_device;
     std::mt19937        engine{random_device()};
     std::vector<MCTSNode *> childs = node.get_childs();
     std::uniform_int_distribution<int>  dist(0, childs.size() - 1);
     int random = dist(engine);
-    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    std::cout << *(childs[random]) << std::endl;
-    std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
-    return (*(childs[random]));
+    // std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    // std::cout << *(childs[random]) << std::endl;
+    // std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++" << std::endl;
+    return (childs[random]);
 }
 
 int             MCTS::rollout(MCTSNode &node, t_node state) {
@@ -605,19 +603,19 @@ int             MCTS::rollout(MCTSNode &node, t_node state) {
     return (game_status);
 }
 
-MCTSNode        MCTS::backpropagate(MCTSNode &leaf, int winner) {
-    MCTSNode    node_tmp = leaf;
+MCTSNode        *MCTS::backpropagate(MCTSNode *leaf, int winner) {
+    MCTSNode    *node_tmp = leaf;
     while (true) {
-        node_tmp.inc_visit();
-        if (node_tmp.get_playerid() == winner) {
-            node_tmp.inc_wins(1);
+        node_tmp->inc_visit();
+        if (node_tmp->get_playerid() == winner) {
+            node_tmp->inc_wins(1);
         }
-        if (node_tmp.get_parent() == NULL) {
+        if (node_tmp->get_parent() == NULL) {
             break;
         }
         // std::cout << "-----------------------------------" << std::endl;
         // std::cout << "node_tmp:\n" << node_tmp << std::endl;
-        node_tmp = *(node_tmp.get_parent());
+        node_tmp = node_tmp->get_parent();
         // std::cout << "node_tmp:\n" << node_tmp << std::endl;
         // std::cout << "-----------------------------------" << std::endl;
     }
@@ -642,7 +640,8 @@ bool            MCTS::timesup(void) {
     return (false);
 }
 
-MCTSNode::MCTSNode(MCTSNode *parent, int move, int wins, int visit): _parent(parent), _move(move), _wins(wins), _visit(visit) {
+MCTSNode::MCTSNode(MCTSNode *parent, int move, int wins, int visit, std::vector<t_move> moves): _parent(parent), _move(move), _wins(wins), _visit(visit) {
+    this->_untried_actions = moves;
     if (this->_parent != NULL && this->_parent->get_playerid() == 1) {
         this->_playerid = 2;
     } else {
@@ -658,16 +657,16 @@ MCTSNode::~MCTSNode(void) {
 }
 
 MCTSNode	&MCTSNode::operator=(MCTSNode const &rhs) {
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
-    if (rhs.get_parent() != NULL) std::cout << "rhs.get_parent():\t" << rhs.get_parent() << std::endl;
+    // std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    // if (rhs.get_parent() != NULL) std::cout << "rhs.get_parent():\t" << rhs.get_parent() << std::endl;
     // if (rhs.get_parent() != NULL) std::cout << "rhs.get_parent()->get_move():\t" << rhs.get_parent()->get_move() << std::endl;
     // std::cout << "this:\t" << this << std::endl;
     this->_parent = rhs.get_parent();
     // if (rhs.get_parent() != NULL) std::cout << "rhs.get_parent():\t" << rhs.get_parent() << std::endl;
     // if (rhs.get_parent() != NULL) std::cout << "rhs.get_parent()->get_move():\t" << rhs.get_parent()->get_move() << std::endl;
     // std::cout << "this:\t" << this << std::endl;
-    std::cout << "this->_parent:\t" << this->_parent << std::endl;
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
+    // std::cout << "this->_parent:\t" << this->_parent << std::endl;
+    // std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" << std::endl;
     this->_playerid = rhs.get_playerid();
     this->_move = rhs.get_move();
     this->_wins = rhs.get_wins();

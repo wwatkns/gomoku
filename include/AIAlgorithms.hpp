@@ -151,7 +151,7 @@ private:
 class MCTSNode {
 
 public:
-    MCTSNode(MCTSNode *parent, int move, int wins, int visit);
+    MCTSNode(MCTSNode *parent, int move, int wins, int visit, std::vector<t_move> moves);
     MCTSNode(MCTSNode const &src);
     ~MCTSNode(void);
     MCTSNode	&operator=(MCTSNode const &rhs);
@@ -167,7 +167,7 @@ public:
     void                    set_wins(int value) { this->_wins = value; return ; };
     void                    inc_wins(int score) { this->_wins += score; return ; };
     void                    inc_visit(void) { this->_visit++; return ; };
-    void                    set_untried_actions(std::vector<t_move> moves) { this->_untried_actions = moves; return ;};
+    // void                    set_untried_actions(std::vector<t_move> moves) { this->_untried_actions = moves; return ;};
 
     void                    add_child(MCTSNode *node);
     void                    remove_action(int index);
@@ -198,12 +198,12 @@ public:
 private:
     t_ret       mcts(t_node root_state); // Enchaine les 4 phases de MCTS
 
-    MCTSNode    select_promising_node(MCTSNode &root, t_node &state); // Select phase
+    MCTSNode    *select_promising_node(MCTSNode *root, t_node &state); // Select phase
     void        expand_node(MCTSNode &root, t_node &state); // Expand phase
-    MCTSNode    get_random_node(MCTSNode &node); // Roll out or simulation phase
+    MCTSNode    *get_random_node(MCTSNode &node); // Roll out or simulation phase
     int         rollout(MCTSNode &node, t_node state); // Roll out
     // t_node      randomize_and_apply(std::vector<t_move> moves);
-    MCTSNode    backpropagate(MCTSNode &leaf, int winner);
+    MCTSNode    *backpropagate(MCTSNode *leaf, int winner);
     t_ret       get_best_move(MCTSNode root_node);
 
     // std::random_device  _random_device;
