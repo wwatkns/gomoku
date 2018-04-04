@@ -25,9 +25,7 @@ t_ret       MinMax::minmax(t_node node, int depth, int player) {
     t_ret   best;
     int     value;
 
-    this->nbnode++; // DEBUG
-    if (depth == 0 || this->checkEnd(node)) {
-        this->nbleaf++; // DEBUG
+    if (depth == 0 || (depth != this->_depth && this->checkEnd(node))) {
         return ((t_ret){ this->score_function(node, depth + 1), -INF });
     }
     else if (player) {
@@ -80,9 +78,7 @@ t_ret       AlphaBeta::alphabeta(t_node node, int depth, int alpha, int beta, in
     t_ret   best;
     int     value;
 
-    this->nbnode++; // DEBUG
-    if (depth == 0 || this->checkEnd(node)) {
-        this->nbleaf++; // DEBUG
+    if (depth == 0 || (depth != this->_depth && this->checkEnd(node))) {
         return ((t_ret){ this->score_function(node, depth + 1), -INF });
     }
     else if (player) {
@@ -144,9 +140,7 @@ t_ret       NegaScout::negascout(t_node node, int depth, int alpha, int beta, in
     int         value;
     BitBoard    moves;
 
-    this->nbnode++; // DEBUG
     if (depth == 0 || this->checkEnd(node)) {
-        this->nbleaf++; // DEBUG
         return ((t_ret){ (color * this->score_function(node, depth + 1)), -INF });
     }
     else {
@@ -205,7 +199,6 @@ t_ret       MTDf::alphabetawithmemory(t_node node, int depth, int alpha, int bet
     t_ret       best;
     int         value;
 
-    this->nbnode++; // DEBUG
     if (this->timesup()) {
         return ((t_ret){ -INF, 0 });
     }
@@ -226,7 +219,6 @@ t_ret       MTDf::alphabetawithmemory(t_node node, int depth, int alpha, int bet
     }
 
     if (depth == 0 || this->checkEnd(node)) {
-        this->nbleaf++; // DEBUG
         return ((t_ret){ this->score_function(node, depth + 1), -INF });
     }
 

@@ -56,9 +56,6 @@ public:
     uint8_t     get_verbose(void) const { return (_verbose); };
     int32_t     score_function(t_node const &node, uint8_t depth);
 
-    int             nbnode; // DEBUG
-    int             nbleaf; // DEBUG
-
     virtual t_ret const operator()(t_node root) = 0;
 
 protected:
