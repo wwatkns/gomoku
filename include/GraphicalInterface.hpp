@@ -59,7 +59,7 @@ public:
     void            set_sg(bool const &val) { _sg = val; };
 
     std::string     render_choice_menu(void);
-    BitBoard        explored_moves_tmp;
+    BitBoard        explored_moves;
 
 private:
     void            _init_sdl(void);

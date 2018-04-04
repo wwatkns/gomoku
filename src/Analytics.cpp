@@ -119,12 +119,20 @@ void        Analytics::_update_analytics(bool init) {
         this->_handle_ratio({15, 120}),
         "left"
     };
+    this->_data["p1_current_score"] = {
+        "current score : ",
+        std::to_string(!init ? this->_player_1->current_score : 0),
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 140}),
+        "left"
+    };
     this->_data["p1_last_action_duration"] = {
         "last action duration : ",
         format_duration(get_last_action_duration(this->_game_engine->get_history(), 1)),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 140}),
+        this->_handle_ratio({15, 160}),
         "left"
     };
     this->_data["p1_mean_action_duration"] = {
@@ -132,23 +140,24 @@ void        Analytics::_update_analytics(bool init) {
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 1)),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 160}),
+        this->_handle_ratio({15, 180}),
         "left"
     };
+
     /* player 2 */
     this->_data["p2"] = {
         "P2 - white",
         (!init and this->_c_player->get_id() == 2?"   (current)":""),
         this->_font_title,
         &this->_color_font_title,
-        this->_handle_ratio({10, 210}),
+        this->_handle_ratio({10, 220}),
         "left"
     };
     this->_data["p2_type"] = {
         (!init and this->_player_2->type == 0 ? "human":"computer"), "",
         this->_font_small,
         &this->_color_font_small,
-        this->_handle_ratio({290, 210}),
+        this->_handle_ratio({290, 220}),
         "right"
     };
     this->_data["p2_captured_pairs"] = {
@@ -156,7 +165,15 @@ void        Analytics::_update_analytics(bool init) {
         std::to_string(!init ? this->_player_2->get_pairs_captured() : 0),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 230}),
+        this->_handle_ratio({15, 240}),
+        "left"
+    };
+    this->_data["p2_current_score"] = {
+        "current score : ",
+        std::to_string(!init ? this->_player_2->current_score : 0),
+        this->_font,
+        &this->_color_font,
+        this->_handle_ratio({15, 260}),
         "left"
     };
     this->_data["p2_last_action_duration"] = {
@@ -164,7 +181,7 @@ void        Analytics::_update_analytics(bool init) {
         format_duration(get_last_action_duration(this->_game_engine->get_history(), 2)),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 250}),
+        this->_handle_ratio({15, 280}),
         "left"
     };
     this->_data["p2_mean_action_duration"] = {
@@ -172,7 +189,7 @@ void        Analytics::_update_analytics(bool init) {
         format_duration(get_mean_action_duration(this->_game_engine->get_history(), 2)),
         this->_font,
         &this->_color_font,
-        this->_handle_ratio({15, 270}),
+        this->_handle_ratio({15, 300}),
         "left"
     };
 

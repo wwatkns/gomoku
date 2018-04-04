@@ -9,17 +9,14 @@ const BitBoard                BitBoard::border_left = (std::array<uint64_t, NICB
 const BitBoard                BitBoard::border_top = (std::array<uint64_t, NICB>){{0xFFFFE00000000000, 0, 0, 0, 0, 0}};
 const BitBoard                BitBoard::border_bottom = (std::array<uint64_t, NICB>){{0, 0, 0, 0, 0, 0x3FFFF800000}};
 const std::array<t_pattern,8> BitBoard::patterns = {{
-    (t_pattern){0xF8, 5, 4, 5000, 50000},  //   OOOOO  :  five
-    (t_pattern){0x78, 6, 4, 1000, 11000},  //  -OOOO-  :  open four
-    (t_pattern){0x70, 5, 4,  500,  1000},  //   -OOO-  :  open three
-    (t_pattern){0x68, 6, 8,  490,   990},  //  -OO-O-  :  open split three
-    (t_pattern){0xF0, 5, 8,  500, 10000},  //  |OOOO-  :  close four
-    (t_pattern){0xB8, 5, 8,  500, 10000},  //   O-OOO  :  split four #1
-    (t_pattern){0xD8, 5, 8,  500, 10000},  //   OO-OO  :  split four #2
-    (t_pattern){0xE8, 5, 8,  500, 10000}   //   OOO-O  :  split four #3
-    // (t_pattern){ 0xE0, 4, 8,   10 },  //  |OOO-   :  close three
-    // (t_pattern){ 0xD0, 5, 8,   10 },  //  |OO-O-  :  close split three #1
-    // (t_pattern){ 0xB0, 5, 8,   10 },  //  |O-OO-  :  close split three #2
+    (t_pattern){0xF8, 5, 4, 500, 5000},  //   OOOOO  :  five
+    (t_pattern){0x78, 6, 4, 500, 1100},  //  -OOOO-  :  open four
+    (t_pattern){0x70, 5, 4,  50,  500},  //   -OOO-  :  open three
+    (t_pattern){0x68, 6, 8,  49,  495},  //  -OO-O-  :  open split three
+    (t_pattern){0xF0, 5, 8,  50, 1000},  //  |OOOO-  :  close four
+    (t_pattern){0xB8, 5, 8,  50, 1000},  //   O-OOO  :  split four #1
+    (t_pattern){0xD8, 5, 8,  50, 1000},  //   OO-OO  :  split four #2
+    (t_pattern){0xE8, 5, 8,  50, 1000}   //   OOO-O  :  split four #3
 }};
 
 /* population count of a 64-bit unsigned integer (count the number of set bits) */

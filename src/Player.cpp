@@ -2,6 +2,7 @@
 
 Player::Player(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id, int algo_type, int depth) : _game_engine(game_engine), _gui(gui), _id(id), _pairs_captured(0) {
     this->suggested_move = { -1, -1 };
+    this->current_score = 0;
     if (algo_type == 2)
         this->_ai_algorithm = (AIPlayer*)new MinMax(depth, verbose::quiet);
     else if (algo_type == 3)

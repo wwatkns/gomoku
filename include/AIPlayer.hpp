@@ -55,6 +55,7 @@ public:
 
     int         get_depth(void) const { return (_depth); };
     uint8_t     get_verbose(void) const { return (_verbose); };
+    int32_t     score_function(t_node const &node, uint8_t depth);
 
     int             nbnode; // DEBUG
     int             nbleaf; // DEBUG
@@ -70,7 +71,7 @@ protected:
     std::vector<t_move> move_generation(t_node const& node, int depth);
 
     t_node              create_child(t_node const &node, int i);
-    int32_t             score_function(t_node const &node, uint8_t depth);
+    // int32_t             score_function(t_node const &node, uint8_t depth);
     int32_t             evaluation_function(t_node const &node, uint8_t depth);
 
     bool                checkEnd(t_node const& node);

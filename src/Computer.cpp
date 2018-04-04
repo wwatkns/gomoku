@@ -27,10 +27,9 @@ bool        Computer::play(Player *other) {
 
     action_beg = std::chrono::steady_clock::now();
 
-    // t_ret ret = this->_alphaBeta(root);
     t_ret ret = (*this->_ai_algorithm)(root);
     action.pos = { range(ret.p / 19, 0, 18), range(ret.p % 19, 0, 18) };
-    this->_gui->explored_moves_tmp = get_moves(root.player, root.opponent, forbidden_detector(root.player, root.opponent), root.player_pairs_captured, root.opponent_pairs_captured);
+    this->_gui->explored_moves = get_moves(root.player, root.opponent, forbidden_detector(root.player, root.opponent), root.player_pairs_captured, root.opponent_pairs_captured);
     action.duration = std::chrono::steady_clock::now() - action_beg;
     action.timepoint = std::chrono::steady_clock::now() - this->_game_engine->get_initial_timepoint();
     action.id = this->_game_engine->get_history_size() + 1;

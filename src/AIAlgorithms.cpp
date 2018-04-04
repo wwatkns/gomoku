@@ -316,6 +316,7 @@ bool            MTDf::timesup(void) {
 /* Default algorithm */
 AlphaBetaCustom::AlphaBetaCustom(int depth, uint8_t verbose, int time_limit) :  AIPlayer(depth, verbose), _current_max_depth(0), _search_limit_ms(time_limit) {
     this->search_stopped = false;
+    this->reached_end = false; // NEW
 }
 
 AlphaBetaCustom::AlphaBetaCustom(AlphaBetaCustom const &src) : AIPlayer(src.get_depth(), src.get_verbose()) {
@@ -335,6 +336,7 @@ t_ret const     AlphaBetaCustom::operator()(t_node root) { /* iterative deepenin
     t_ret       current;
 
     this->search_stopped = false;
+    this->reached_end = false; // NEW
     this->_search_start = std::chrono::steady_clock::now();
     this->_root_moves.clear();
 
@@ -344,6 +346,8 @@ t_ret const     AlphaBetaCustom::operator()(t_node root) { /* iterative deepenin
         if (this->search_stopped)
             break;
         ret = current;
+        if (this->reached_end) /* stop the iterative deepening search if we reached an end game */
+            break;
     }
     return (ret);
 }
@@ -410,6 +414,8 @@ t_ret       AlphaBetaCustom::_root_max(t_node node, int alpha, int beta, int dep
         current = this->_min(move->node, alpha, beta, depth-1);
         move->eval = current.score;
         _debug_append_explored(current.score, move->p, depth);
+        if (std::abs(current.score) >= 1000000) // if we go past we want to stop the iterative deepening
+            this->reached_end = true;
         if (current > best) {
             best = { current.score, move->p };
             alpha = this->max(alpha, best.score);
@@ -429,9 +435,6 @@ void    AlphaBetaCustom::_debug_append_explored(int score, int i, int depth) {
 
 void    AlphaBetaCustom::_debug_search(t_ret const& ret) {
     if (this->_verbose >= verbose::normal) {
-        // if (this->_current_max_depth == 1)
-            // std::printf("\n[player %d - %s]\n", this->_pid, (this->_pid == 1 ? "black" : "white"));
-
         std::printf("[%c] Depth %d: %2d-%c, %11d pts in %3dms\n%s",
             (this->search_stopped ? 'x' : 'o'),
             this->_current_max_depth, 19-(ret.p/19),

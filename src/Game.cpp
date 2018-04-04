@@ -94,7 +94,9 @@ void    Game::loop(void) {
             // test |= highlight_five_aligned(this->_c_player->board);
             // std::cout << three_four_detector(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board)) << std::endl;
             // std::cout << get_winning_moves(this->_c_player->board, (this->_c_player->get_id() == 1 ? this->_player_2->board : this->_player_1->board), this->_c_player->get_pairs_captured(), (this->_c_player->get_id() == 1 ? this->_player_2->get_pairs_captured() : this->_player_1->get_pairs_captured())) << std::endl;
+            this->_c_player->current_score = this->_c_player->get_ai_algorithm()->score_function(create_node(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1), 1);
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
+            this->_c_player->current_score = this->_c_player->get_ai_algorithm()->score_function(create_node(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1), 1);
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);
         this->_gui->update_display();
@@ -106,7 +108,7 @@ void    Game::loop(void) {
 bool    Game::undo(void) {
     bool    last = (this->_game_engine->get_history_size() == 0);
     this->_game_engine->delete_last_action(this->_player_1, this->_player_2);
-    this->_gui->explored_moves_tmp = get_moves(
+    this->_gui->explored_moves = get_moves(
         this->_c_player->board,
         (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1)->board,
         this->_c_player->board_forbidden,

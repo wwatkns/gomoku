@@ -31,6 +31,7 @@ public:
     BitBoard        board;
     BitBoard        board_forbidden;
     Eigen::Array2i  suggested_move;
+    int64_t         current_score;
 
 protected:
     GameEngine          *_game_engine;

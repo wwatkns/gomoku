@@ -85,6 +85,7 @@ public:
     virtual t_ret const operator()(t_node root);
 
     bool    search_stopped;
+    bool    reached_end;
 
 private:
     int                                     _current_max_depth;
