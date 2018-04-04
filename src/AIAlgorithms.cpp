@@ -614,8 +614,12 @@ MCTSNode        *MCTS::backpropagate(MCTSNode *leaf, int winner) {
 t_ret           MCTS::get_best_move(MCTSNode &root_node) {
     std::vector<MCTSNode *> childs = root_node.get_childs();
     MCTSNode                *best_node = childs[0];
+    double                  best_score = -1;
+    double                  expect_success;
     for (std::vector<MCTSNode *>::const_iterator child = childs.begin(); child != childs.end(); ++child) {
-        if ((*child)->get_visit() > best_node->get_visit()) {
+        expect_success = ((*child)->get_wins() + 1) / ((*child)->get_visit() + 2);
+        if (expect_success > best_score) {
+            best_score = expect_success;
             best_node = *child;
         }
     }
