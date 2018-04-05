@@ -33,22 +33,6 @@ private:
 
 };
 
-class NegaScout: public AIPlayer {
-
-public:
-    NegaScout(int depth, uint8_t pid, uint8_t verbose = verbose::quiet);
-    NegaScout(NegaScout const &src);
-    ~NegaScout(void);
-    NegaScout    &operator=(NegaScout const &);
-
-    virtual t_ret const operator()(t_node root);
-
-private:
-    t_ret           negascout(t_node, int depth, int alpha, int beta, int color, int maxdepth);
-
-};
-
-
 class MTDf: public AIPlayer {
 
 public:

@@ -114,64 +114,6 @@ t_ret       AlphaBeta::alphabeta(t_node node, int depth, int alpha, int beta, in
     return (best);
 }
 
-/***************************************************** NEGASCOUT ******************************************************/
-
-NegaScout::NegaScout(int depth, uint8_t pid, uint8_t verbose) : AIPlayer(depth, pid, verbose) {
-}
-
-NegaScout::NegaScout(NegaScout const &src) : AIPlayer(src.get_depth(), src.get_verbose()) {
-    *this = src;
-}
-
-NegaScout::~NegaScout(void) {
-}
-
-NegaScout   &NegaScout::operator=(NegaScout const&) {
-    return(*this);
-}
-
-t_ret const NegaScout::operator()(t_node root) {
-    return (this->negascout(root, this->_depth, -INF, INF, 1, this->_depth));
-}
-
-/* TODO: NegaScout relies on move ordering. Thus, this is NOT A WORKING NEGASCOUT! */
-t_ret       NegaScout::negascout(t_node node, int depth, int alpha, int beta, int color, int max_depth) {
-    t_ret       best;
-    int         value;
-    BitBoard    moves;
-
-    if (depth == 0 || this->checkEnd(node)) {
-        return ((t_ret){ (color * this->score_function(node, depth + 1)), -INF });
-    }
-    else {
-        best = { alpha, -INF };
-        if (color == 1)
-            moves = get_moves(node.player, node.opponent, forbidden_detector(node.player, node.opponent), node.player_pairs_captured,
-                                    node.opponent_pairs_captured);
-        if (color == -1)
-            moves = get_moves(node.opponent, node.player, forbidden_detector(node.opponent, node.player), node.opponent_pairs_captured,
-                                    node.player_pairs_captured);
-        for (int i = 0; i < 361; ++i) {
-            if (moves.check_bit(i)) {
-                if (depth == max_depth) {
-                    value = -this->negascout(this->create_child(node, i), depth - 1, -beta, -alpha, -color, max_depth).score;
-                }
-                else {
-                    value = -this->negascout(this->create_child(node, i), depth - 1, -alpha - 1, -beta, -color, max_depth).score;
-                    if (alpha < value && value < beta) {
-                        value = -this->negascout(this->create_child(node, i), depth - 1, -beta, -value, -color, max_depth).score;
-                    }
-                }
-                alpha = this->max(alpha, value);
-                best = value > best.score ? (t_ret){ value, i } : best;
-                if (alpha >= beta)
-                    break;
-            }
-        }
-    }
-    return (best);
-}
-
 /******************************************************** MTDF ********************************************************/
 
 MTDf::MTDf(int depth, uint8_t pid, uint8_t verbose) : AIPlayer(depth, pid, verbose) {
