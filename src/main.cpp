@@ -41,6 +41,9 @@ static int      check_algo_type(int algo_type, int player) {
         case 4:
             std::cout << "(4) MTDf" << std::endl;
             return (4);
+        case 5:
+            std::cout << "(5) MCTS" << std::endl;
+            return (5);
         default:
             std::cout << "(1) default" << std::endl;
             return (1);
@@ -78,7 +81,7 @@ int             main(int argc, char **argv) {
         boost::program_options::variables_map           vm;
         desc.add_options()
             ("help,h", "Print help options")
-            ("ai,a", boost::program_options::value<std::vector<int> >()->multitoken(), "Choose AI algorithm:\n(1) default,\n(2) MinMax,\n(3) AlphaBeta,\n(4) MTDf")
+            ("ai,a", boost::program_options::value<std::vector<int> >()->multitoken(), "Choose AI algorithm:\n(1) default,\n(2) MinMax,\n(3) AlphaBeta,\n(4) MTDf\n(5) MCTS")
             ("depth,d", boost::program_options::value<std::vector<int> >()->multitoken(), "Select the maximum depth");
         try {
             boost::program_options::store(boost::program_options::parse_command_line(argc, argv, desc), vm);

@@ -9,6 +9,8 @@ Player::Player(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id, int
         this->_ai_algorithm = (AIPlayer*)new AlphaBeta(depth, id, verbose::quiet);
     else if (algo_type == 4)
         this->_ai_algorithm = (AIPlayer*)new MTDf(depth, id, verbose::quiet);
+    else if (algo_type == 5)
+        this->_ai_algorithm = (AIPlayer*)new MCTS(depth, id, verbose::quiet);
     else
         this->_ai_algorithm = (AIPlayer*)new AlphaBetaCustom(depth, id, verbose::debug);
 }
