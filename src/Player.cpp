@@ -12,7 +12,7 @@ Player::Player(GameEngine *game_engine, GraphicalInterface *gui, uint8_t id, int
     else if (algo_type == 5)
         this->_ai_algorithm = (AIPlayer*)new MCTS(depth, id, verbose::quiet);
     else
-        this->_ai_algorithm = (AIPlayer*)new AlphaBetaCustom(depth, id, verbose::debug);
+        this->_ai_algorithm = (AIPlayer*)new AlphaBetaCustom(depth, id, verbose::quiet);
 }
 
 Player::Player(Player const &src) : _game_engine(src.get_game_engine()), _id(src.get_id()) {
