@@ -1,5 +1,4 @@
 #include "Game.hpp"
-#include "BitBoard.hpp" // DEBUG
 
 Game::Game(void)  {
     this->_game_engine = new GameEngine();
@@ -83,24 +82,12 @@ void    Game::loop(void) {
             this->_gui->update_end_game(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1);
         if ((action_performed == true && !this->_gui->check_pause()) || (action_undo == true && !this->_gui->get_end_game())) {
             this->_game_engine->update_dynamic_pattern_weights();
-
-            std::cout << "p1 weights: ";
-            for (int i = 0; i < 7; ++i)
-                std::cout << BitBoard::p1_pattern_weights[i] << ", ";
-            std::cout << BitBoard::p1_pattern_weights[7] << std::endl;
-
-            std::cout << "p2 weights: ";
-            for (int i = 0; i < 7; ++i)
-                std::cout << BitBoard::p2_pattern_weights[i] << ", ";
-            std::cout << BitBoard::p2_pattern_weights[7] << std::endl;
-
             this->_c_player->current_score = this->_c_player->get_ai_algorithm()->score_function(create_node(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1), 1);
             this->_c_player = (this->_c_player->get_id() == 1 ? this->_player_2 : this->_player_1); /* switch players */
             this->_c_player->current_score = this->_c_player->get_ai_algorithm()->score_function(create_node(*this->_c_player, this->_c_player->get_id() == 1 ? *this->_player_2 : *this->_player_1), 1);
         }
         this->_gui->get_analytics()->set_c_player(this->_c_player);
         this->_gui->update_display();
-        // this->_debug_fps();
         this->_cap_framerate(30);
     }
 }

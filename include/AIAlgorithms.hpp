@@ -55,10 +55,6 @@ private:
 
 };
 
-/*  + Alpha-Beta pruning
-    + Iterative Deepening
-    + Move Sorting
-*/
 class AlphaBetaCustom: public AIPlayer {
 
 public:

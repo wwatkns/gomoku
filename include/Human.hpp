@@ -13,11 +13,8 @@ public:
 
     virtual bool    play(Player *other);
 
-    // AlphaBetaWithIterativeDeepening get_alphaBeta(void) const { return (_alphaBeta); };
-
 private:
     std::chrono::duration<double, std::milli>   _action_duration;
-    // AlphaBetaWithIterativeDeepening             _alphaBeta;
 };
 
 #endif

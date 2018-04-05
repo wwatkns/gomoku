@@ -78,8 +78,6 @@ protected:
     int                 min(int const& a, t_ret const& b)   { return (a < b.score ? a : b.score); };
     int                 max(int const& a, int const& b)     { return (a > b ? a : b); };
     int                 min(int const& a, int const& b)     { return (a < b ? a : b); };
-
-
 };
 
 t_node              create_node(Player const& player, Player const& opponent);
