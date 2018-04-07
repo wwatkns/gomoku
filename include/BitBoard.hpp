@@ -10,14 +10,14 @@
 
 # define NICB 6  /* number of int64 composing the bitboard */
 # define DIRS 8  /* number of directions */
-# define BITS 64 /* number of bits in a int64 */
+# define BITS 64 /* number of bits */
 
 typedef struct  s_pattern {
     uint8_t     repr;       /* the pattern encoded in big-endian (ex : 01011000 for -O-OO-) */
     uint8_t     size;       /* the size of the pattern */
     uint8_t     dirs;       /* the number of directions (symmetric pattern like -OOO- need only 4 directions computed) */
     uint16_t    value_0;    /* the value associated with the pattern if next turn is player */
-    uint16_t    value_1;    /* the value associated with the pattern if next turn is player */
+    uint16_t    value_1;    /* the value associated with the pattern if next turn is opponent */
 }               t_pattern;
 
 /*  Implementation of a bitboard representation of a square board of 19*19 using
@@ -37,7 +37,7 @@ public:
 
     void        zeros(void);                                                // set the bitboard values to zeros
     void        write(const uint64_t i);                                    // set a bit to 1 on the bitboard at position i
-    void        remove(const uint64_t i);                                   // set a bit to 1 on the bitboard at position i
+    void        remove(const uint64_t i);                                   // set a bit to 0 on the bitboard at position i
     void        write(const uint64_t x, const uint64_t y);                  // set a bit to 1 on the bitboard at position x, y
     void        remove(const uint64_t x, const uint64_t y);                 // set a bit to 0 on the bitboard at position x, y
     int         set_count(void) const;                                      // return the number of bits set to 1 in bitboard
@@ -55,7 +55,7 @@ public:
     BitBoard    dilated(void) const;                                        // return the board dilated
     BitBoard    eroded(void) const;                                         // return the board eroded
 
-    BitBoard    rotated_45(void);
+    BitBoard    rotated_45(void);                                           // return the rotated bitboard (not used but here for reference)
 
     /* arithmetic (bitwise) operator overload */
     BitBoard    operator|(BitBoard const &rhs) const; // bitwise union
@@ -80,8 +80,8 @@ public:
     bool        operator!=(BitBoard const &rhs) const;
 
     std::array<uint64_t, NICB>              values;
-    static const std::array<int16_t, DIRS>  shifts;
-    static const std::array<t_pattern,8>    patterns;
+    static const std::array<int16_t, DIRS>  shifts;             
+    static const std::array<t_pattern,8>    patterns;           // the patterns used in the scoring function (heuristic)
     static std::array<int, 8>               p1_pattern_weights; // Sorry...
     static std::array<int, 8>               p2_pattern_weights; // Sorry...
     static const BitBoard                   full;
@@ -95,26 +95,37 @@ public:
 
 std::ostream	&operator<<(std::ostream &os, BitBoard const &bitboard);
 
+/* return the positions being a threat of win by opponent (open-threes, fours, fives) */
 BitBoard    get_threat_moves(BitBoard const &p1, BitBoard const &p2, int p2_pairs_captured);
+/* return the positions leading to an instant win */
 BitBoard    get_winning_moves(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured, int p2_pairs_captured);
-
+/* return the forbidden positions (only double-threes are forbidden) */
 BitBoard    forbidden_detector(BitBoard const &p1, BitBoard const &p2);
+/* return the positions leading to the completion a given pattern (ex: if we want to build a -OOOO- and there is a -O-OO- on the board, we can play at the third position to achieve that) */
 BitBoard    future_pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
+/* return the positions where we found a given pattern */
 BitBoard    pattern_detector(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
+/* return the open positions around a given pattern */
 BitBoard    pattern_detector_highlight_open(BitBoard const &p1, BitBoard const &p2, t_pattern const &pattern);
-
+/* detect if there is a five stone alignment on a given board */
 bool        detect_five_aligned(BitBoard const &bitboard);
+/* return the positions of the stones that compose five alignments */
 BitBoard    highlight_five_aligned(BitBoard const &bitboard);
-
-BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);      /* detect the positions leading to one or multiple captures */
-BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, int move);  /* return the board showing the stones captured */
-BitBoard    pair_capture_detector_highlight(BitBoard const &p1, BitBoard const &p2); /* detect the positions leading to one or multiple captures but highlights the stones that will be captured */
+/* return the positions leading to capture */
+BitBoard    pair_capture_detector(BitBoard const &p1, BitBoard const &p2);
+/* return the positions of the stones that have been captured by `move` */
+BitBoard    highlight_captured_stones(BitBoard const &p1, BitBoard const &p2, int move);
+/* return the positions of the stones that are threatened by capture */
+BitBoard    pair_capture_detector_highlight(BitBoard const &p1, BitBoard const &p2);
+/* return the positions of the stones that are threatened by capture and that compose a five alignment */
 BitBoard    pair_capture_breaking_five_detector(BitBoard const &p1, BitBoard const &p2);
-
-BitBoard    win_by_capture_detector(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured); /* detect the positions that lead to an instant win by capture */
-BitBoard    win_by_alignment_detector(BitBoard const &p1, BitBoard const &p2, BitBoard const& p1_forbidden, int p2_pairs_captured); /* detect the positions that lead to an instant win by five alignment (unbreakable) */
-
+/* return the positions leading to an instant win by capture (it handles multiples captures) */
+BitBoard    win_by_capture_detector(BitBoard const &p1, BitBoard const &p2, int p1_pairs_captured);
+/* return the positions leading to an instant win by alignment (with opponent unable to break it with capture and unable to total 5 pairs captured the following turn) */
+BitBoard    win_by_alignment_detector(BitBoard const &p1, BitBoard const &p2, BitBoard const& p1_forbidden, int p2_pairs_captured);
+/* return the positions leading to an open-three and open-four pattern (with one stone placed) */
 BitBoard    three_four_detector(BitBoard const &p1, BitBoard const &p2);
+/* return the positions leading to a double-four (with one stone placed) */
 BitBoard    four_four_detector(BitBoard const &p1, BitBoard const &p2);
 
 namespace direction {
@@ -155,9 +166,8 @@ namespace direction {
        +---------------------------------------+
          0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8
 
-    BitBoard without separating bits. We'll benchmark the performances of the
-    algorithms once we have more stuff in place, and compare the version of the
-    BitBoard with and without the separator bits.
+    BitBoard without separating bits. The `/` show the separation of
+    the int64 (as the bitboard is represented as an array of 6 int64 variables)
 
     +--Shifts---+---------------+-----+
     | direction |     value     | idx |        [indices]         [shifts]
@@ -247,28 +257,11 @@ namespace direction {
     -> pattern depict desired stone arrangements, as such the function pattern_detection returns a
      bitboard showing the open cells leading to such arrangements.
     -> patterns are encoded in 8 bits and in big-endian (from left to right) as shown in table above.
-    -> patterns must have a length associated to them (is it still true ?).
+    -> patterns must have a length associated to them.
     -> close pattern mean they have one extremity blocked by an enemy stone, both extremities closed
      are not checked as it will lead to nothing.
     -> asymmetric patterns such as -OO-O- are checked on 4 axis and both directions, so -O-OO- is
      checked as the same time.
     -> with this pattern encoding you can do (open & open), (open & close), (any & any), (open & any),
      (close & any) and the mirrors.
-
-
-    +-16bit position storage---------+
-    |     x    |    y    |    pad    |
-    +----------+---------+-----------+-------------+
-    | 1 1 1 1 1|1 1 1 1 1|0 0 0 0 0 0| binary mask |
-    +----------+---------+-----------+-------------+
-    |  0xF800  |  0x7C0  |           |    hex mask |
-    +----------+---------+-----------+-------------+
-
-    Encode :
-     $ uint16_t pos = (x << 11) | (y << 6);
-    Decode :
-     $ x = pos & 0xF800;
-     $ y = pos & 0x7C0;
-
-     1001001111000000 is (18, 15)
 */
